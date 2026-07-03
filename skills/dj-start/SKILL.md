@@ -84,7 +84,7 @@ These live in `.agent/project.md` and are echoed into every task packet later �
 
 ### 4. Set the language policy
 
-Detect (or ask, if genuinely ambiguous) the language the user converses in — that is the **internal language**. The **external language is always English**: code, comments, tests, commits, PRs, tickets, anything that leaves the user's machine. Write `.agent/language-policy.md` from `templates/language-policy.md`.
+Detect (or ask, if genuinely ambiguous) the language the user converses in — that is the **internal language**. The **external language is always English**: code, comments, tests, commits, PRs, tickets, anything that leaves the user's machine. Also set the **external English level**: `simple (B1/B2)` — plain words, short sentences; the right default when teammates read English as a second language — or `natural`. It is a writing register, never a facts filter. Write `.agent/language-policy.md` from `templates/language-policy.md`.
 
 ### 5. Generate the `.agent/` base files
 

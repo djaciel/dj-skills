@@ -19,6 +19,7 @@ Read `.agent/language-policy.md` first, if it exists, and honor it:
 
 - **Internal language** (whatever the user converses in) — explanations, summaries, and notes addressed to the user.
 - **External language** (always English) — PR descriptions, commit messages, review comments, tickets, team updates: anything that leaves the user's machine.
+- **External English level** — if the policy sets `simple (B1/B2)`, write plain English: common words, short sentences, no idioms or rare vocabulary. Simplify the words, never the facts — code identifiers and technical terms with no simpler equivalent stay as they are.
 
 If the file does not exist, default to: external artifacts in English, user-facing explanations in the user's own language.
 

@@ -31,6 +31,8 @@ Read `.agent/language-policy.md` before writing anything. Two layers:
 - **Conversation with the user:** internal language — whatever the user converses in.
 - **The artifact itself** (PR description, commit message, review comment, ticket, update): external language — **English, always**. It leaves the user's machine.
 
+The policy may also set an **External English level** (e.g. `simple (B1/B2)`): when present, artifacts use plain vocabulary and short sentences — simpler words, identical facts.
+
 If `.agent/language-policy.md` does not exist, default to exactly that split: converse in the user's language, write artifacts in English.
 
 ## Routing

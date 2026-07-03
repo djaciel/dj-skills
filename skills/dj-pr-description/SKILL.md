@@ -65,7 +65,7 @@ Short PRs get short descriptions. The judgment question: **"What does the review
 - **Validation must be real.** List only commands actually run, with their actual results. Never write "tests pass" without having seen them pass.
 - **"Why" before "what".** Reviewers judge fitness to intent; a description that only lists changes forces them to reverse-engineer the intent.
 - **Don't restate the diff.** File-by-file prose that repeats what `git diff --stat` shows is noise.
-- **English, always** — a PR description is an external artifact under the language policy.
+- **English, always** — a PR description is an external artifact under the language policy. Honor its "External English level": at `simple (B1/B2)`, plain words and short sentences — same facts, simpler register.
 - **Surface risk honestly.** A known limitation stated up front is a review aid; the same limitation discovered by the reviewer is a trust problem.
 
 ## Common mistakes

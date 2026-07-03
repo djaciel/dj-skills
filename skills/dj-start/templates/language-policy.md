@@ -30,6 +30,16 @@ Use English for:
 - Public docs and README content.
 - Anything that leaves the user's machine.
 
+## External English level
+<simple (B1/B2) | natural>
+
+- `simple (B1/B2)`: plain vocabulary, short sentences, no idioms or rare words —
+  written so any teammate reads it comfortably, whatever their English level.
+- `natural`: fluent professional English.
+
+Either way: simplify the words, never the facts. Code identifiers and technical
+terms with no simpler equivalent stay as they are.
+
 ## Mixed output
 When reporting a completed task to the user:
 - Main explanation in the internal language.
