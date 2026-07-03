@@ -37,3 +37,4 @@
 
 ## Report style
 <internal language>, short, with review order and validation evidence.
+Walkthrough: <off | on-request | always>

@@ -35,12 +35,39 @@ When NOT to use:
 | Skipped steps | Loop steps skipped and why | One line each ("Skipped scout: packet lists all context"); drop when empty |
 | Acceptance | Hard / soft check status + drift classification | Levels per **dj-acceptance-review**; if drift exists, point to the drift-log entry (**dj-drift-management**) |
 | Out of scope | Discoveries reported, not acted on | Bugs, refactor candidates, missing utilities found along the way; drop when empty |
+| Walkthrough | Optional deep-dive: goal, data flow, file-by-file functions | Off by default — see "The optional Walkthrough" below |
 | Review order | Numbered reading order, core file first | This is the human's map — earn their 10–20 minutes |
 | Suggested commit | One line via **dj-commit-message** | Suggest only; the human commits unless commit_policy says otherwise |
 
 Language: the report itself follows the internal language in `.agent/language-policy.md`; the suggested commit message is always English.
 
 Scaling: a trivial task gets a trivial report — outcome, changes, validation, commit. Drop sections that would say "nothing to report"; never drop Validation.
+
+## The optional Walkthrough
+
+Off by default — the base report stays readable in 2 minutes. Produce it when the user asks ("walk me through T-03"), or when `.agent/current.md` sets `Walkthrough: always` under Report style. Three parts, in the internal language, ordered so the reader never drowns:
+
+1. **Goal** — the task's objective restated in one line.
+2. **Data flow** — a compact `input → transform → output` map of the changed flow (apply **dj-data-flow-review**), one line per path.
+3. **File by file, in review order** — for each core file, the functions added or changed, one line each, in plain words. Mechanical files stay grouped — never function by function.
+
+Short lines, no prose paragraphs, no code dumps. The walkthrough explains the change; the diff remains the source of truth.
+
+```md
+Walkthrough — T-03
+
+Goal: recover the funding flow when account linking fails after token creation.
+
+Data flow:
+- webhook `funding.failed` → `resolveRecovery()` → retry queue or abort + refund
+
+File by file:
+1. `src/funding/recover.ts`
+   - `resolveRecovery()` — decides retry vs abort from the error code
+   - `scheduleRetry()` — enqueues the retry with backoff (reuses `queue.push`)
+2. `src/funding/types.ts`
+   - `RecoveryState` — new union: `retrying | aborted | recovered`
+```
 
 ## Common mistakes
 

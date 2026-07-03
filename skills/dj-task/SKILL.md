@@ -148,7 +148,7 @@ Per **dj-task-report** (the canonical format and full example live there). Secti
 ```text
 <T-ID>: <end state>
 Changes · Validation · Self-review · Skipped steps · Acceptance ·
-Out of scope · Review order · Suggested commit
+Out of scope · Review order · Suggested commit · Walkthrough (on request)
 ```
 
-Readable in 2 minutes; drop empty sections.
+Readable in 2 minutes; drop empty sections. The Walkthrough (goal in one line, data-flow map, core files function by function) is produced only when the user asks or when `current.md`'s Report style says `Walkthrough: always`.
