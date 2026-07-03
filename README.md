@@ -53,7 +53,25 @@ Deterministic checks (formatting, typecheck, tests, secret-blocking) belong in h
 
 ## Installation
 
-Clone the repo, then copy or symlink the pieces into Claude Code's config directories.
+### Option A: `npx skills` (recommended)
+
+```bash
+# from GitHub
+npx skills add djaciel/dj-skills --all -g
+
+# or from a local clone
+npx skills add /path/to/dj-skills --all -g
+```
+
+Drop `-g` to install into the current project (`.claude/`) instead of user-level (`~/.claude/`). The CLI symlinks by default, so `git pull` on the clone updates your installed skills; add `--copy` if you want plain copies. Use `-l` to list what would be installed, or omit `--all` to pick skills interactively.
+
+**The subagents are not covered by the skills CLI** — copy them manually:
+
+```bash
+cp /path/to/dj-skills/agents/*.md ~/.claude/agents/    # or .claude/agents/ inside a project
+```
+
+### Option B: manual copy/symlink
 
 **User-level (available in every project):**
 
@@ -73,7 +91,7 @@ cp -R /path/to/dj-skills/skills/* .claude/skills/
 cp /path/to/dj-skills/agents/*.md .claude/agents/
 ```
 
-Prefer symlinks if you want `git pull` updates to propagate automatically. The skills follow the standard `SKILL.md` layout, so installers that consume this format (such as `npx skills add`) are compatible as well.
+Prefer symlinks if you want `git pull` updates to propagate automatically.
 
 Each installed skill is invocable by its name (e.g. `/dj-start`, `/dj-task`). The eight command skills below are the intended entry points; the lens skills are mostly applied automatically by the commands and subagents. Commands degrade gracefully: if a subagent is not installed, the same work happens inline in the main session.
 
