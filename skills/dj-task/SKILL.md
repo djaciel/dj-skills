@@ -32,6 +32,8 @@ The loop delegates to specialist subagents (**dj-scout**, **dj-implementer**, **
 
 Read `.agent/current.md` first — it is the source of truth for active mode, current direction, and anything marked "Do not follow". Then read the task packet (`.agent/features/<feature>/tasks/T-XX.md`): objective, context files, acceptance checks (hard/soft/exploratory/deferred), validation commands, commit policy. If `current.md` and the packet disagree, `current.md` wins — flag the mismatch before implementing.
 
+**Branch check.** Read the Branching section of `.agent/project.md`. On the base branch with `branch_creation: agent`? Create the feature branch (per the naming convention) from the up-to-date base before touching files. `suggest-only`? Tell the human which branch to create and wait. Already on a matching feature branch? Continue. No policy written? Ask once, record the answer in `project.md`, and move on.
+
 ### 2. Scout context and precedents
 
 Delegate to the **dj-scout** subagent: relevant files, existing patterns, reusable helpers, duplication risk. **Skip this step** if the packet already lists context files and you know the area — say so in the report.

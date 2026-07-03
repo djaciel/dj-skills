@@ -171,6 +171,8 @@ Set at `/dj-start` (or by hand in `project.md`), adjustable any time:
 
 Default commit policy everywhere: no auto-commit, no push, no auto-PR, no co-author lines. `--autonomous` only when you say so.
 
+Branching is policy too: `project.md` records the base branch, the naming convention (`feat/…`, `fix/…`), and whether the agent creates branches or only suggests them. `/dj-task` and `/dj-fix` check it before touching files — and if no policy is written, they ask once and record the answer.
+
 **Language policy** (in `.agent/language-policy.md`): *internal* = whatever you converse in; *external* = always English, with an **English level** — `simple (B1/B2)` (plain words, short sentences) or `natural`. Words get simplified, facts never.
 
 ## Living acceptance & task end states

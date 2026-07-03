@@ -79,6 +79,7 @@ Also set:
 
 - `commit_policy: human-only | allowed-if-explicit | autonomous` — default **human-only**.
 - `pr_policy: none | phase-as-pr | explicit-pr-strategy`.
+- Branching: base branch, naming convention (`feat/<feature>`, `fix/<issue-id>`), and whether the agent creates branches or only suggests them. For an existing repo, detect the convention from `git branch -a` and recent history instead of inventing one.
 
 These live in `.agent/project.md` and are echoed into every task packet later — the mode is written down, not remembered.
 

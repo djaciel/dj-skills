@@ -15,6 +15,11 @@ human_loop: <task | checkpoint | phase>
 commit_policy: <human-only | allowed-if-explicit | autonomous>
 pr_policy: <none | phase-as-pr | explicit-pr-strategy>
 
+## Branching
+base_branch: <main | develop | ...>
+naming: <feat/<feature> · fix/<issue-id> — match the repo's existing convention>
+branch_creation: <agent | suggest-only>
+
 ## Language policy
 Internal: <internal language>. External: English.
 Full rules: `.agent/language-policy.md`.

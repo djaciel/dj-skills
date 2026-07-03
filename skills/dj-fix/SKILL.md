@@ -38,7 +38,7 @@ Everything else in the flow scales with judgment. These two do not.
 
 ## The process
 
-Create `.agent/issues/<issue-id>/` as the working folder. Read `.agent/current.md` first if it exists.
+Create `.agent/issues/<issue-id>/` as the working folder. Read `.agent/current.md` first if it exists. Then do the branch check from the Branching section of `.agent/project.md`: on the base branch with `branch_creation: agent`, create `fix/<issue-id>` (or the repo's convention) from the up-to-date base; with `suggest-only`, tell the human which branch to create; if no policy is written, ask once and record it in `project.md`.
 
 ### 1. Read the issue
 
