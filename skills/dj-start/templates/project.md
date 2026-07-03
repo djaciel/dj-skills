@@ -30,6 +30,10 @@ Full rules: `.agent/language-policy.md`.
 ## Repositories / packages
 - <repo-or-package>: <purpose>
 
+## Related repos & context sources
+<!-- registered once — dj-scout and dj-planner consult these; add an entry whenever work needs another repo, doc, or schema -->
+- `<path>`: <what it provides — e.g. ../backend: API contracts in src/api/schema.ts>
+
 ## Important commands
 - install: <command>
 - test: <command>

@@ -34,6 +34,7 @@ Read everything the user provides: notes, ideas, constraints, links, doubts, pas
 - Problem — what hurts today.
 - Constraints — platform, stack, budget, timeline, "must not" items.
 - Risks and doubts — theirs and yours.
+- External context — other repos, docs, or schemas this project depends on. Record them in `project.md` under "Related repos & context sources" so they never need re-explaining.
 
 Reflect a compact intake summary back before asking anything:
 

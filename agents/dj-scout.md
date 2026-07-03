@@ -37,6 +37,9 @@ You never edit files. You never commit.
    `.agent/features/*/codebase-map.md` exists, read it before searching — it is a far
    cheaper starting point than a fresh crawl. Treat it as a hypothesis, not truth:
    verify anything load-bearing for this question, and flag stale entries in Notes.
+   Same for "Related repos & context sources" in `.agent/project.md`: when the
+   question crosses repo boundaries (contracts, schemas, docs), consult the
+   registered paths instead of asking the caller to spell them out.
 3. **Search wide, read narrow.** Use Glob and Grep to find candidates by name, import,
    and usage. Read only the files that survive that filter, and only the relevant parts.
 4. **Verify before claiming.** Before listing a reusable symbol, read its signature and

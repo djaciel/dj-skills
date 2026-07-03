@@ -60,7 +60,10 @@ test, config, and mechanical files don't count against size. The judgment questi
 **Every task packet includes:** goal, why it matters, scope in/out, context (read-first
 files and reference patterns — verified paths, not guesses), the four-level acceptance
 checks, validation commands, review focus, and execution mode (`human_loop`,
-`commit_policy`, internal/external language) copied from `project.md`.
+`commit_policy`, internal/external language) copied from `project.md`. For multi-repo
+tasks, also fill the packet's "Repos involved" block — each repo's role, the cross-repo
+contract, and validation per repo — pulling registered paths from "Related repos &
+context sources" in `project.md`.
 
 **PR strategy is a revisable hypothesis**, never file-count dogma. Recommend
 1 PR / 2 PRs / stacked PRs / no PR; state why; give the review story; classify expected

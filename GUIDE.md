@@ -187,7 +187,7 @@ Guidance, not law: up to ~75% of context, keep going (update handoff as tasks cl
 
 ## Multi-repo setups
 
-One `.agent/` at the root, one `CLAUDE.md` per repo. Cross-repo task packets declare the contract explicitly:
+One `.agent/` at the root, one `CLAUDE.md` per repo. Register sibling repos and shared docs **once** in `project.md` under "Related repos & context sources" — scout and planner consult them automatically, so you never re-explain the paths. Cross-repo task packets declare the contract explicitly:
 
 ```md
 ## Repos involved

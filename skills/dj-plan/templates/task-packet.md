@@ -28,6 +28,16 @@ Reference patterns:
 - `<path>` — <what to imitate>
 - `<path>` — <what to imitate>
 
+## Repos involved
+<!-- multi-repo tasks only — delete this section for single-repo work -->
+- <repo>: <role in this task>
+
+Cross-repo contract:
+- <what one side provides, what the other consumes — e.g. backend returns X; frontend consumes X>
+
+Validation per repo:
+- <repo>: `<command>`
+
 ## Acceptance checks
 Hard:
 - <must pass — e.g. typecheck passes; existing success flow still works; do not modify the widget in this task>
