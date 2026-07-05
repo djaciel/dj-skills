@@ -74,7 +74,9 @@ A task can end `done`, but also `blocked`, `needs-replan`, `split-needed`... —
 # → copy the drafted English comments into the PR yourself
 ```
 
-**What you get:** a **Reviewer Dossier** (`.agent/reviews/<pr>/reviewer-dossier.md`) that separates *findings worth considering* (with evidence), *questions*, and *discarded suspicions* (things it checked and ruled out, so you don't re-check them). Then `comments.md` with kind, ready-to-paste English comments for the findings you kept.
+**What you get:** a **Reviewer Dossier** (`.agent/reviews/<pr>/reviewer-dossier.md`) written for someone who does *not* know that area of the codebase: every component explained on first mention, the files walked from the most foundational up with every change explained function by function, then *findings worth considering* (with evidence), *questions*, and *discarded suspicions* (things it checked and ruled out, so you don't re-check them). Then `comments.md` with kind, ready-to-paste English comments for the findings you kept.
+
+**Depth & cost:** the default is a single careful pass — one reviewer, each file read once, no agent fleets. Add `--deep` only for high-stakes PRs (money, auth, data integrity): it independently verifies Blocking findings, consulting library sources. Deep costs several times more, and it is always your call — the skill will offer it, never assume it.
 
 **Your job:** filter the findings — you decide what gets said. **Nothing is ever posted automatically.**
 

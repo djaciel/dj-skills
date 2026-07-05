@@ -9,7 +9,7 @@ description: Use when reviewing someone else's pull request, branch, or diff —
 
 Comprehension before criticism. Understand what the change does and why before judging it, and report only findings backed by code evidence that are likely to matter in production or maintenance. Nothing is ever posted automatically.
 
-**Announce at start:** "I'm using the dj-review skill to review <branch or PR> against <base>."
+**Announce at start:** "I'm using the dj-review skill to review <branch or PR> against <base> (standard|deep)."
 
 ## When to use
 
@@ -22,6 +22,19 @@ When NOT to use:
 - Reviewing your own just-implemented task — the review loop inside **dj-task** covers that
 - Diagnosing a bug — use **dj-fix**
 - Only writing a PR description or comment from existing analysis — use **dj-brief**
+
+## Review depth — the cost contract
+
+Two depths. **Cost is the user's choice, never a surprise.**
+
+| Depth | What runs | When |
+|---|---|---|
+| `standard` (default) | ONE reviewer — this session — does the whole flow inline. Each file is read once. No subagents, no parallel fleets, no library-source spelunking. | Every review, unless the user asks for deep |
+| `--deep` | Standard flow, then independent verification of **Blocking findings only** (one verifier per finding, not a panel), which may consult installed library sources. | Only when the user explicitly asks — high-stakes PRs: money, auth, data integrity |
+
+**Hard brake:** never launch multi-agent workflows or parallel reviewer fleets from this skill — not even when the session's effort mode encourages orchestration. If a deeper pass seems warranted, finish the standard review, state what deep verification would add and roughly what it costs, and let the user decide.
+
+If subagents (dj-scout, dj-test-auditor, dj-ts-reviewer, dj-pr-reviewer) are unavailable, nothing is lost at standard depth — the flow below is inline by design. When they are available, use at most ONE delegated pass where noted, and hand it your already-gathered context (diff, intent summary, core file list) instead of letting it re-derive everything from scratch.
 
 ## The review contract
 
@@ -39,28 +52,21 @@ A good review may legitimately conclude: "No blockers. Two questions and one min
 
 Create `.agent/reviews/<branch-or-pr>/` as the working folder for this review.
 
-## The process
+## The process (single pass, in order)
 
 ### 1. Get the diff
 
 Fetch the full diff and the PR/branch metadata (title, description, linked issue). If the description is empty, note it — intent will have to be fully reconstructed.
 
-### 2. Classify files
+### 2. Triage files (internal — not a dossier section)
 
-| Category | What it is | Review effort |
-|----------|-----------|---------------|
-| Core | Files carrying the actual behavior change | Most of your attention |
-| Tests | Test files | Audit in step 6 |
-| Config | Config, infra, CI, env | Check for surprises only |
-| Mechanical | Renames, moves, formatting-only, lockfiles | Skim |
-| Generated | Build output, codegen artifacts | Verify they match the generator; don't hand-review |
-| Docs | Documentation | Skim for accuracy |
-
-A 30-file diff with 5 core files is a small review. Anchor effort on core.
+Sort changed files into core / tests / config / mechanical / generated / docs **to allocate your attention**: read core files fully, skim the rest. A 30-file diff with 5 core files is a small review. This triage guides you; it does not appear in the dossier.
 
 ### 3. Reconstruct intent (before / after)
 
-From the diff, description, and issue: what does this PR appear to solve? How did the affected behavior work before, and how does it work after? Write it down in your own words. If intent stays unclear, that is itself a question for the author — not a license to assume they are wrong.
+From the diff, description, and issue: what does this PR appear to solve? How did the affected behavior work before, and how does it work after? Write it down in plain language. If intent stays unclear, that is itself a question for the author — not a license to assume they are wrong.
+
+While doing this, collect the **components involved**: every codebase-specific service, lock, queue, helper, or pattern the change touches — for each, what it is, where it lives, why it exists. The dossier's audience does not know them.
 
 ### 4. Map the data flow
 
@@ -68,25 +74,17 @@ From the diff, description, and issue: what does this PR appear to solve? How di
 
 For each main flow the diff touches, build a compact `input → transform → output` map: where inputs come from, what validates them, what consumes the results, and which assumptions changed at the seams. Most real findings live here.
 
-### 5. Scan for precedents and duplication
+### 5. Check precedents, tests, and stack quality — inline
 
-Delegate to the **dj-scout** subagent: does the repo already have utilities, types, or logic this PR re-implements? Are there existing patterns the PR diverges from? If the dj-scout subagent is not available, do this exploration inline in the main session (targeted grep for similar names/helpers — not a full repo crawl).
+Three lenses over the core files, one read, no delegation:
 
-### 6. Audit the tests
+- **Precedents/duplication:** targeted grep for similar names/helpers — does the repo already have what this PR re-implements? Does it diverge from an established pattern? (Not a full repo crawl. Consult `.agent/**/codebase-map.md` if one exists.)
+- **Tests:** apply the **dj-test-quality** skill — do the tests validate the behavior this PR introduces, or implementation details? What realistic cases are missing?
+- **Stack quality:** apply the **dj-repo-patterns** skill — consistency with the repo's own conventions beats abstract best practice. For TypeScript, watch the dj-ts-reviewer checklist areas: unsafe casts, duplicated types/utilities, mishandled async flows.
 
-Delegate to the **dj-test-auditor** subagent: do the tests validate the behavior this PR introduces, or just its implementation details? What realistic cases are missing? If the dj-test-auditor subagent is not available, apply the **dj-test-quality** skill inline.
-
-### 7. Stack review
-
-For TypeScript/Node code, delegate to the **dj-ts-reviewer** subagent. For other stacks, or if the subagent is not available, do a general quality pass inline anchored on the repo's own patterns (apply the **dj-repo-patterns** skill): consistency with existing conventions beats abstract best practice.
-
-### 8. Consolidate and filter
-
-Delegate consolidation to the **dj-pr-reviewer** subagent, which merges the material from steps 3–7 and filters it through the evidence rule. If the dj-pr-reviewer subagent is not available, do the filtering yourself using the rule below.
+### 6. Filter through the evidence rule
 
 **Evidence rule:** a finding without evidence is a question, not a finding. Every finding must cite file:line or a reproducible behavior. Suspicions you investigated and could not confirm go to "discarded suspicions" — never into findings.
-
-Filter every candidate finding through:
 
 ```md
 - No speculative race conditions unless there is a concrete async path.
@@ -102,34 +100,44 @@ Give each surviving finding this shape:
 ```md
 [Blocking | Should fix | Nit] <one-line finding>
 - Evidence: <file:line — what the code actually does>
-- Why it matters: <concrete production or maintenance impact>
+- Why it matters: <concrete impact, explained for someone without full context>
 - Confidence: <high | medium | low>
 ```
 
-### 9. Write the Reviewer Dossier
+### 7. Deep verification (only with `--deep`)
 
-Fill `templates/reviewer-dossier.md` and save it to `.agent/reviews/<branch-or-pr>/reviewer-dossier.md`. The dossier is for the human: it absorbs the comprehension work (intent, before/after, data flow, reading order) so they can review the PR in minutes, then presents findings, questions, and discarded suspicions separately.
+For each **Blocking** finding: one independent verification pass (the **dj-pr-reviewer** subagent if available, otherwise inline with fresh eyes) that tries to refute it — consulting installed library sources when the finding depends on library behavior. Hand the verifier the finding, the relevant excerpts, and your evidence — not the whole repo. Downgrade or discard findings that do not survive.
 
-Write the dossier in the internal language from `.agent/language-policy.md` (default: the language the user converses in).
+### 8. Write the Reviewer Dossier
 
-### 10. Human filters, then draft comments
+Fill `templates/reviewer-dossier.md` and save it to `.agent/reviews/<branch-or-pr>/reviewer-dossier.md`, in the internal language from `.agent/language-policy.md`.
 
-The human decides which findings and questions are worth raising. For the selected ones, delegate drafting to the **dj-writer** subagent applying the **dj-human-comments** skill: kind, non-accusatory, evidence-linked, questions before verdicts, always in English. If the dj-writer subagent is not available, draft the comments inline applying the dj-human-comments skill directly.
+**Dossier writing rules** (they override habit):
+
+- **Audience: a reviewer who does NOT know this area of the codebase.** Every component named gets a one-line explanation on first mention — what it is, where it lives, why it exists. That is what the "Components involved" section is for.
+- **Concrete over abstract.** Not "serializes across processes" — "prevents two replicas from signing with the same nonce at the same time". A one-sentence digression to explain something "obvious" is welcome; unexplained jargon is not.
+- **"Files, from the ground up":** order files from the most foundational to the top-level (dependencies first, orchestration last), and for each file explain **every change in it**, function by function, one or two plain lines each.
+- **No extra sections.** No file-category listings, no ad-hoc context sections — operational facts (topology, wiring, config) go inside the finding whose severity they set.
+
+### 9. Human filters, then draft comments
+
+The human decides which findings and questions are worth raising. For the selected ones, apply the **dj-human-comments** skill (via the **dj-writer** subagent if available, otherwise inline): kind, non-accusatory, evidence-linked, questions before verdicts, always in English.
 
 Save drafts to `.agent/reviews/<branch-or-pr>/comments.md`. **Never post comments to the PR yourself** — the human copies, edits, and posts.
 
 ## Scaling rigor
 
-This flow is guidance, not ceremony. A docs-only or mechanical PR does not need six review passes — say which steps you skipped and why in the dossier. A large PR touching payments in a production-work project deserves every step. The question is always: "what does the human need to review this confidently?"
+This flow is guidance, not ceremony. A docs-only or mechanical PR does not need every step — say which steps you skipped and why in the dossier. A large PR touching payments deserves the full standard pass, and probably a `--deep` follow-up — but that escalation is the user's call, offered with a cost estimate, never assumed.
 
 ## Common mistakes
 
 - **Jumping straight to criticism** — findings before comprehension produce noise. Steps 3–4 come first.
+- **Fanning out agents to look thorough** — seven agents re-reading the same files multiplies cost, not insight. One careful pass beats a fleet.
+- **Writing for yourself** — a dossier full of unexplained internal component names is useless to the person it is for.
 - **Padding the review** — reporting nits to justify the effort. "No blockers" is a valid, valuable result.
 - **Presenting questions as findings** — if you lack evidence, it is a question for the author.
 - **Hiding discarded suspicions** — listing what you checked and dropped builds trust and saves the human from re-checking.
 - **Posting or pushing anything** — this skill produces material for the human; it never touches the PR.
-- **Reviewing generated/mechanical files line by line** — classify first, spend attention on core.
 
 ## Output
 

@@ -26,6 +26,8 @@ Execute ONE task packet end to end: implement, validate, review, report. The hum
 
 The loop delegates to specialist subagents (**dj-scout**, **dj-implementer**, **dj-test-auditor**, **dj-ts-reviewer**, **dj-acceptance-reviewer**). If any of them is not available, do that step inline in the main session with a fresh-eyes mindset — the step still happens, only the executor changes.
 
+**Cost brake:** at most one subagent per step, sequentially — never parallel fleets or multi-agent workflows, even when the session's effort mode encourages orchestration. Hand each subagent the context already gathered (diff, packet, scout result) instead of letting it re-derive everything from scratch.
+
 ## The execution loop
 
 ### 1. Load state

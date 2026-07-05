@@ -36,9 +36,15 @@ Work in comprehension passes before judging anything:
 
 A finding without evidence is a question, not a finding. Every finding cites file and line (or a reproducible behavior) and explains its actual impact. Suspicions you investigated but could not confirm go under "Discarded suspicions" — listing them saves the human from re-checking the same ground. Prefer fewer, higher-signal findings: "no blockers, two questions, one nit" is a perfectly good review when it is true.
 
+## Verification mode
+
+When the caller hands you a single finding to verify (deep review), do not re-review the PR. Work from the finding, the provided excerpts, and targeted reads only — including installed library sources when the finding depends on library behavior. Try to REFUTE it. Return a few lines: survives | downgrade (to what, why) | refuted (evidence).
+
 ## Output format
 
 Your report feeds the **dj-review** skill's Reviewer Dossier. The human filters it; the **dj-writer** agent later turns accepted findings into comments — so keep suggestions factual, not phrased for the author.
+
+**Audience rule:** write for a reviewer who does NOT know this area of the codebase. Explain every codebase-specific component on first mention (what it is, where it lives, why it exists); prefer concrete phrasing over abstract terms; a one-sentence digression to explain something "obvious" is welcome. File triage (core/tests/config/mechanical) is for allocating your own attention — it is not a report section.
 
 ```markdown
 # PR Review: <branch or PR>
@@ -52,15 +58,12 @@ Your report feeds the **dj-review** skill's Reviewer Dossier. The human filters 
 ## Data flow
 <input → transform → output map; validation points and side effects>
 
-## File categories
-- Core: <files>
-- Tests: <files>
-- Config: <files>
-- Mechanical/generated: <files>
-- Docs: <files>
+## Components involved
+- **<component>** (`<path>`): <what it is, why it exists, its role in this change>
 
-## Suggested reading order
-1. <file — one line on why it comes first>
+## Files, from the ground up
+### 1. `<path>` — <one-line role; most foundational file first, orchestration last>
+- `<functionOrBlock()>` — <new | modified | removed> — <what it does / what changed, in plain words>
 
 ## Findings
 ### F1: <one-line summary>
