@@ -53,7 +53,18 @@ Deterministic checks (formatting, typecheck, tests, secret-blocking) belong in h
 
 ## Installation
 
-### Option A: `npx skills` (recommended)
+### Option A: install script (recommended)
+
+```bash
+git clone https://github.com/djaciel/dj-skills.git
+cd dj-skills
+./install.sh                     # user-level: ~/.claude (all projects)
+./install.sh /path/to/project    # or project-level: <project>/.claude
+```
+
+Installs the 19 skills and the 8 subagents in one step. Re-run it after every `git pull` or local edit — it replaces previous copies (and any symlinks left by other installers).
+
+### Option B: `npx skills`
 
 ```bash
 # from GitHub
@@ -71,7 +82,7 @@ Drop `-g` to install into the current project (`.claude/`) instead of user-level
 cp /path/to/dj-skills/agents/*.md ~/.claude/agents/    # or .claude/agents/ inside a project
 ```
 
-### Option B: manual copy/symlink
+### Option C: manual copy/symlink
 
 **User-level (available in every project):**
 
