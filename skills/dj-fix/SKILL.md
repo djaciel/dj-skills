@@ -87,7 +87,7 @@ Delegate to the **dj-test-auditor** subagent: does the fix's test cover the real
 
 ### 9. Stack review
 
-For TypeScript/Node code, delegate to the **dj-ts-reviewer** subagent. Otherwise, or if unavailable, do a brief inline quality pass anchored on the repo's existing patterns.
+Delegate to the stack reviewer that matches the diff: **dj-ts-reviewer** for TypeScript/Node, **dj-elixir-reviewer** for Elixir. Otherwise, or if unavailable, do a brief inline quality pass anchored on the repo's existing patterns.
 
 ### 10. Acceptance against the issue
 
