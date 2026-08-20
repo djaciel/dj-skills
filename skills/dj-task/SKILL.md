@@ -24,9 +24,9 @@ Execute ONE task packet end to end: implement, validate, review, report. The hum
 
 ## Subagent availability
 
-The loop delegates to specialist subagents (**dj-scout**, **dj-implementer**, **dj-test-auditor**, **dj-ts-reviewer**, **dj-acceptance-reviewer**). If any of them is not available, do that step inline in the main session with a fresh-eyes mindset — the step still happens, only the executor changes.
+The loop delegates to specialist subagents (**dj-scout**, **dj-implementer**, **dj-test-auditor**, **dj-ts-reviewer**, **dj-elixir-reviewer**, **dj-acceptance-reviewer**, **dj-guide-writer**). If any of them is not available, do that step inline in the main session with a fresh-eyes mindset — the step still happens, only the executor changes.
 
-**Cost brake:** at most one subagent per step, sequentially — never parallel fleets or multi-agent workflows, even when the session's effort mode encourages orchestration. Hand each subagent the context already gathered (diff, packet, scout result) instead of letting it re-derive everything from scratch.
+**Cost brake:** at most one subagent per step, sequentially — never parallel fleets or multi-agent workflows, even when the session's effort mode encourages orchestration. Hand each subagent deterministic pointers to context already gathered — the packet path, the scout result file, the diff as a commit range — instead of letting it re-derive everything from scratch, and instead of pasting file contents into the orchestrating session.
 
 ## The execution loop
 
@@ -38,11 +38,13 @@ Read `.agent/current.md` first — it is the source of truth for active mode, cu
 
 ### 2. Scout context and precedents
 
-Delegate to the **dj-scout** subagent: relevant files, existing patterns, reusable helpers, duplication risk. **Skip this step** if the packet already lists context files and you know the area — say so in the report.
+Delegate to the **dj-scout** subagent: relevant files, existing patterns, reusable helpers, duplication risk. Save the returned Scout Result verbatim to `.agent/features/<feature>/scout/T-XX.md` — the implementer and reviewers read the file, and a future session resuming this task does not re-scout. **Skip this step** if the packet already lists context files and you know the area — say so in the report.
 
 ### 3. Implement
 
-Implement in the main session, or delegate to the **dj-implementer** subagent for well-bounded packets.
+**Delegate to the dj-implementer subagent — always.** The orchestrating session writes no code; all implementation happens in the implementer's own context, and only its Implementation Report comes back. Hand it pointers, not content: the packet path, the scout result file (step 2), and `.agent/current.md`. The implementer applies dj-repo-patterns and dj-simplicity-lens internally.
+
+Implement inline only as degradation — when dj-implementer is not installed — and then:
 
 **REQUIRED SUB-SKILL:** dj-repo-patterns — find precedent before creating anything new.
 **REQUIRED SUB-SKILL:** dj-simplicity-lens — before writing new code, ask whether it needs to exist.
@@ -53,13 +55,15 @@ Stay in scope: one conceptual objective, the files the packet points at. Out-of-
 
 Run the packet's validation commands (format, lint, typecheck, tests — whatever the packet lists). **Real output required**: read the actual results, never assume success. If a command fails, fix the root cause and re-run; if the failure reveals the task is mis-specified, that is drift — see end states below.
 
+**Reviewers pull, the orchestrator points (steps 5–7).** Give each reviewer the packet path, the scout result file, and the diff as a commit range (state the refs, e.g. `git diff <base>..HEAD`); the reviewer runs the diff in its own context. Never load the full diff into the orchestrating session just to paste it into reviewer prompts — the range is deterministic and costs the orchestrator nothing.
+
 ### 5. Audit tests
 
 Delegate to the **dj-test-auditor** subagent: do the new/changed tests cover the change's actual contract? Behavior over implementation, realistic edge cases, no duplicate fixtures. Scale by work mode (table below).
 
 ### 6. Stack review
 
-For TypeScript/Node work, delegate to the **dj-ts-reviewer** subagent. For other stacks, do a general quality pass inline using the repo's own patterns as the bar (**REQUIRED SUB-SKILL:** dj-repo-patterns). Scale by work mode.
+Delegate to the stack reviewer that matches the diff: **dj-ts-reviewer** for TypeScript/Node, **dj-elixir-reviewer** for Elixir. For other stacks, do a general quality pass inline using the repo's own patterns as the bar (**REQUIRED SUB-SKILL:** dj-repo-patterns). Scale by work mode.
 
 ### 7. Acceptance review
 
@@ -67,14 +71,15 @@ Delegate to the **dj-acceptance-reviewer** subagent: does the diff fulfill the p
 
 ### 8. Fix obvious issues
 
-Fix small, clear findings from steps 5–7 (a missing edge-case test, an unnecessary cast, a naming slip) and re-run the affected validation. Anything bigger — architectural doubts, new scope, findings that change the task's shape — goes in the report instead. Do not expand scope to satisfy a reviewer.
+Collect the small, clear findings from steps 5–7 (a missing edge-case test, an unnecessary cast, a naming slip) and hand them back to **dj-implementer** as one short fix list; it applies them and re-runs the affected validation (inline only as degradation). Anything bigger — architectural doubts, new scope, findings that change the task's shape — goes in the report instead. Do not expand scope to satisfy a reviewer.
 
-### 9. Report and hand off
+### 9. Report, guide, and hand off
 
-**REQUIRED SUB-SKILL:** dj-task-report — produce the compact report (format at the end of this file).
+**REQUIRED SUB-SKILL:** dj-task-report — produce the compact report (format at the end of this file) and save the same content to `.agent/features/<feature>/reports/T-XX.md`.
+**Guide step:** delegate to the **dj-guide-writer** subagent (contract in the **dj-guide** skill) to append this task's section to `.agent/features/<feature>/guide.md` — pass it the packet path, the commit range, and the report path. Inline as degradation. Scale detail by work mode: full on `production-work`, minimal on `personal-small`.
 **REQUIRED SUB-SKILL:** dj-commit-message — suggest a commit message matching the repo's convention.
 
-The human reviews the diff and the report, then commits (unless commit policy says otherwise). Declare the task's end state.
+The human reviews the diff, the report, and the guide, then commits (unless commit policy says otherwise). Declare the task's end state.
 
 ## Review rigor by work mode
 
@@ -120,10 +125,12 @@ Default (from `.agent/project.md`, `commit_policy: human-only`):
 
 When a task closes (any end state):
 
-1. Update `.agent/current.md`: current task, direction, anything now in "Do not follow".
-2. Update `.agent/handoff.md` if the session will end or the context is getting heavy.
-3. Update the drift-log if direction changed.
-4. Mark the next task.
+1. Update the packet itself (`T-XX.md`): set `Status:` to the end state and fill the one-line `Outcome:` — a fresh session reading the packet must see the truth without this conversation.
+2. Update `.agent/current.md`: current task, direction, anything now in "Do not follow".
+3. Update `.agent/handoff.md` at every task close — recap (where we stand), what changed, decisions taken, open question if any, next action. Not only when the session is ending: the orchestrating session must stay disposable at all times.
+4. Update the drift-log if direction changed.
+5. Mark the next task.
+6. If the same human correction has now appeared more than once across tasks, propose making it structural — a lint rule, a test, a `project.md` line — instead of trusting memory.
 
 Context guidance (judgment, not thresholds-as-law):
 
@@ -138,6 +145,7 @@ Before opening a fresh session, `handoff.md` must state: what is true now, what 
 
 ## Common mistakes
 
+- **Implementing in the orchestrating session with dj-implementer installed** — the orchestrator plans, delegates, reviews, and reports; it does not write code. Inline implementation is a degradation path, not a choice.
 - **Expanding scope because a reviewer suggested it** — reviewers surface findings; the packet defines scope. Bigger findings go in the report.
 - **Claiming validation passed without reading output** — "should pass" is not evidence. Paste real results.
 - **Silently absorbing drift** — if reality differed from the packet, say so and log it, even when the outcome is fine.
