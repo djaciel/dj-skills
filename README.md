@@ -1,6 +1,6 @@
 # dj-skills
 
-A lightweight agentic cockpit for [Claude Code](https://code.claude.com/docs/en/overview) — you stay the architect, agents do specialist work. Eight visible commands, eight specialist subagents, and eleven small quality lenses turn Claude Code into a structured but flexible development partner for real work: new projects, features in existing repos, bug fixes, peer PR review, and the human communication around all of it.
+A lightweight agentic cockpit for [Claude Code](https://code.claude.com/docs/en/overview) — you stay the architect, agents do specialist work. Eight visible commands, ten specialist subagents, and twelve small quality lenses turn Claude Code into a structured but flexible development partner for real work: new projects, features in existing repos, bug fixes, peer PR review, and the human communication around all of it.
 
 ## Why
 
@@ -21,6 +21,7 @@ The goal is not an AI that never makes mistakes. The goal is an AI that works li
 - **Living specs** — Feature Spec → Phase → Task Packet, all revisable. When reality diverges from the plan, drift is logged and triggers a replan — never a silent restart from zero.
 - **Small task packets** — one conceptual objective, clear validation commands, human-reviewable in 10–20 minutes.
 - **Specialist subagents** — scout, planner, implementer, reviewers, writer. Each has one job, restricted tools, and a defined output format.
+- **A light orchestrator** — the main session plans, delegates, and reviews; it does not write code or hold diffs. Heavy steps run in subagents with their own context, state is saved to `.agent/` at every task close, and the session stays disposable.
 - **Evidence-based review** — a finding without evidence is a question, not a finding. No invented race conditions, no impossible edge cases, no zero-value nits.
 - **Clear language policy** — converse in whatever language you prefer; everything that leaves your machine (code, commits, PR descriptions, review comments) is always English.
 - **Self-contained** — the system has zero dependencies on third-party skills. External expertise skills are optional plugins registered per project, never requirements.
@@ -38,7 +39,7 @@ Main Claude session
   ↓
 Reads .agent/ (current state, task packet, spec)
   ↓
-Invokes subagents where useful (scout, implementer, reviewers)
+Delegates the heavy steps to subagents (scout, implementer, reviewers, guide writer)
   ↓
 Subagents apply quality lenses (simplicity, repo patterns, test quality)
   ↓
@@ -62,7 +63,7 @@ cd dj-skills
 ./install.sh /path/to/project    # or project-level: <project>/.claude
 ```
 
-Installs the 19 skills and the 8 subagents in one step. Re-run it after every `git pull` or local edit — it replaces previous copies (and any symlinks left by other installers).
+Installs the 20 skills and the 10 subagents in one step. Re-run it after every `git pull` or local edit — it replaces previous copies (and any symlinks left by other installers).
 
 ### Option B: `npx skills`
 
@@ -115,13 +116,13 @@ Each installed skill is invocable by its name (e.g. `/dj-start`, `/dj-task`). Th
 | `/dj-start` | Start a new project from an idea or brain-dump: smart intake, work mode, base `.agent/` files, focused discovery |
 | `/dj-map` | Understand an existing repo or repo area before planning — produces a compact codebase map |
 | `/dj-plan` | Turn intent into a living spec, phases, task packets, and PR strategy; also replans after drift |
-| `/dj-task` | Execute one task packet end-to-end: implement, validate, audit tests, review, report |
+| `/dj-task` | Execute one task packet end-to-end: implement, validate, audit tests, review, report, guide |
 | `/dj-review` | Review someone else's PR, branch, or diff — produces a reviewer dossier and draft comments |
 | `/dj-fix` | Investigate and fix a bug: reproduce first, confirm root cause, minimal fix, fix report |
 | `/dj-brief` | Generate human communication from work already done: PR description, commit message, ticket, team update |
 | `/dj-explore` | Compare 2–3 approaches when there is real architectural uncertainty |
 
-### Subagents (8)
+### Subagents (10)
 
 | Subagent | Purpose |
 |---|---|
@@ -129,12 +130,14 @@ Each installed skill is invocable by its name (e.g. `/dj-start`, `/dj-task`). Th
 | `dj-planner` | Turns intent into feature spec, delivery plan, task packets, and PR strategy — writes only inside `.agent/` |
 | `dj-implementer` | Implements one task packet: stays in scope, reuses existing patterns, runs real validation |
 | `dj-ts-reviewer` | TypeScript/Node review lens: types, duplication, modularity, error handling, async flows |
+| `dj-elixir-reviewer` | Elixir review lens: Ecto queries and changesets, error tuples, OTP/process use, context boundaries |
 | `dj-test-auditor` | Judges whether tests add value: behavior over implementation, realistic edge cases only |
 | `dj-acceptance-reviewer` | Judges whether the diff fulfills the task/spec intent — not whether the code is pretty |
 | `dj-pr-reviewer` | Reviews external PRs under the evidence rule: findings, questions, and discarded suspicions |
+| `dj-guide-writer` | Writes the human-review guide for one task's diff: file-by-file, test-by-test, deletions audited |
 | `dj-writer` | Turns technical analysis into human communication, honoring the project's language policy |
 
-### Core skills (11)
+### Core skills (12)
 
 | Skill | Purpose |
 |---|---|
@@ -148,6 +151,7 @@ Each installed skill is invocable by its name (e.g. `/dj-start`, `/dj-task`). Th
 | `dj-pr-slicing` | Decide PR boundaries by reviewable story, not by file counts |
 | `dj-data-flow-review` | Reconstruct input → transform → output before judging any diff |
 | `dj-task-report` | The compact task completion report: changes, real validation output, review order |
+| `dj-guide` | Turns a validated diff into a human-review guide: reading order, every test and deletion explained |
 | `dj-drift-management` | Detect drift, log it, decide absorb vs replan vs split — and mark obsolete docs |
 
 ## Quick start
