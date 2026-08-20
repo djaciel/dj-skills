@@ -34,7 +34,7 @@ Two depths. **Cost is the user's choice, never a surprise.**
 
 **Hard brake:** never launch multi-agent workflows or parallel reviewer fleets from this skill — not even when the session's effort mode encourages orchestration. If a deeper pass seems warranted, finish the standard review, state what deep verification would add and roughly what it costs, and let the user decide.
 
-If subagents (dj-scout, dj-test-auditor, dj-ts-reviewer, dj-pr-reviewer) are unavailable, nothing is lost at standard depth — the flow below is inline by design. When they are available, use at most ONE delegated pass where noted, and hand it your already-gathered context (diff, intent summary, core file list) instead of letting it re-derive everything from scratch.
+If subagents (dj-scout, dj-test-auditor, dj-ts-reviewer, dj-elixir-reviewer, dj-pr-reviewer) are unavailable, nothing is lost at standard depth — the flow below is inline by design. When they are available, use at most ONE delegated pass where noted, and hand it your already-gathered context (diff, intent summary, core file list) instead of letting it re-derive everything from scratch.
 
 ## The review contract
 
@@ -80,7 +80,7 @@ Three lenses over the core files, one read, no delegation:
 
 - **Precedents/duplication:** targeted grep for similar names/helpers — does the repo already have what this PR re-implements? Does it diverge from an established pattern? (Not a full repo crawl. Consult `.agent/**/codebase-map.md` if one exists.)
 - **Tests:** apply the **dj-test-quality** skill — do the tests validate the behavior this PR introduces, or implementation details? What realistic cases are missing?
-- **Stack quality:** apply the **dj-repo-patterns** skill — consistency with the repo's own conventions beats abstract best practice. For TypeScript, watch the dj-ts-reviewer checklist areas: unsafe casts, duplicated types/utilities, mishandled async flows.
+- **Stack quality:** apply the **dj-repo-patterns** skill — consistency with the repo's own conventions beats abstract best practice. For TypeScript, watch the dj-ts-reviewer checklist areas: unsafe casts, duplicated types/utilities, mishandled async flows. For Elixir, watch the dj-elixir-reviewer areas: N+1 queries and missing preloads, get-then-insert races, swallowed error tuples, context boundaries bypassed.
 
 ### 6. Filter through the evidence rule
 
@@ -95,14 +95,23 @@ Three lenses over the core files, one read, no delegation:
 - Prefer fewer, higher-signal comments.
 ```
 
+**Kill pass — before writing any finding down.** For each candidate, actively try to kill it: is the case already handled elsewhere (caller validation, middleware, a DB constraint, the type system)? Can its trigger actually happen in this system as deployed, through a realistic user or API flow? Is it a style point the repo is already inconsistent about? A finding earns its place only if the kill attempt fails; killed candidates go to "discarded suspicions" with a line on what you checked.
+
 Give each surviving finding this shape:
 
 ```md
 [Blocking | Should fix | Nit] <one-line finding>
+- Trigger: <the realistic sequence — user action, API call, state — that makes this bite>
 - Evidence: <file:line — what the code actually does>
 - Why it matters: <concrete impact, explained for someone without full context>
-- Confidence: <high | medium | low>
+- Confidence: <high | medium>
 ```
+
+Structural gates — these override the urge to look thorough:
+
+- No realistic Trigger you can write down → not a finding. It is a question or a discarded suspicion.
+- Confidence would be `low` → it is a question for the author, never a finding.
+- Budget: Blocking is never capped; **Should fix** max 3; **Nit** max 3, one line each. More survivors? Keep the highest-impact ones and close with "N lower-signal nits dropped" — a long list buries the two findings that matter.
 
 ### 7. Deep verification (only with `--deep`)
 

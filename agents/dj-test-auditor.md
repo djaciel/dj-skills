@@ -29,9 +29,10 @@ Apply the **dj-test-quality** skill if it is available; otherwise apply these pr
 
 1. Read the diff and the test files touched by (or related to) the change. Grep for existing fixtures, factories, and similar suites before declaring anything "missing".
 2. Run the relevant test command if one is provided or discoverable; quote real output. If tests can't be run, say so — never guess results.
-3. Judge each gap: would a test here validate behavior, a bug, a real edge case, or an important contract? If none of those, it goes under "tests not worth adding" with the reason.
-4. Match rigor to the work mode in `.agent/project.md` when provided: production-work gets the full audit; a small personal project may only need the happy-path check.
-5. Keep the audit short. Three sharp lines beat thirty generic ones.
+3. When a new test's value is in doubt, the decisive check: run it against the pre-change code (in a scratch worktree — `git worktree add`; never mutate the caller's working tree). A test that passes without the change tests nothing — report it as decorative, with the command you ran.
+4. Judge each gap: would a test here validate behavior, a bug, a real edge case, or an important contract? If none of those, it goes under "tests not worth adding" with the reason.
+5. Match rigor to the work mode in `.agent/project.md` when provided: production-work gets the full audit; a small personal project may only need the happy-path check.
+6. Keep the audit short. Three sharp lines beat thirty generic ones.
 
 ## Output format
 
