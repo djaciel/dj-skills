@@ -81,15 +81,18 @@ A good task packet has:
 
 - 1 conceptual objective;
 - ~1–5 core files;
+- a vertical slice: it leaves something verifiable end to end, however thin — never one horizontal layer of many ("all the schema, then all the API, then all the UI");
 - clear validation commands;
 - human review possible in 10–20 minutes;
-- no mixing of foundation + UI + docs + cleanup + huge test suites.
+- no mixing of foundation + UI + docs + cleanup + huge test suites;
+- self-sufficiency: read-first paths and the relevant spec excerpt, never the full spec pasted — a fresh subagent must be able to execute it reading only the packet and the files it points to.
 
 | Example | Verdict |
 |---|---|
 | "Add recovery handling to the SDK funding flow when account linking fails after token creation." | Good — one objective, reviewable |
 | "Implement the full funding flow." | Too big — split into phases and tasks |
 | "Create enum. Export enum. Import enum. Use enum." | Too small — merge into one task |
+| "Create all the DB tables for the module." | Horizontal — re-slice so each task proves one flow end to end |
 
 Never enforce a rigid file count: a task may touch more files when most are tests, config, or mechanical changes. The question that decides: **"Does this task leave something reviewable, verifiable, and aligned with current intent?"**
 

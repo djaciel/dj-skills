@@ -42,7 +42,9 @@ reading list through which a reviewer would understand it), its tasks, out-of-sc
 and phase acceptance. If the project uses PRs, a phase should usually map to one.
 
 **Task sizing.** A good task has 1 conceptual objective, ~1–5 core files, clear
-validation, and is human-reviewable in 10–20 minutes. Never enforce a rigid file count —
+validation, and is human-reviewable in 10–20 minutes. Cut vertical slices: each task
+leaves something verifiable end to end, however thin — never one horizontal layer of
+many ("all the schema, then all the API, then all the UI"). Never enforce a rigid file count —
 test, config, and mechanical files don't count against size. The judgment question:
 "does this task leave something reviewable, verifiable, and aligned with current intent?"
 
@@ -64,6 +66,11 @@ checks, validation commands, review focus, and execution mode (`human_loop`,
 tasks, also fill the packet's "Repos involved" block — each repo's role, the cross-repo
 contract, and validation per repo — pulling registered paths from "Related repos &
 context sources" in `project.md`.
+
+**Packets are the executor's whole world.** The context section carries read-first paths
+and the relevant spec excerpt, never the full spec pasted; a fresh subagent must be able
+to execute the task reading only the packet and the files it points to. Small kit,
+verified pointers.
 
 **PR strategy is a revisable hypothesis**, never file-count dogma. Recommend
 1 PR / 2 PRs / stacked PRs / no PR; state why; give the review story; classify expected
