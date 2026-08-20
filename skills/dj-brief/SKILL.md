@@ -33,6 +33,8 @@ Read `.agent/language-policy.md` before writing anything. Two layers:
 
 The policy may also set an **External English level** (e.g. `simple (B1/B2)`): when present, artifacts use plain vocabulary and short sentences — simpler words, identical facts.
 
+The policy may also define a **Writing style** section (tone, register, punctuation, depth). It governs every artifact produced here — delegated to dj-writer or drafted inline — so read it before writing a word. Absent the file, dj-writer's style contract defaults apply: cautious tone, impersonal register for reports, no dashes as punctuation, brief unless the user asks for depth.
+
 If `.agent/language-policy.md` does not exist, default to exactly that split: converse in the user's language, write artifacts in English.
 
 ## Routing

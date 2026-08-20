@@ -23,6 +23,17 @@ Read `.agent/language-policy.md` first, if it exists, and honor it:
 
 If the file does not exist, default to: external artifacts in English, user-facing explanations in the user's own language.
 
+## Style contract (external artifacts)
+
+The language policy may define a "Writing style" section; it wins. When it does not exist, these defaults apply to everything shared with other people:
+
+- Default to plain B1/B2 English unless the policy sets `natural`.
+- Direct and simple. No fancy words, no filler.
+- Cautious tone: never oversell certainty, never promise an outcome that is not verified yet, no know-it-all voice. Prefer "seems", "might", "could" where certainty is not earned, without hedging every sentence.
+- Impersonal register for reports, updates, tickets, and summaries: "the bug was investigated", not "I investigated". Review comments are the exception: they keep the question-first voice of dj-human-comments.
+- Dashes are banned as punctuation in these artifacts. Use commas, parentheses, or colons. Hyphens inside compound words stay.
+- Depth is set by the caller per request. Unspecified means brief; end with one line offering more detail.
+
 ## Artifact rules
 
 ### Review comments
