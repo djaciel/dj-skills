@@ -29,10 +29,10 @@ If any of these is missing, work with what you have and say so in your Notes rat
 ## Process
 
 1. **Read inputs.** The task packet (objective, scope, acceptance checks). The task report, if given (validation results, decisions already made, self-review notes). Then `git diff <base>..<HEAD> --stat` and the full diff for the range.
-2. **Determine detail level.** Read `.agent/expertise-registry.md` if it exists; find the entry for the stack this task touches. No match, or no file → known stack (default). This decides whether the file-by-file section includes language/framework primers.
-3. **Build the diff audit.** From `git diff --stat` plus a line-level look at what was removed (`git diff -U0 | grep '^-[^-]'`): a table of every added/modified/deleted file with line counts, and a verdict for every deleted block (moved / rewritten / removed on purpose / unclear).
+2. **Determine language and detail level.** Read `.agent/language-policy.md` if it exists: the guide is written in the **internal language** (code and quoted blocks stay verbatim, never translated). Read `.agent/expertise-registry.md` if it exists; find the entry for the stack this task touches. No match, or no file → known stack (default). This decides whether the Concepts section teaches language primitives or only project-specific ideas.
+3. **Build the diff audit.** From `git diff --stat` plus a line-level look at what was removed (`git diff -U0 | grep '^-[^-]'`): the file map table, the `--shortstat` line, and — for every removed line — the actual ```diff block with a verdict (moved / rewritten / removed on purpose / unclear). A deletion mentioned but never shown is not audited.
 4. **Order files for reading.** Work out the logical reading order from the diff: files with no local dependencies first, files that call or import them after, tests last. Base this on actual imports/calls, not file-system or alphabetical order.
-5. **Write the section**, following the dj-guide section structure (summary, diff audit, cross-cutting concept, file by file, tests one by one, not-done, low-confidence decisions). Quote real code and line numbers from the diff — don't paraphrase code you haven't quoted.
+5. **Write the section — code first, explanation after.** Follow the dj-guide section structure (summary, file map, deletions, concepts, file by file, tests one by one, not-done, low-confidence decisions). For every point you explain, first extract the verbatim code — from the diff, the file as it landed, a dependency's source, or a 3-line REPL example — and paste it in a fenced block with a language tag; then explain it below in short paragraphs (2–4 lines, bold lead-in naming the point). Never reference a `file:line` without quoting the code that lives there; never narrate three changes in one paragraph. Each test is quoted (its key block) before its three answers.
 6. **Append to `guide.md`.** If the file doesn't exist yet, create it with a feature-level header. Otherwise append the new `## T-XX — <title>` section after the last existing one, and leave every prior section untouched.
 7. **Confirm back.** Reply with the destination path and the section title(s) written — nothing else.
 
@@ -49,8 +49,10 @@ Nothing else. The guide's content stays in the file — loading it into the call
 
 ## Quality bar
 
-- Every file in the diff-audit table actually appears in `git diff --stat` for the given range.
-- Every deletion carries a verdict backed by actually reading the surrounding diff, not assumed.
-- Every test touched by the diff gets its three-line treatment (what / why / what-if-missing).
+- **The section is full of fenced code blocks.** A file-by-file entry with no code block is an automatic fail; the reader must be able to follow the guide without opening the repo.
+- Every file in the file-map table actually appears in `git diff --stat` for the given range.
+- Every deletion is shown in a ```diff block with a verdict backed by actually reading the surrounding diff, not assumed.
+- Every test touched by the diff is quoted and gets its three answers (what / why / what-if-missing).
 - File-by-file order is dependency order, verified against real imports/calls — not copied from the diff's file listing.
+- Paragraphs stay short (2–4 lines) with bold lead-ins; the guide is written in the internal language from the language policy.
 - No invented rationale anywhere in the section.
