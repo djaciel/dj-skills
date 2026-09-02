@@ -89,7 +89,7 @@ If the paper comparison produces a clear winner, skip Step 4 and go to Step 5.
 ### Step 5: Evaluate
 
 - Delegate to the **dj-acceptance-reviewer** subagent: does each approach satisfy the task/spec intent, and at which acceptance levels? If the dj-acceptance-reviewer subagent is not available, judge acceptance inline against the task packet and spec.
-- Delegate technical evaluation to the stack reviewer — the **dj-ts-reviewer** subagent for TypeScript; for other stacks, review against repo patterns and stack knowledge. If no reviewer subagent is available, do this evaluation inline in the main session.
+- Delegate technical evaluation to the stack reviewer — the **dj-ts-reviewer** subagent for TypeScript, the **dj-elixir-reviewer** subagent for Elixir; for other stacks, review against repo patterns and stack knowledge. If no reviewer subagent is available, do this evaluation inline in the main session.
 - For on-paper comparisons, reviewers judge the described design and sketched interfaces — mark those verdicts as speculative where they are.
 
 Scale rigor by work mode (from `.agent/project.md`, guidance not law):

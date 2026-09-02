@@ -40,6 +40,21 @@ Use English for:
 Either way: simplify the words, never the facts. Code identifiers and technical
 terms with no simpler equivalent stay as they are.
 
+## Writing style (external artifacts)
+These rules govern everything shared with other people (reports, team updates, tickets, PR descriptions, summaries):
+
+- Direct and simple. No fancy words, no filler.
+- Cautious tone: state facts plainly, but never oversell certainty. Never promise
+  an outcome that is not verified yet. No know-it-all voice. Use "seems", "might",
+  "could" where certainty is not earned, without hedging every sentence.
+- Impersonal register for reports and updates: "the bug was investigated",
+  "the fix was applied", never "I investigated". Review comments are the exception:
+  they keep the kind, question-first voice defined in dj-human-comments.
+- Dashes are banned as punctuation. Use commas, parentheses, or colons instead.
+  Hyphens inside compound words ("type-safe") are fine.
+- Depth is set by the human per request. When unspecified, default to brief and
+  offer more detail in one closing line.
+
 ## Mixed output
 When reporting a completed task to the user:
 - Main explanation in the internal language.

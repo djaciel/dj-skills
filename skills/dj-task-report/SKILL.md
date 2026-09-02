@@ -23,6 +23,10 @@ When NOT to use:
 
 > Don't explain everything. Say what changed, why it matters, how it was validated, and what the human should review.
 
+## Persistence
+
+The same report is delivered twice: shown in the conversation for the human, and saved to `.agent/features/<feature>/reports/T-XX.md` (work outside a feature: `.agent/reports/<date>-<slug>.md`). The saved copy is what lets a fresh session — or **dj-brief** weeks later — reconstruct what happened without the original conversation. A chat-only report is a lost report.
+
 ## What goes in the report
 
 | Section | Content | Discipline |

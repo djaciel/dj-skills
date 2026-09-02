@@ -54,9 +54,9 @@ Pick your situation, run the recipe. Every recipe tells you: what to type, what 
 /dj-task T-01..T-04 --autonomous    # only if you enabled autonomous commits
 ```
 
-**What happens inside** (automatic; rigor scales with your work mode): read state → scout context → implement → run validations with real output → test audit → stack review → acceptance review → compact report.
+**What happens inside** (automatic; rigor scales with your work mode): read state → scout context → implement (delegated to dj-implementer) → run validations with real output → test audit → stack review → acceptance review → report, guide, and hand off.
 
-**What you get:** a 2-minute report — changes per file, validation evidence, review order, suggested commit. Want the deep dive? Say **"walk me through T-03"** → goal, data-flow map, and file-by-file functions in plain words.
+**What you get:** a 2-minute report — changes per file, validation evidence, review order, suggested commit — saved to `.agent/features/<feature>/reports/T-XX.md`, plus a review guide appended to `.agent/features/<feature>/guide.md` (file-by-file, test-by-test, every deletion audited). Want the deep dive? Say **"walk me through T-03"** → goal, data-flow map, and file-by-file functions in plain words.
 
 **Your job:**
 1. Read the report (start with the review order).
@@ -158,6 +158,8 @@ Per-project external memory — chat history is disposable, `.agent/` is not. Us
 | `handoff.md` | What a fresh session needs to continue |
 | `features/<f>/tasks/T-XX.md` | Task packets — the unit of work |
 | `features/<f>/drift-log.md` | Every scope/direction change, with per-task impact |
+| `features/<f>/guide.md` | Human-review guide, one section per task, appended on every task close |
+| `features/<f>/reports/T-XX.md`, `features/<f>/scout/T-XX.md` | Saved task report and scout result per task |
 | `features/<f>/` also holds | brief, discovery, spec, delivery-plan, pr-strategy, codebase-map |
 | `issues/<id>/`, `reviews/<pr>/` | Fix and review artifacts |
 
@@ -175,7 +177,7 @@ Default commit policy everywhere: no auto-commit, no push, no auto-PR, no co-aut
 
 Branching is policy too: `project.md` records the base branch, the naming convention (`feat/…`, `fix/…`), and whether the agent creates branches or only suggests them. `/dj-task` and `/dj-fix` check it before touching files — and if no policy is written, they ask once and record the answer.
 
-**Language policy** (in `.agent/language-policy.md`): *internal* = whatever you converse in; *external* = always English, with an **English level** — `simple (B1/B2)` (plain words, short sentences) or `natural`. Words get simplified, facts never.
+**Language policy** (in `.agent/language-policy.md`): *internal* = whatever you converse in; *external* = always English, with an **English level** — `simple (B1/B2)` (plain words, short sentences) or `natural`. Words get simplified, facts never. The policy also carries a **writing style** for everything you share (cautious tone, impersonal register for reports, no dashes as punctuation, depth on demand) — `dj-writer` applies it to every artifact, and its defaults kick in even when the file doesn't exist.
 
 ## Living acceptance & task end states
 
@@ -185,7 +187,7 @@ Tasks end in one of: `done · done-with-drift · blocked · needs-replan · spli
 
 ## Sessions & context
 
-Guidance, not law: up to ~75% of context, keep going (update handoff as tasks close); at 75–85%, close the slice and start fresh; past 85%, don't start anything new. Recipe 9 makes fresh sessions cheap.
+The orchestrating session is designed to stay light: implementation and reviews run in subagents (only compact results return), and every task close saves state to `.agent/` — so the session is disposable at any moment. Guidance, not law: up to ~75% of context, keep going; at 75–85%, close the slice and start fresh; past 85%, don't start anything new. When you do cut, prefer a fresh session over compacting — compaction produces a variable summary, while `.agent/` always restores the same state. Recipe 9 makes fresh sessions cheap.
 
 ## Multi-repo setups
 

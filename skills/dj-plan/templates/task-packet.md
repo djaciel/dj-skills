@@ -5,6 +5,7 @@
 # T-XX — <task name>
 
 Status: <pending | done | done-with-drift | blocked | needs-replan | split-needed | merged-into-next | obsolete>
+Outcome: <one line, filled by dj-task at close — what actually happened>
 
 ## Goal
 <small, clear objective — one conceptual objective>

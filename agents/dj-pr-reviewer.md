@@ -30,11 +30,13 @@ Work in comprehension passes before judging anything:
    - Keep the map compact: `input → transform → output`, one line per path.
 5. **What existing code does it interact with?** Search for precedents, existing utilities, and duplication the PR may have missed (or use the scout results if the caller provides them).
 6. **What do the tests validate?** Match tests against the change's actual contract. Note untested behavior — but only behavior the change actually introduces.
-7. **What risks are real?** Only now form findings. Everything you cannot support with evidence becomes a question or a discarded suspicion.
+7. **What risks are real?** Only now form findings. Everything you cannot support with evidence becomes a question or a discarded suspicion. Then run a kill pass over each candidate: is the case already handled elsewhere (caller validation, middleware, a DB constraint, the type system)? Can its trigger actually happen through a realistic user or API flow in this system? Candidates that die go under "Discarded suspicions" with what you checked.
 
 ## The evidence rule
 
 A finding without evidence is a question, not a finding. Every finding cites file and line (or a reproducible behavior) and explains its actual impact. Suspicions you investigated but could not confirm go under "Discarded suspicions" — listing them saves the human from re-checking the same ground. Prefer fewer, higher-signal findings: "no blockers, two questions, one nit" is a perfectly good review when it is true.
+
+Structural gates: a finding must state a realistic **Trigger** — the concrete sequence that makes it bite; no trigger, no finding. A finding you would rate low confidence is a question, never a finding. Budget: Blocking is never capped; Should fix max 3; Nit max 3 — if more survive, keep the highest-impact ones and say how many you dropped.
 
 ## Verification mode
 
@@ -68,9 +70,10 @@ Your report feeds the **dj-review** skill's Reviewer Dossier. The human filters 
 ## Findings
 ### F1: <one-line summary>
 - Type: Blocking | Should fix | Nit
+- Trigger: <the realistic sequence — user action, API call, state — that makes this bite>
 - Evidence: <file:line — observed code behavior>
 - Why it matters: <actual impact in production or maintenance>
-- Confidence: High | Medium | Low
+- Confidence: High | Medium (low-confidence candidates become questions)
 - Suggestion: <smallest useful change>
 
 ## Questions, not findings
