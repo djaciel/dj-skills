@@ -140,7 +140,7 @@ Acceptance checks are living contracts: they can change, but consciously — thr
 
 ## Human checkpoint
 
-Present the plan before any implementation: spec summary, phase list, the detailed task packets, Architecture fit (tasks that deviate from the map, as open questions), PR strategy, and open assumptions. Scale ceremony to work mode: for `personal-small` a compact summary is enough; for `production-work` walk the human through the review story. The human approves, adjusts, or answers open questions; each answer to a blocking question is added to `knowledge/questions.md` with the decision it unblocked, following that file's update rule. Then hand off to /dj-task for execution.
+Present the plan before any implementation: spec summary, phase list, the detailed task packets, Architecture fit (tasks that deviate from the map, as open questions), PR strategy, and open assumptions. Scale ceremony to work mode: for `personal-small` a compact summary is enough; for `production-work` walk the human through the review story. The human approves, adjusts, or answers open questions, and confirms or clears each packet's `Learn:` line; each answer to a blocking question is added to `knowledge/questions.md` with the decision it unblocked, following that file's update rule. Then hand off to /dj-task for execution.
 
 ## Common mistakes
 

@@ -5,6 +5,8 @@
 # T-XX — <task name>
 
 Status: <pending | done | done-with-drift | blocked | needs-replan | split-needed | merged-into-next | obsolete>
+Learn: <what the human wants taught in this task's guide | none>
+<!-- proposed by the planner (for example the first use of a stack feature the expertise registry marks as unknown), confirmed or cleared by the human at the plan checkpoint; none is the default -->
 Outcome: <one line, filled by dj-task at close — what actually happened>
 
 <!-- only when neither the flow nor the spec states the business why; delete this line otherwise -->

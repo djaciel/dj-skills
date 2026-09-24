@@ -88,6 +88,10 @@ the cross-repo contract, and validation per repo), pulling registered paths from
   the packet and list it under open questions; never invent it.
 - **Rejected approaches**: what was considered and why not, so a reopened task does not
   retry it. "none considered" is a valid entry.
+- **Learn:** one line under `Status:` naming what the human wants taught in this task's
+  guide, or `none` (the default). The planner proposes it, for example on the first use of
+  a stack feature the expertise registry marks as unknown; the human confirms or clears it
+  at the plan checkpoint.
 - No "How to review" or "Notes" sections in a packet: what a reviewer should look at
   derives from the acceptance checks and lands in the guide.
 
