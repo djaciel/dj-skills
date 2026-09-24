@@ -24,7 +24,7 @@ Execute ONE task packet end to end: implement, validate, review, report. The hum
 
 ## Subagent availability
 
-The loop delegates to specialist subagents (**dj-scout**, **dj-implementer**, **dj-test-auditor**, **dj-ts-reviewer**, **dj-elixir-reviewer**, **dj-acceptance-reviewer**, **dj-guide-writer**). If any of them is not available, do that step inline in the main session with a fresh-eyes mindset — the step still happens, only the executor changes.
+The loop delegates to specialist subagents (**dj-scout**, **dj-implementer**, **dj-test-auditor**, **dj-ts-reviewer**, **dj-elixir-reviewer**, **dj-pr-reviewer**, **dj-acceptance-reviewer**, **dj-guide-writer**). If any of them is not available, do that step inline in the main session with a fresh-eyes mindset: the step still happens, only the executor changes.
 
 **Cost brake:** at most one subagent per step, sequentially — never parallel fleets or multi-agent workflows, even when the session's effort mode encourages orchestration. Hand each subagent deterministic pointers to context already gathered — the packet path, the scout result file, the diff as a commit range — instead of letting it re-derive everything from scratch, and instead of pasting file contents into the orchestrating session.
 
@@ -41,6 +41,7 @@ Read in this order:
 1. `.dj-agents/repos/<repo>/current.md`: the index of active features. Find this feature's line.
 2. `.dj-agents/repos/<repo>/features/<feature>/state.md`: the source of truth for active mode, current direction, and anything marked "Do not follow".
 3. The task packet (`.dj-agents/repos/<repo>/features/<feature>/tasks/T-XX.md`): objective, context files, acceptance checks (hard/soft/exploratory/deferred), validation commands, commit policy.
+4. `.dj-agents/repos/<repo>/features/<feature>/follow-ups.md`, if it exists. Open entries on files in the packet's scope go to the implementer as a pointer together with the packet (step 3); at close their status becomes `taken in T-XX` only when the diff resolves them, otherwise they stay open.
 
 If `state.md` and the packet disagree, `state.md` wins: flag the mismatch before implementing.
 
@@ -67,23 +68,44 @@ Stay in scope: one conceptual objective, the files the packet points at. Out-of-
 
 Run the packet's validation commands (format, lint, typecheck, tests — whatever the packet lists). **Real output required**: read the actual results, never assume success. If a command fails, fix the root cause and re-run; if the failure reveals the task is mis-specified, that is drift — see end states below.
 
-**Reviewers pull, the orchestrator points (steps 5–7).** Give each reviewer the packet path, the scout result file, and the diff as a commit range (state the refs, e.g. `git diff <base>..HEAD`); the reviewer runs the diff in its own context. Never load the full diff into the orchestrating session just to paste it into reviewer prompts — the range is deterministic and costs the orchestrator nothing.
+**Reviewers pull, the orchestrator points (steps 5 to 7).** Give the test auditor (step 5) and the acceptance reviewer (step 7) the packet path, the scout result file, and the diff as a commit range (state the refs, e.g. `git diff <base>..HEAD`); the reviewer runs the diff in its own context. The blind reviewer (step 6) gets only the hand-off written in step 6. Never load the full diff into the orchestrating session just to paste it into reviewer prompts: the range is deterministic and costs the orchestrator nothing.
 
 ### 5. Audit tests
 
 Delegate to the **dj-test-auditor** subagent: do the new/changed tests cover the change's actual contract? Behavior over implementation, realistic edge cases, no duplicate fixtures. Scale by work mode (table below).
 
-### 6. Stack review
+### 6. Blind review
 
-Delegate to the stack reviewer that matches the diff: **dj-ts-reviewer** for TypeScript/Node, **dj-elixir-reviewer** for Elixir. For other stacks, do a general quality pass inline using the repo's own patterns as the bar (**REQUIRED SUB-SKILL:** dj-repo-patterns). Scale by work mode.
+Delegate to the blind reviewer of the diff's stack: **dj-ts-reviewer** for TypeScript or Node, **dj-elixir-reviewer** for Elixir, **dj-pr-reviewer** for any other stack. A mixed diff goes to the reviewer of the stack with the most core files (one subagent for the step). The prompt has exactly this shape, followed by an `Expertise: <skill>` line only when an expertise skill for that stack is available:
+
+```
+Blind review. Range: <base>..<head> in <repo path>.
+Goal: <one line>.
+Map inputs: <architecture path | missing>; <rules path | missing>; <false-positives path | missing>.
+Output: compact.
+```
+
+- **Goal**: the packet's Goal reduced to one sentence of purpose, with no file names, scope lists or acceptance checks. "Goal: let a customer cancel an order that has not shipped yet." is right; "Goal: T-04, add cancelOrder to src/orders/service.ts." is not.
+- **Map inputs**: `<knowledge>/architecture/<name>.md`, `<knowledge>/review/rules.md` and `<knowledge>/review/false-positives.md`, with `<knowledge>` from `dj-root knowledge` and `<name>` from `dj-root name`; a file that does not exist is written `missing`.
+- **Output**: always written, always `compact`.
+
+Never add the packet, the scout result, the report, `state.md`, `current.md`, `handoff.md` or the feature path to that prompt: a reviewer that holds the story of the task confirms the story instead of judging the code. If no reviewer subagent is available, the main session does the pass inline with the reviewer's checklist and gates, and the report says "blind review ran inline: not blind".
+
+**Intent comparison.** Put the reviewer's "Intent (from the code)" paragraph next to the packet Goal and write one line for the report: `match | partial (<what the code does more or less than the Goal>) | mismatch (<what the code does not communicate>)`. A partial or a mismatch enters step 8 as a candidate.
 
 ### 7. Acceptance review
 
 Delegate to the **dj-acceptance-reviewer** subagent: does the diff fulfill the packet's intent? Hard checks pass? Soft checks reasonable? Any scope drift or missing behavior? This is the one review that judges intent, not code beauty.
 
-### 8. Fix obvious issues
+### 8. Filter, then fix
 
-Collect the small, clear findings from steps 5–7 (a missing edge-case test, an unnecessary cast, a naming slip) and hand them back to **dj-implementer** as one short fix list; it applies them and re-runs the affected validation (inline only as degradation). Anything bigger — architectural doubts, new scope, findings that change the task's shape — goes in the report instead. Do not expand scope to satisfy a reviewer.
+Nothing a reviewer returns is applied before the orchestrator filters it. **Stage 1** is the reviewers' output: the findings, Questions and "Couldn't verify" items of steps 5 to 7, plus a partial or a mismatch from the intent comparison. The same problem reported twice (a runtime finding and its structural twin, or a finding and a "Couldn't verify" item on the same path:line) is one candidate; a structural finding that cites touched code at path:line stands even when the map is missing. **Stage 2** is the orchestrator: it reads each candidate against the packet, the scout result and the architecture file, and gives it exactly one outcome:
+
+- **Discard**, with the reason in one line: "the packet decides this in <section>", "protected by <path:line>", "out of this task's purpose". Every discard is listed in the report.
+- **Apply**, when it is small and clear. A `Fix: auto` tag is a hint, not an order; a `Fix: human` item is never applied without the human's yes. A Question or a "Couldn't verify" item reaches the fix list only after the orchestrator answers it from the packet, the scout result or a file it opened, and the report line shows that answer; without an answer it goes to the human.
+- **To the human**, in the report, when it changes logic, needs a decision or is a redesign. When it is real but outside this task's scope, the report line points to a new entry in `features/<feature>/follow-ups.md` (created from `templates/follow-ups.md` of the dj-plan skill on first use).
+
+**One fix list** goes to **dj-implementer** with the applied items only: no new decisions, no refactor beyond them; it re-runs the affected validation (inline only as degradation). The reviewers do not run again on the fixes: re-reviewing is how a fix step turns into a second run. A second round happens only for what the first round broke or left undone, and it is shorter than the first; after the second round, whatever remains goes to the human in the report and the loop stops. Do not expand scope to satisfy a reviewer.
 
 ### 9. Report, guide, and hand off
 
@@ -99,15 +121,19 @@ Read the mode from `.dj-agents/repos/<repo>/project.md`. Guidance, not law — t
 
 | Work mode | Steps 5–7 |
 |---|---|
-| `production-work` | All three: test audit + stack review + acceptance review |
+| `production-work` | All three: test audit + blind review + acceptance review |
 | `personal-medium` | Test audit + acceptance review |
 | `personal-small` | Acceptance review only (or none, if project.md says so) |
+
+Within a mode, no step of 5 to 7 is skipped for the size of the task or the zone of the code; a diff with nothing to review comes back as "Nothing to report".
 
 Validation (step 4) never scales down — commands listed in the packet always run.
 
 ## Skipping steps
 
 If a step is obviously unnecessary for this task — scout for a one-line change in a file you just edited, test audit for a docs-only task — skip it **and say so in the report**: "Skipped step 2 (scout): packet lists all context and the area was mapped in T-01." Visibility over ceremony. Silently skipping is the failure mode; skipping with a stated reason is the system working.
+
+Step 6 is never skipped in a mode that runs it: a docs-only or one-line diff still goes to the blind reviewer.
 
 ## Task end states
 
@@ -143,7 +169,7 @@ When a task closes (any end state), follow this checklist in order. State files 
 2. **Feature state.** Rewrite `.dj-agents/repos/<repo>/features/<feature>/state.md` from its template: active mode, current phase, current task and the next one, current direction, "Do not follow", recent changes that are still active, read first.
 3. **Index.** Rewrite this feature's line in `.dj-agents/repos/<repo>/current.md` (phase, current task, next action) and its `Rewritten:` line. Add the line when the feature starts; remove it when the feature closes. The index holds nothing else.
 4. **Handoff.** Rewrite `.dj-agents/repos/<repo>/handoff.md` from its template: last real state (and what was verified), next step, not verified, do not rely on. Do it at every task close, not only when the session is ending: the orchestrating session must stay disposable at all times. Never append the previous handoff below.
-5. **Map lines.** Propose one to three map lines this task taught: a rule learned, a gotcha, a flow traced, a term. Sources: the human's corrections, the reviewers' findings, the scout's flow and opportunity candidates. Write them as one inbox entry, `knowledge/inbox/<YYYY-MM-DD>-T-XX-<feature>.md`, in the routing-table format of `templates/knowledge/inbox-entry.md` in the dj-map skill (`Source kind: task close`): each line with its provenance (`verified in code <file:line, date, sha>`, `said by someone <date>` or `explained by the agent <date>`) and a destination (`review/rules.md`, `architecture/<repo>.md`, `flows/<slug>.md`, `glossary.md`, `decisions.md`, `library/`). Show the table and stop: the human approves in the same close ("apply all", edit destinations, or drop rows with a reason), and nothing reaches the map before that. A line for `review/rules.md` that comes from a single occurrence is marked "one comment, not yet a rule" and needs its own yes: "apply all" does not cover it, and once confirmed the rule text is written clean with the marker in the Evidence column. Apply what was approved by each destination's update rule, with its provenance; what was not approved stays in the entry as `left: <reason>`, and the entry moves to `inbox/processed/` once no row is pending. When the task taught nothing, say "none" and write no entry: proposing lines to look thorough fills the map with noise.
+5. **Map lines.** Propose one to three map lines this task taught: a rule learned, a gotcha, a flow traced, a term. Sources: the human's corrections, the reviewers' findings, the scout's flow and opportunity candidates. Write them as one inbox entry, `knowledge/inbox/<YYYY-MM-DD>-T-XX-<feature>.md`, in the routing-table format of `templates/knowledge/inbox-entry.md` in the dj-map skill (`Source kind: task close`): each line with its provenance (`verified in code <file:line, date, sha>`, `said by someone <date>` or `explained by the agent <date>`) and a destination (`review/rules.md`, `architecture/<repo>.md`, `flows/<slug>.md`, `glossary.md`, `decisions.md`, `library/`). The entry also carries one row per step 8 discard whose reason is a protection in code: the flagged shape as a pattern and its protection, destination `review/false-positives.md`, provenance `verified in code <file:line, date, sha>` when the orchestrator opened the protection, otherwise `explained by the agent <date>`. These rows do not count toward the one to three map lines, and they go through the same approval stop. A discard whose reason is the packet or the spec stays in the report only: it is a decision of this task, not a shape of false positive. Show the table and stop: the human approves in the same close ("apply all", edit destinations, or drop rows with a reason), and nothing reaches the map before that. A line for `review/rules.md` that comes from a single occurrence is marked "one comment, not yet a rule" and needs its own yes: "apply all" does not cover it, and once confirmed the rule text is written clean with the marker in the Evidence column. Apply what was approved by each destination's update rule, with its provenance; what was not approved stays in the entry as `left: <reason>`, and the entry moves to `inbox/processed/` once no row is pending. When the task taught nothing, say "none" and write no entry: proposing lines to look thorough fills the map with noise.
 6. **Drift log.** If direction changed, add an entry to `features/<feature>/drift-log.md` (**dj-drift-management**).
 7. **Next task.** Mark it in the delivery plan and in `state.md`.
 8. **Nothing is discarded, it moves.** Anything that leaves a state file in steps 2 to 4 goes to a named destination before it is removed: task detail to the packet (`Outcome:`) or the report (`features/<feature>/reports/T-XX.md`); decisions, dead ideas and feature history to `features/<feature>/` (drift log, spec, follow-ups); anything not yet classified to the knowledge inbox once it exists. It is never deleted and never appended as a "Previous" block.
@@ -170,6 +196,8 @@ Before opening a fresh session, `handoff.md` must state the last real state, the
 - **Running all reviewers on a personal-small project** — ceremony without payoff. Scale down and say you did.
 - **Fixing an out-of-scope bug "while you're here"** — report it; fixing it is a separate task (or a `/dj-fix`).
 - **Appending a "Previous" block to `current.md` or `handoff.md` instead of rewriting them**: history moves to the packet, the report or the feature folder; the state files hold only what is active.
+- **Handing the blind reviewer the packet or the scout "for context"**: the hand-off of step 6 is the whole prompt; the orchestrator holds the story and filters in step 8.
+- **Re-running the reviewers on the fixes or starting a third round**: one fix list, at most two rounds, then the rest goes to the human.
 - **Starting T-05 at 90% context** — close the session properly instead; the handoff costs 5 minutes, a contaminated session costs the task.
 
 ## Report format
@@ -178,7 +206,7 @@ Per **dj-task-report** (the canonical format and full example live there). Secti
 
 ```text
 <T-ID>: <end state>
-Changes · Validation · Self-review · Skipped steps · Acceptance ·
+Changes · Validation · Self-review · Review filter · Skipped steps · Acceptance ·
 Out of scope · Review order · Suggested commit · Walkthrough (on request)
 ```
 

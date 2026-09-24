@@ -36,6 +36,7 @@ The same report is delivered twice: shown in the conversation for the human, and
 | Key decisions | Choices a reviewer would question — especially "reused X instead of creating Y because..." | Only decisions with alternatives; skip the obvious |
 | Validation | Each command from the packet + its REAL result | Run it and paste the outcome. "Should pass" is not a result |
 | Self-review | Reuse found? Duplication avoided? Edge cases added? | 2–4 bullets from the **dj-repo-patterns** and **dj-simplicity-lens** checks |
+| Review filter | The intent comparison line; candidates applied, discarded (each with its reason), sent to the human; follow-ups written; rounds used | One line per candidate; a discard without its reason is not a discard |
 | Skipped steps | Loop steps skipped and why | One line each ("Skipped scout: packet lists all context"); drop when empty |
 | Acceptance | Hard / soft check status + drift classification | Levels per **dj-acceptance-review**; if drift exists, point to the drift-log entry (**dj-drift-management**) |
 | Out of scope | Discoveries reported, not acted on | Bugs, refactor candidates, missing utilities found along the way; drop when empty |
@@ -106,8 +107,14 @@ Self-review:
 - reuse scan found no duplicate helper
 - added edge case: timeout during recovery
 
+Review filter:
+- intent: not compared (step 6 skipped)
+- applied: timeout edge case test (test audit)
+- discarded: "retry has no upper bound": protected by `src/funding/queue.ts:31`
+- to the human: none; follow-ups: none; rounds: 1
+
 Skipped steps:
-- Step 6 (stack review): personal-medium mode — per project.md
+- Step 6 (blind review): personal-medium mode, per project.md
 
 Acceptance:
 - hard checks: pass

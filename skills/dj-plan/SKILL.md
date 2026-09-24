@@ -37,6 +37,7 @@ Read before planning, in this order:
 3. The knowledge map (`dj-root knowledge` prints its path), in this order: `knowledge/index.md`, `knowledge/architecture/<repo>.md`, `knowledge/patterns/<repo>/` (the capabilities the feature touches), `knowledge/flows/` (the flow the feature touches), `knowledge/glossary.md` (canonical terms for the spec), `knowledge/decisions.md` and `knowledge/questions.md` (never re-ask a question that already has an answer). If the repo has no architecture file, say so in the plan ("no architecture map; run `/dj-map --architecture` or accept the risk") and still plan.
 4. `.dj-agents/repos/<repo>/features/<feature>/brief.md` and `discovery.md`, if they exist.
 5. `.dj-agents/repos/<repo>/features/<feature>/codebase-map.md`, if it exists. If the area is unfamiliar and there is no map, run /dj-map first.
+6. `.dj-agents/repos/<repo>/features/<feature>/follow-ups.md`, if it exists: its open entries are findings earlier tasks left for later packets.
 
 If something essential is missing, ask at most 3–5 **blocking questions** — questions whose answers change planning decisions, not checklist questions.
 
@@ -49,7 +50,7 @@ Everything else becomes an assumption listed in the spec for the human to correc
 
 ## Delegation
 
-Delegate drafting to the **dj-planner** subagent: pass it the inputs above **plus the contents (or absolute paths) of this skill's templates** — `templates/feature-spec.md`, `templates/phase.md`, `templates/task-packet.md`, `templates/pr-strategy.md`, `templates/drift-log.md` — since the subagent cannot see this skill's folder on its own. Let it produce the spec, delivery plan, task packets, and PR strategy. dj-planner writes only inside `.dj-agents/` and never edits source code.
+Delegate drafting to the **dj-planner** subagent: pass it the inputs above **plus the contents (or absolute paths) of this skill's templates**: `templates/feature-spec.md`, `templates/phase.md`, `templates/task-packet.md`, `templates/pr-strategy.md`, `templates/drift-log.md`, `templates/follow-ups.md`, since the subagent cannot see this skill's folder on its own. Let it produce the spec, delivery plan, task packets, and PR strategy. dj-planner writes only inside `.dj-agents/` and never edits source code.
 
 If the dj-planner subagent is not available, do the planning inline in the main session, following the same rules and templates.
 
@@ -64,6 +65,7 @@ All under `.dj-agents/repos/<repo>/features/<feature>/`:
 | `tasks/T-01.md`, `tasks/T-02.md`, ... | `templates/task-packet.md`, one file per task | Detailed tasks only |
 | `pr-strategy.md` | `templates/pr-strategy.md` | When `pr_policy` is not `none` |
 | `drift-log.md` | `templates/drift-log.md` | Initialize empty on first plan |
+| `follow-ups.md` | `templates/follow-ups.md` | Created by dj-task on the first out-of-scope finding |
 
 Then create or rewrite `.dj-agents/repos/<repo>/features/<feature>/state.md` (template: `skills/dj-start/templates/feature-state.md`) with the active mode, current phase and next task, and add or rewrite the feature's line in the `.dj-agents/repos/<repo>/current.md` index.
 

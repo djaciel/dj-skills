@@ -29,6 +29,8 @@ Read before planning, when they exist:
   still plan.
 - `.dj-agents/repos/<repo>/features/<feature>/brief.md`, `discovery.md`, `codebase-map.md` — intent and context.
 - `.dj-agents/repos/<repo>/features/<feature>/drift-log.md` — required when replanning.
+- `.dj-agents/repos/<repo>/features/<feature>/follow-ups.md`: open entries. A packet whose
+  scope touches a file named in an open entry lists that entry under Context "Read first".
 
 If the caller supplied template contents or paths, follow those formats exactly;
 otherwise use the structures described below.

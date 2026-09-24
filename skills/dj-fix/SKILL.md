@@ -87,13 +87,15 @@ The failing test from step 3 must now pass. Run the relevant suite plus typechec
 
 Delegate to the **dj-test-auditor** subagent: does the fix's test cover the realistic neighbors of this bug (boundary values, the same flaw in sibling code paths)? If the dj-test-auditor subagent is not available, apply the **dj-test-quality** skill inline. Add only tests the auditor deems worth adding.
 
-### 9. Stack review
+### 9. Blind review
 
-Delegate to the stack reviewer that matches the diff: **dj-ts-reviewer** for TypeScript/Node, **dj-elixir-reviewer** for Elixir. Otherwise, or if unavailable, do a brief inline quality pass anchored on the repo's existing patterns.
+Delegate with the reviewer choice, the hand-off and the degradation of **dj-task** step 6. The Goal line is the expected behavior from `issue-context.md` in one line (`Goal: Fix: <what should happen>.`), never the root cause or the fix plan: they play the packet's role and are not passed. Compare the reviewer's Intent paragraph with that line as dj-task step 6 does.
 
 ### 10. Acceptance against the issue
 
 Delegate to the **dj-acceptance-reviewer** subagent with the issue context, fix plan, and diff: does the change resolve what the reporter actually experienced — not merely make the new test pass? If the dj-acceptance-reviewer subagent is not available, apply the **dj-acceptance-review** skill inline.
+
+**Filter, then fix.** The output of steps 8 to 10 goes through the filter and the fix list of **dj-task** step 8: the same three outcomes, one list, at most two rounds, with `issue-context.md` and `fix-plan.md` in the packet's place. Out-of-scope findings go to the fix report's "Remaining risk" and, when the issue belongs to a feature, to that feature's `follow-ups.md` (source `<issue-id>`).
 
 ### 11. Report and hand off
 
@@ -101,15 +103,15 @@ Delegate to the **dj-acceptance-reviewer** subagent with the issue context, fix 
 - Generate the PR description through the **dj-brief** skill (English, per `.dj-agents/repos/<repo>/language-policy.md`), using the fix report as source material.
 - Suggest a commit message following the repo's convention. **Never commit or push** unless `commit_policy` in `.dj-agents/repos/<repo>/project.md` explicitly allows it.
 - Rewrite `.dj-agents/repos/<repo>/handoff.md` from its template and, if a feature is involved, its `features/<feature>/state.md` and index line in `current.md`. Rewrite, never append: what stops being active moves to the fix report.
-- Propose one to three map lines the bug taught, usually a gotcha or a rule learned, as in the **dj-task** close: one inbox entry, `knowledge/inbox/<YYYY-MM-DD>-<issue-id>.md`, in the routing-table format of `templates/knowledge/inbox-entry.md` in the dj-map skill (`Source kind: fix close`), each line with its provenance label and a destination (`review/rules.md`, `architecture/<repo>.md`, `flows/<slug>.md`, `glossary.md`, `decisions.md`, `library/`). Show the table and stop until the human approves; a line for `review/rules.md` from a single occurrence is marked "one comment, not yet a rule" and needs its own yes ("apply all" does not cover it; once confirmed, the rule text is clean and the marker goes in the Evidence column). Apply what was approved by each destination's update rule; the rest stays in the entry as `left: <reason>`. Nothing learned: say "none" and write no entry.
+- Propose one to three map lines the bug taught, usually a gotcha or a rule learned, as in the **dj-task** close: one inbox entry, `knowledge/inbox/<YYYY-MM-DD>-<issue-id>.md`, in the routing-table format of `templates/knowledge/inbox-entry.md` in the dj-map skill (`Source kind: fix close`), each line with its provenance label and a destination (`review/rules.md`, `architecture/<repo>.md`, `flows/<slug>.md`, `glossary.md`, `decisions.md`, `library/`). Discards whose reason is a protection in code add their `review/false-positives.md` rows as in dj-task close item 5, outside the one to three lines. Show the table and stop until the human approves; a line for `review/rules.md` from a single occurrence is marked "one comment, not yet a rule" and needs its own yes ("apply all" does not cover it; once confirmed, the rule text is clean and the marker goes in the Evidence column). Apply what was approved by each destination's update rule; the rest stays in the entry as `left: <reason>`. Nothing learned: say "none" and write no entry.
 - If `project.md` has `dj_agents_commit: auto` (the default, also when the key is missing) and `.dj-agents/` is a git repository of its own (`<root>/.git` exists), commit inside it, with `<root>` from `dj-root root`: `git -C <root> add -A && git -C <root> commit -m '<issue-id> <repo>: <fixed | not reproduced | not a bug>'`. This never touches the client repo's commit policy.
 
 ## Scaling rigor
 
 | Project type | Steps to keep |
 |--------------|---------------|
-| production-work | All steps, both reviewers, plan shown before implementing |
-| personal-medium | Skip stack review unless the area is risky; keep test audit + acceptance |
+| production-work | All steps, blind review and acceptance review, plan shown before implementing |
+| personal-medium | Test audit + acceptance; blind review when the human asks |
 | personal-small | Steps 1–7 and the report; reviewers optional |
 
 Steps 3 (reproduce) and 4 (root cause) never scale away — they are the fix.
