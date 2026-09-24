@@ -110,9 +110,14 @@ Nothing a reviewer returns is applied before the orchestrator filters it. **Stag
 
 ### 9. Report, guide, and hand off
 
-**REQUIRED SUB-SKILL:** dj-task-report — produce the compact report (format at the end of this file) and save the same content to `.dj-agents/repos/<repo>/features/<feature>/reports/T-XX.md`.
+The numbers in the report come from two scripts; where they live is in "Running the scripts" of `skills/dj-start/templates/dj-agents-layout.md`.
+
+**Staging:** when the task's changes are not committed, run `staging-table` from the repository before the report. Its table goes under "Staging" with one Theme cell per row: the hunks the human would commit together share a theme, so the human can `git add -p` theme by theme. A hunk that mixes two themes names both and says to split it with `s`.
+**REQUIRED SUB-SKILL:** dj-task-report: produce the report (format at the end of this file) and save the same content to `.dj-agents/repos/<repo>/features/<feature>/reports/T-XX.md`.
 **Guide step:** delegate to the **dj-guide-writer** subagent (contract in the **dj-guide** skill) to append this task's section to `.dj-agents/repos/<repo>/features/<feature>/guide.md` — pass it the packet path, the commit range, and the report path. Inline as degradation. Scale detail by work mode: full on `production-work`, minimal on `personal-small`.
-**REQUIRED SUB-SKILL:** dj-commit-message — suggest a commit message matching the repo's convention.
+**REQUIRED SUB-SKILL:** dj-commit-message: suggest a commit message matching the repo's convention.
+**Lengths:** after the guide step, run `line-count <report path> <guide path>#T-XX` and write `Lengths: report <n> lines, guide section <m> lines` as the report's last line, in the saved file and in the reply. Write the line first, then run the script on the saved file and fill in the numbers, so the count includes that line. When the guide file or its section for the task does not exist (exit 1 or 2 for the guide argument), the line says `guide section not found`.
+**Missing script:** when `staging-table` or `line-count` is not found, the report says "script missing: part skipped" in that part. Never estimate the numbers by hand or by reading the diff.
 
 The human reviews the diff, the report, and the guide, then commits (unless commit policy says otherwise). Declare the task's end state.
 
@@ -206,9 +211,11 @@ Before opening a fresh session, `handoff.md` must state the last real state, the
 Per **dj-task-report** (the canonical format and full example live there). Sections, in order:
 
 ```text
-<T-ID>: <end state>
-Changes · Validation · Self-review · Review filter · Skipped steps · Acceptance ·
-Out of scope · Review order · Suggested commit · Walkthrough (on request)
+First screen, never dropped:
+<T-ID> <end state> · I need from you · Not verified · Business rules changed · Deviations
+Below:
+Changes · Validation · Review filter · Self-review · Skipped steps · Acceptance ·
+Out of scope · Staging · Review order · Suggested commit · Lengths · Walkthrough (on request)
 ```
 
-Readable in 2 minutes; drop empty sections. The Walkthrough (goal in one line, data-flow map, core files function by function) is produced only when the user asks or when the Report style section of `.dj-agents/repos/<repo>/project.md` says `Walkthrough: always`.
+The first-screen parts say "nothing" or "none" when empty; below them, drop empty sections. The Walkthrough (goal in one line, data-flow map, core files function by function) is produced only when the user asks or when the Report style section of `.dj-agents/repos/<repo>/project.md` says `Walkthrough: always`.
