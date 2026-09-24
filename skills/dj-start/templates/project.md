@@ -55,3 +55,7 @@ Full rules: `.dj-agents/repos/<repo>/language-policy.md`.
 - Avoid giant classes/functions.
 - Do not refactor only because a function is long.
 - Refactor when it improves readability, removes duplication or separates real responsibilities.
+
+## Assumptions (correct me)
+<!-- adopt mode: every value above that was assumed rather than detected or answered; the human corrects it here -->
+- <assumption>: <why it was assumed>

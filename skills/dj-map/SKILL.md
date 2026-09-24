@@ -17,6 +17,8 @@ Build a compact, actionable map of the code you are about to touch — a reading
 - Planning a feature in an area of the repo you have not worked in.
 - Returning to a repo after a long absence, when your picture of it is stale.
 
+If `dj-root repo` fails or prints a path that does not exist yet, stop and tell the human to run `/dj-start --adopt` first.
+
 When NOT to use:
 
 - Greenfield projects — there is nothing to map yet; use /dj-start.
@@ -37,6 +39,8 @@ Prefer the feature-scoped map. A whole-repo map is worth writing on first contac
 ### Step 1: Frame the scope
 
 Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
+
+If `dj-root repo` fails or prints a path that does not exist yet, stop and tell the human to run `/dj-start --adopt` first.
 
 1. If `.dj-agents/repos/<repo>/current.md` exists, read it first — it may already say what the upcoming work is.
 2. Establish the consumer of the map: what feature or decision must this map serve? If unclear, ask the user one question. A map without a consumer becomes an encyclopedia.

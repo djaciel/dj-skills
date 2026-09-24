@@ -1,6 +1,6 @@
 ---
 name: dj-start
-description: "Use when starting a NEW project from scratch — the user arrives with an idea, brain-dump, notes, links, or a pasted conversation with another AI, and no .dj-agents/ root exists yet. Not for existing codebases (use dj-map) or for planning work in a project that already has .dj-agents/ context (use dj-plan)."
+description: "Use when starting a NEW project from scratch: the user arrives with an idea, brain-dump, notes, links, or a pasted conversation with another AI, and no work area exists for it under .dj-agents/ yet. Use with --adopt when an existing repository has no repos/<repo>/ area under .dj-agents/ yet. Not for a repository that already has its area (use dj-map to understand the code, dj-plan to plan work)."
 ---
 
 # Starting a New Project
@@ -18,11 +18,12 @@ Turn a raw idea dump into working project memory: extract what the user already 
 Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
 
 - A new project starts from an idea, notes, restrictions, links, or a pasted brainstorming conversation with another AI.
-- There is no `.dj-agents/` root yet.
+- The project has no `repos/<repo>/` area under `.dj-agents/` yet (the root itself may already exist next to other repositories).
+- An existing repository with no `repos/<repo>/` area under `.dj-agents/`: `/dj-start --adopt`.
 
 When NOT to use:
 
-- First contact with an existing codebase → use the **dj-map** skill.
+- First contact with an existing codebase → map it with the **dj-map** skill after adopting it.
 - New feature or scope change in a project that already has `.dj-agents/` → use the **dj-plan** skill.
 - A throwaway one-off script that needs no memory — just write it.
 
@@ -90,18 +91,18 @@ These live in `.dj-agents/repos/<repo>/project.md` and are echoed into every tas
 
 Detect (or ask, if genuinely ambiguous) the language the user converses in — that is the **internal language**. The **external language is always English**: code, comments, tests, commits, PRs, tickets, anything that leaves the user's machine. Also set the **external English level**: `simple (B1/B2)` — plain words, short sentences; the right default when teammates read English as a second language — or `natural`. It is a writing register, never a facts filter. Write `.dj-agents/repos/<repo>/language-policy.md` from `templates/language-policy.md`.
 
-### 5. Generate the `.dj-agents/` base files
+### 5. Generate the base files (new project and adopt)
 
-Generate the minimal set — planning documents come later, from dj-plan. Default feature name: `main`.
+Generate the minimal set — planning documents come later, from dj-plan. Default feature name for a new project: `main`. Adopt mode creates no feature.
 
-| File | Template | Purpose |
-|---|---|---|
-| `.dj-agents/repos/<repo>/project.md` | `templates/project.md` | Stable context: stack, commands, constraints, work mode. |
-| `.dj-agents/repos/<repo>/current.md` | `templates/current.md` | Active work state — always read first. |
-| `.dj-agents/repos/<repo>/handoff.md` | `templates/handoff.md` | Session-to-session handoff (starts nearly empty). |
-| `.dj-agents/repos/<repo>/language-policy.md` | `templates/language-policy.md` | Internal vs external language rules. |
-| `.dj-agents/repos/<repo>/features/main/brief.md` | `templates/brief.md` | What to build, for whom, which problem — plus assumptions. |
-| `.dj-agents/repos/<repo>/expertise-registry.md` | `templates/expertise-registry.md` | Optional — only if the user wants to wire external skills per stack. |
+| File | Template | New project | Adopt | Purpose |
+|---|---|---|---|---|
+| `.dj-agents/repos/<repo>/project.md` | `templates/project.md` | yes | yes | Stable context: stack, commands, constraints, work mode. |
+| `.dj-agents/repos/<repo>/current.md` | `templates/current.md` | yes | yes, with no active feature | Active work state — always read first. |
+| `.dj-agents/repos/<repo>/handoff.md` | `templates/handoff.md` | yes | yes, empty state | Session-to-session handoff (starts nearly empty). |
+| `.dj-agents/repos/<repo>/language-policy.md` | `templates/language-policy.md` | yes | yes | Internal vs external language rules. |
+| `.dj-agents/repos/<repo>/features/main/brief.md` | `templates/brief.md` | yes | no | What to build, for whom, which problem — plus assumptions. |
+| `.dj-agents/repos/<repo>/expertise-registry.md` | `templates/expertise-registry.md` | optional | optional | Optional — only if the user wants to wire external skills per stack. |
 
 Do not front-load fifteen documents. Spec, delivery plan, task packets and PR strategy belong to dj-plan.
 
@@ -139,6 +140,19 @@ Keep the vocabulary straight: **spike** = answer a small question · **prototype
 
 If the dj-plan skill is not available, tell the user planning is the next step and offer to draft a minimal spec and task list inline — don't silently skip planning.
 
+## Adopt mode (`--adopt`)
+
+`/dj-start --adopt` gives an existing repository its `repos/<repo>/` area. Run it from inside the repository. It reads the repository and writes only under `.dj-agents/`; nothing is written inside the client repository (no files, no branches, no `git fetch`).
+
+1. **Resolve the root.** Run `dj-root`. If it prints a root, use it. If it exits 1, ask one question with a default: "Where should `.dj-agents/` live? Default: `<parent of the repository>`" (the parent of the main checkout, the directory that owns `git rev-parse --git-common-dir`, so a worktree or a subdirectory does not move it). Then create `.dj-agents/knowledge/` and `.dj-agents/repos/` there, each with a `.gitkeep`, run `git init` inside `.dj-agents/`, and make a first commit with those two directories ("Initialize .dj-agents"). A root that exists without its own `.git` gets the same `git init` and first commit.
+2. **Resolve the repo name.** Run `dj-root name`. Exit 2 means the session is not inside a git repository: stop and say so. If `.dj-agents/repos/<repo>/` already exists, stop: "already adopted; edit `project.md` by hand".
+3. **Detect from the repository, not from memory.** Stack and commands from the manifests that exist (`package.json` scripts, `mix.exs` aliases, `pyproject.toml`, `Makefile` targets, CI config under `.github/workflows/` or similar). Quote each command as the manifest defines it and keep its source file. Branching from `git branch -a` and `git log --oneline -n 30` (naming convention, merge style). The base branch from the remote HEAD (`git symbolic-ref --short refs/remotes/origin/HEAD`); with no remote, the current branch, listed as an assumption.
+4. **Ask only what the repository cannot answer**, at most 3 to 5 blocking questions, in one message: project type and work mode (`human_loop`), `commit_policy`, `pr_policy`, internal language and external English level. Skip any the conversation already answers. Everything else becomes an assumption.
+5. **Write the base files** under `.dj-agents/repos/<repo>/` from the templates (table in step 5 above): `project.md` (detected values, each command with its source file, and every unconfirmed value under "Assumptions (correct me)"), `language-policy.md`, `current.md` (the index with no active feature) and `handoff.md` (empty state: adopted, nothing implemented yet).
+6. **Do not create a feature.** The human creates `.dj-agents/repos/<repo>/features/<feature>/init.md` and runs `/dj-plan` with that path.
+7. **Commit inside `.dj-agents/`**: `git -C <root> add repos/<repo>` and `git -C <root> commit -m "Adopt <repo>"`. The client repository's commit policy does not apply here, and no commit is made in it.
+8. **Report** with the adopt variant of the Output block: paths written, detected values with their source, assumptions to correct, next step (`/dj-map <area>` for unfamiliar ground, or `/dj-plan` once a feature's `init.md` exists).
+
 ## Common mistakes
 
 - **Questionnaire mode** — asking blocks of questions the idea dump already answers. Extract first, ask last.
@@ -147,6 +161,8 @@ If the dj-plan skill is not available, tell the user planning is the next step a
 - **Giant spikes** — a spike that builds 80% of the app is an implementation phase in disguise; a spike that installs a huge project "just to try one thing" is not justified.
 - **Skipping the language policy** — it must be a written contract, or later output arrives in the wrong language.
 - **Treating the original brain-dump as an active source** — after intake, the pasted conversation is archive material; `current.md` and the brief are the truth.
+- **Adopting by copying rules from memory instead of reading the manifests and the git history**: every command and branching value in an adopted `project.md` has a source in the repository, or it is listed as an assumption.
+- **Writing anything inside the client repository**: adopt mode reads the repository and writes only under `.dj-agents/`.
 
 ## Output
 
@@ -174,6 +190,33 @@ Key discovery decisions: <one line each, from the table>
 Proposed spikes: <list with time/file budgets, or "none">
 
 Next: run /dj-plan to generate the spec, delivery plan and task packets.
+```
+
+Adopt variant (`--adopt`):
+
+```text
+Repository adopted: <repo>
+
+Root: <path>/.dj-agents (created now | existing)
+Mode: <project type> (human_loop: <task | checkpoint | phase>, commit_policy: <policy>, pr_policy: <policy>)
+Language: internal <language> / external English (<simple (B1/B2) | natural>)
+
+Generated:
+- .dj-agents/repos/<repo>/project.md
+- .dj-agents/repos/<repo>/language-policy.md
+- .dj-agents/repos/<repo>/current.md
+- .dj-agents/repos/<repo>/handoff.md
+
+Detected (source):
+- test: <command> (package.json)
+- base_branch: <branch> (origin/HEAD)
+
+Assumptions I made (correct me in project.md):
+1. <assumption>
+
+Committed in .dj-agents/: "Adopt <repo>". Nothing written inside the repository.
+
+Next: create .dj-agents/repos/<repo>/features/<feature>/init.md and run /dj-plan with it; run /dj-map <area> first if the ground is unfamiliar.
 ```
 
 Signal over ceremony: if the project is tiny and a step is obviously unnecessary (e.g. no discovery decisions exist), say so in the report and skip it — don't perform empty sections.

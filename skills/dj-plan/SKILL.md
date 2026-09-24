@@ -28,6 +28,8 @@ When NOT to use:
 
 Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
 
+If `dj-root repo` fails or prints a path that does not exist yet, stop and tell the human to run `/dj-start --adopt` first.
+
 Read before planning, in this order:
 
 1. `.dj-agents/repos/<repo>/current.md` — active state. Never plan against stale intent.
