@@ -102,4 +102,34 @@ Written once: packets, scout results and reports inside `features/<feature>/`, a
 
 - `.dj-agents/` is its own git repository: `git init` inside it, no remote required. It gives history, per-file rollback and a clean way to move changes between machines.
 - Task and fix closes commit inside it by default, one short commit per close (`T-XX <repo>/<feature>: <end state>` for a task, `<issue-id> <repo>: <fixed | not reproduced | not a bug>` for a fix), when it is a git repository of its own. `dj_agents_commit: human-only` in `repos/<repo>/project.md` turns this off; `auto` is the default. The client repository's commit policy is untouched.
-- Sync between two machines uses git bundles since a `last-sync` tag: `dj-sync pack` on one side, `dj-sync unpack` on the other. The procedure ships with that script. One feature per machine at a time.
+- Sync between two machines uses git bundles since a `last-sync` tag: `dj-sync pack` on one side, `dj-sync unpack` on the other. See "Sync between machines" below. One feature per machine at a time.
+
+## Sync between machines
+
+`dj-sync` moves the root between two machines without a network, as git bundles. It sits next to `dj-root` and follows the same rules: bash, git, coreutils, `hostname` and `date` only, stdout carries the single value, messages go to stderr. Exit codes: 0 ok, 1 usage or no root, 2 git failure (bundle verify, pull, conflict).
+
+| Command | What it does |
+|---|---|
+| `dj-sync pack [--out <file>] [--full]` | Bundles the commits since the `last-sync` tag, or the whole branch with `--full` or when there is no tag. Prints the bundle path. The default file is `dj-agents-<hostname>-<date>-<time>.bundle` next to `.dj-agents/`, never inside it. With no new commits it says "nothing to pack since last-sync" and writes nothing. |
+| `dj-sync unpack <file>` | Runs `git bundle verify`, then pulls the bundle into the current branch. Prints the new HEAD line. |
+| `dj-sync unpack --finish` | After a conflict: moves the tag once the human resolved and committed the merge. |
+| `dj-sync clone <file> [<dest>]` | Creates a root from a full bundle, by default `./.dj-agents` in the current directory: run it from the folder that holds the repositories. Sets `last-sync` at HEAD and leaves no remote. |
+| `dj-sync status` | Four lines: root and branch, `last-sync`, commits to pack, working tree clean or not. |
+
+The branch is detected in the root (`main`, `master` or any other), never assumed.
+
+`last-sync` marks the newest commit both machines hold. `pack` moves it only after the bundle file exists. `unpack` moves it only after the pull succeeded, and to the commit that came in, never backward: when both machines had new commits, git makes a merge commit here and the next `pack` carries it back. On a conflict, `unpack` stops with exit 2, shows git's message and does not move the tag; resolve the files, `git add`, `git commit`, then `dj-sync unpack --finish`.
+
+First time, with v2 data on both machines. The order is the one `/dj-migrate` documents: the machine with more data first, then its root is copied to the second machine (`dj-sync`), then `/dj-migrate --merge` there on top of it, then the result goes back. In commands:
+
+1. First machine: `/dj-migrate`, which commits inside the root, then `dj-sync pack --full`.
+2. Second machine, from the folder that holds the repositories: `dj-sync clone <file>`, then `/dj-migrate --merge`, which commits, then `dj-sync pack`.
+3. First machine: `dj-sync unpack <file>`.
+
+From then on: `dj-sync pack` on the machine you leave, `dj-sync unpack <file>` on the machine you arrive at. Move the file by any means; it is not encrypted, so treat it like the root itself.
+
+Rules:
+
+- One feature on one machine at a time. The library and the inbox are append-dated and merge alone; rules files (`review/rules.md`, `decisions.md`, `glossary.md`) may conflict, and git shows it.
+- Uncommitted changes are not packed: close the task or commit inside the root first. `pack` warns on stderr and `status` says it.
+- When a remote exists later, `git remote add` is enough; the tag logic keeps working.
