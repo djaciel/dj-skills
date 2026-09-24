@@ -36,6 +36,8 @@ Ask in order before writing new code:
 
 If questions 2–5 turn up an existing answer, reuse or extend it. Write new code only when all seven questions survive.
 
+After the change takes shape, ask against the diff you produced whether the new code now repeats an existing path's steps in the same order. That duplication was created by this change, and removing it is part of this change, not a follow-up.
+
 ## Do not sacrifice
 
 Simplicity never justifies dropping:
@@ -77,6 +79,7 @@ Apply the same shape to helpers, wrappers, and abstractions: judge the specific 
 - Adding a dependency for what five lines of stdlib solve.
 - Refactoring a function only because it is long. Refactor when it improves readability, removes duplication, or separates real responsibilities.
 - Answering question 2 from memory instead of searching the repo.
+- Reading "do not change existing behavior" as "do not touch existing code". The first is a promise about what callers observe. The second is a promise about the diff, and honoring it is how a second branch becomes a copy of the first.
 
 ## Output format
 

@@ -68,7 +68,7 @@ Stay in scope: one conceptual objective, the files the packet points at. Out-of-
 
 Run the packet's validation commands (format, lint, typecheck, tests — whatever the packet lists). **Real output required**: read the actual results, never assume success. If a command fails, fix the root cause and re-run; if the failure reveals the task is mis-specified, that is drift — see end states below.
 
-**Reviewers pull, the orchestrator points (steps 5 to 7).** Give the test auditor (step 5) and the acceptance reviewer (step 7) the packet path, the scout result file, and the diff as a commit range (state the refs, e.g. `git diff <base>..HEAD`); the reviewer runs the diff in its own context. The blind reviewer (step 6) gets only the hand-off written in step 6. Never load the full diff into the orchestrating session just to paste it into reviewer prompts: the range is deterministic and costs the orchestrator nothing.
+**Reviewers pull, the orchestrator points (steps 5 to 7).** Give the test auditor (step 5) and the acceptance reviewer (step 7) the packet path, the scout result file, and the diff as a commit range (state the refs: `git diff <base>..HEAD`, or `git diff <base>` plus the untracked files when nothing is committed yet); the reviewer runs the diff in its own context. The blind reviewer (step 6) gets only the hand-off written in step 6. Never load the full diff into the orchestrating session just to paste it into reviewer prompts: the range is deterministic and costs the orchestrator nothing.
 
 ### 5. Audit tests
 
@@ -85,6 +85,7 @@ Map inputs: <architecture path | missing>; <rules path | missing>; <false-positi
 Output: compact.
 ```
 
+- **Range**: `<base>` is the commit the task started from; `<head>` is `working-tree` while the task's changes are not committed (the usual case under `commit_policy: human-only`), otherwise the task's last commit. Example: `Blind review. Range: 3f2a1c9..working-tree in /path/to/repo.`
 - **Goal**: the packet's Goal reduced to one sentence of purpose, with no file names, scope lists or acceptance checks. "Goal: let a customer cancel an order that has not shipped yet." is right; "Goal: T-04, add cancelOrder to src/orders/service.ts." is not.
 - **Map inputs**: `<knowledge>/architecture/<name>.md`, `<knowledge>/review/rules.md` and `<knowledge>/review/false-positives.md`, with `<knowledge>` from `dj-root knowledge` and `<name>` from `dj-root name`; a file that does not exist is written `missing`.
 - **Output**: always written, always `compact`.

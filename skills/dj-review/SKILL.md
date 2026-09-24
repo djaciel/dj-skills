@@ -43,7 +43,7 @@ Map inputs: <architecture path | missing>; <rules path | missing>; <false-positi
 Output: dossier.
 ```
 
-- **Range**: `<base>` is `git merge-base <target> <head>`, so the range is the PR's own commits. A PR number is fetched locally first; a pasted diff with no range to hand over is reviewed inline.
+- **Range**: `<base>` is `git merge-base <target> <head>`, so the range is the PR's own commits. When that equals `<head>` (the PR is already merged, so the range would be empty): for a merge commit `<m>`, `<head>` is `<m>^2` and `<base>` is `git merge-base <m>^1 <m>^2`; for a squash or rebase merge, `<head>` is the PR head ref fetched from the host, and ask the human for the base when it cannot be derived. An explicit `--base <ref>` from the human always wins. A branch that is not checked out is reviewed where it is: the reviewer reads it at `<head>`, and the session never checks it out for the review. A PR number is fetched locally first; a pasted diff with no range to hand over is reviewed inline.
 - **Map inputs**: the absolute paths from Inputs; a file that does not exist is written `missing`.
 
 Never add the PR description, the ticket, the commit bodies, your own intent summary or anything under `.dj-agents/repos/` to that prompt: a reviewer that holds the author's account confirms it instead of judging the code. The reviewer does steps 2 and 4 to 6 and writes the Intent paragraph of step 3; the session does not repeat them. No other subagent runs at standard depth. If dj-pr-reviewer is not available, the session does steps 2 to 6 inline under the same contract, and "How this review ran" says so.
@@ -60,7 +60,7 @@ A good review may legitimately conclude: "No blockers. Two questions and one min
 
 Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
 
-- The diff: `git diff <base>...<branch>`, `gh pr diff <number>`, or a pasted diff
+- The diff: `git diff <base>..<head>` with the Range rule below, `gh pr diff <number>`, or a pasted diff; `--base <ref>` (optional, the human's explicit base)
 - The PR description and any linked issue or ticket, if available: read at step 3, after the Intent paragraph, never before
 - `.dj-agents/repos/<repo>/language-policy.md` and `.dj-agents/repos/<repo>/project.md`, if present
 - The three map review inputs, by absolute path, with `<root>` from `dj-root` and `<repo>` from `dj-root name`: `<root>/knowledge/architecture/<repo>.md`, `<root>/knowledge/review/rules.md` and `<root>/knowledge/review/false-positives.md`. Each may be missing; the dossier says which were used.
@@ -73,7 +73,7 @@ Standard depth: step 1 here, the delegated pass (steps 2 and 4 to 6, and the Int
 
 ### 1. Get the diff
 
-Fetch the diff (or fix the range for the hand-off) and the PR or branch metadata: title, base and head, linked issue id. Set the description and the ticket aside unread; step 3 reads them.
+Fetch the diff (or fix the range for the hand-off) and the PR or branch metadata: title, base and head, linked issue id. Set the description and the ticket aside unread; step 3 reads them. Fix the range as the Range bullet says, and check it is not empty (`git diff --stat <base>..<head>`) before the hand-off.
 
 ### 2. Triage files (internal — not a dossier section)
 

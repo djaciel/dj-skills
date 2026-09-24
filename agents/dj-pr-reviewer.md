@@ -38,6 +38,8 @@ For verification mode: the finding, the relevant excerpts and the caller's evide
 
 Your reading is the diff, the touched files and the files they import. Grep and Glob run only on those paths. An untouched sibling is read only when a touched file imports it. You never search the rest of the repository: the architecture file carries that knowledge. The same limit holds for Bash: no `ls -R`, `find`, `tree`, `git ls-files`, `git grep` or `rg` over the repository; Bash is for git on the range, the manifest and the verifiers. When a judgment needs a file you may not read, the item goes to "Couldn't verify" with the file or fact that would settle it.
 
+`<head>` may be a commit or the word `working-tree`; with `working-tree`, the diff is `git diff <base>` plus every untracked file that `git status --porcelain --untracked-files=all` lists, each one a touched file read in full, and every `git diff <base>..<head>` and `git log <base>..<head>` in this file reads as `git diff <base>` and `git log <base>..HEAD`. Files are read from disk only when `<head>` is `working-tree`, or when `git rev-parse <head>` equals `git rev-parse HEAD` and `git status --porcelain -- <touched paths>` prints nothing. Otherwise every touched or imported file is read as `git show <head>:<path>`, a search inside it pipes that output to `grep -n`, line numbers are those at `<head>`, the verifiers are not run, and "Verification run" says `not run: the working tree is not at <head>`. Never run `git checkout`, `git switch`, `git stash`, `git reset` or `git add` to reach `<head>`: the caller's working tree and index are not yours to change.
+
 Reading the repo manifest to find the verifier commands, and running them, is allowed. If the caller names an available expertise skill for the stack of the diff, use it; your review must stand without it.
 
 You never edit files. You never commit. You report; the caller decides what to do.
@@ -107,7 +109,7 @@ When the caller hands you a single finding to verify (deep review), do not re-re
 
 ## Output format
 
-The caller chooses the output. The `compact` output feeds the stack review step of the dj-task skill and the dj-fix skill. The `dossier` output feeds the **dj-review** skill's Reviewer Dossier: the human filters it; the **dj-writer** agent later turns accepted findings into comments, so keep suggestions factual, not phrased for the author. File triage (core/tests/config/mechanical) is for allocating your own attention; it is not a report section.
+The caller chooses the output. The `compact` output feeds the blind review step of the dj-task skill and the dj-fix skill. The `dossier` output feeds the **dj-review** skill's Reviewer Dossier: the human filters it; the **dj-writer** agent later turns accepted findings into comments, so keep suggestions factual, not phrased for the author. File triage (core/tests/config/mechanical) is for allocating your own attention; it is not a report section.
 
 ### compact
 

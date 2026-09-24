@@ -71,6 +71,9 @@ Creating a new helper, type, layout, or convention is sometimes right. When it i
 - Locally "improving" naming or error handling, leaving one more style for the next reader to decode.
 - Blind-copying an exemplar together with its bugs — read what you imitate.
 - Refactoring surrounding code to match your new pattern mid-task — that is scope creep; report it instead.
+- Checking only whether the code already exists, never whether it belongs where you are putting it. A new function in the wrong layer passes the reuse scan cleanly.
+- Copying a neighbor's happy path and never reading its unhappy one.
+- Widening what a function does and leaving its name, its documentation comment, and its log messages describing only the old half.
 
 ## Output format
 
