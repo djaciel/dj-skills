@@ -11,9 +11,9 @@ A PR boundary is judged by one question — **"Does this PR tell a reviewable st
 
 ## When to use
 
-- During planning, when the **dj-plan** skill (or the **dj-planner** subagent) produces `.agent/features/<feature>/pr-strategy.md`
+- During planning, when the **dj-plan** skill (or the **dj-planner** subagent) produces `.dj-agents/repos/<repo>/features/<feature>/pr-strategy.md`
 - When a branch has grown and you must decide: ship as-is, split, or stack
-- When `pr_policy` in `.agent/project.md` is `explicit-pr-strategy`, or `phase-as-pr` needs a sanity check
+- When `pr_policy` in `.dj-agents/repos/<repo>/project.md` is `explicit-pr-strategy`, or `phase-as-pr` needs a sanity check
 
 **When NOT to use:**
 
@@ -92,7 +92,7 @@ If the strategy changes, update `pr-strategy.md` and note why — silent diverge
 
 ## Output format
 
-When producing or revising a strategy, write `.agent/features/<feature>/pr-strategy.md`. The canonical template ships with **dj-plan** (`templates/pr-strategy.md`); its sections, in order:
+When producing or revising a strategy, write `.dj-agents/repos/<repo>/features/<feature>/pr-strategy.md`. The canonical template ships with **dj-plan** (`templates/pr-strategy.md`); its sections, in order:
 
 ```text
 Recommended approach (1 PR | 2 PRs | stacked PRs | no PR) · Why ·

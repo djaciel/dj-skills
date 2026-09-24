@@ -1,13 +1,13 @@
 ---
 name: dj-start
-description: "Use when starting a NEW project from scratch — the user arrives with an idea, brain-dump, notes, links, or a pasted conversation with another AI, and no .agent/ directory exists yet. Not for existing codebases (use dj-map) or for planning work in a project that already has .agent/ context (use dj-plan)."
+description: "Use when starting a NEW project from scratch — the user arrives with an idea, brain-dump, notes, links, or a pasted conversation with another AI, and no .dj-agents/ root exists yet. Not for existing codebases (use dj-map) or for planning work in a project that already has .dj-agents/ context (use dj-plan)."
 ---
 
 # Starting a New Project
 
 ## Overview
 
-Turn a raw idea dump into working project memory: extract what the user already knows, ask only what blocks real decisions, set the work mode and language policy, and leave `.agent/` ready for planning.
+Turn a raw idea dump into working project memory: extract what the user already knows, ask only what blocks real decisions, set the work mode and language policy, and leave `.dj-agents/` ready for planning.
 
 **Core principle:** Smart intake, not a questionnaire. Read what the user brings, infer everything you can, and ask at most 3–5 questions — only the ones planning would get wrong without.
 
@@ -15,13 +15,15 @@ Turn a raw idea dump into working project memory: extract what the user already 
 
 ## When to use
 
+Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
+
 - A new project starts from an idea, notes, restrictions, links, or a pasted brainstorming conversation with another AI.
-- There is no `.agent/` directory yet.
+- There is no `.dj-agents/` root yet.
 
 When NOT to use:
 
 - First contact with an existing codebase → use the **dj-map** skill.
-- New feature or scope change in a project that already has `.agent/` → use the **dj-plan** skill.
+- New feature or scope change in a project that already has `.dj-agents/` → use the **dj-plan** skill.
 - A throwaway one-off script that needs no memory — just write it.
 
 ## The process
@@ -82,24 +84,24 @@ Also set:
 - `pr_policy: none | phase-as-pr | explicit-pr-strategy`.
 - Branching: base branch, naming convention (`feat/<feature>`, `fix/<issue-id>`), and whether the agent creates branches or only suggests them. For an existing repo, detect the convention from `git branch -a` and recent history instead of inventing one.
 
-These live in `.agent/project.md` and are echoed into every task packet later — the mode is written down, not remembered.
+These live in `.dj-agents/repos/<repo>/project.md` and are echoed into every task packet later — the mode is written down, not remembered.
 
 ### 4. Set the language policy
 
-Detect (or ask, if genuinely ambiguous) the language the user converses in — that is the **internal language**. The **external language is always English**: code, comments, tests, commits, PRs, tickets, anything that leaves the user's machine. Also set the **external English level**: `simple (B1/B2)` — plain words, short sentences; the right default when teammates read English as a second language — or `natural`. It is a writing register, never a facts filter. Write `.agent/language-policy.md` from `templates/language-policy.md`.
+Detect (or ask, if genuinely ambiguous) the language the user converses in — that is the **internal language**. The **external language is always English**: code, comments, tests, commits, PRs, tickets, anything that leaves the user's machine. Also set the **external English level**: `simple (B1/B2)` — plain words, short sentences; the right default when teammates read English as a second language — or `natural`. It is a writing register, never a facts filter. Write `.dj-agents/repos/<repo>/language-policy.md` from `templates/language-policy.md`.
 
-### 5. Generate the `.agent/` base files
+### 5. Generate the `.dj-agents/` base files
 
 Generate the minimal set — planning documents come later, from dj-plan. Default feature name: `main`.
 
 | File | Template | Purpose |
 |---|---|---|
-| `.agent/project.md` | `templates/project.md` | Stable context: stack, commands, constraints, work mode. |
-| `.agent/current.md` | `templates/current.md` | Active work state — always read first. |
-| `.agent/handoff.md` | `templates/handoff.md` | Session-to-session handoff (starts nearly empty). |
-| `.agent/language-policy.md` | `templates/language-policy.md` | Internal vs external language rules. |
-| `.agent/features/main/brief.md` | `templates/brief.md` | What to build, for whom, which problem — plus assumptions. |
-| `.agent/expertise-registry.md` | `templates/expertise-registry.md` | Optional — only if the user wants to wire external skills per stack. |
+| `.dj-agents/repos/<repo>/project.md` | `templates/project.md` | Stable context: stack, commands, constraints, work mode. |
+| `.dj-agents/repos/<repo>/current.md` | `templates/current.md` | Active work state — always read first. |
+| `.dj-agents/repos/<repo>/handoff.md` | `templates/handoff.md` | Session-to-session handoff (starts nearly empty). |
+| `.dj-agents/repos/<repo>/language-policy.md` | `templates/language-policy.md` | Internal vs external language rules. |
+| `.dj-agents/repos/<repo>/features/main/brief.md` | `templates/brief.md` | What to build, for whom, which problem — plus assumptions. |
+| `.dj-agents/repos/<repo>/expertise-registry.md` | `templates/expertise-registry.md` | Optional — only if the user wants to wire external skills per stack. |
 
 Do not front-load fifteen documents. Spec, delivery plan, task packets and PR strategy belong to dj-plan.
 
@@ -107,7 +109,7 @@ Do not front-load fifteen documents. Spec, delivery plan, task packets and PR st
 
 **Rule: discovery only investigates decisions that affect real construction.** Not the whole stack, not "evaluate everything", no infinite research.
 
-Write `.agent/features/main/discovery.md` from `templates/focused-discovery.md`. Its core is one table:
+Write `.dj-agents/repos/<repo>/features/main/discovery.md` from `templates/focused-discovery.md`. Its core is one table:
 
 | Decision | Options | Recommendation | Evidence | Risk |
 |---|---|---|---|---|
@@ -157,12 +159,12 @@ Mode: personal-medium (human_loop: checkpoint, commit_policy: human-only, pr_pol
 Language: internal <language> / external English
 
 Generated:
-- .agent/project.md
-- .agent/current.md
-- .agent/handoff.md
-- .agent/language-policy.md
-- .agent/features/main/brief.md
-- .agent/features/main/discovery.md
+- .dj-agents/repos/<repo>/project.md
+- .dj-agents/repos/<repo>/current.md
+- .dj-agents/repos/<repo>/handoff.md
+- .dj-agents/repos/<repo>/language-policy.md
+- .dj-agents/repos/<repo>/features/main/brief.md
+- .dj-agents/repos/<repo>/features/main/discovery.md
 
 Assumptions I made (correct me):
 1. <assumption>

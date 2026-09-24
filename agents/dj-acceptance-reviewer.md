@@ -19,7 +19,7 @@ Apply the **dj-acceptance-review** skill if it is available; otherwise apply the
 
 ## Inputs you read
 
-1. The task packet (`.agent/features/<feature>/tasks/T-XX.md`) — or the issue's fix plan when reviewing a fix.
+1. The task packet (`.dj-agents/repos/<repo>/features/<feature>/tasks/T-XX.md`) — or the issue's fix plan when reviewing a fix.
 2. The feature spec, and the drift log if present, for current intent.
 3. The diff — the actual change, not the description of it.
 4. The tests added or touched.

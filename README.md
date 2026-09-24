@@ -17,18 +17,18 @@ The goal is not an AI that never makes mistakes. The goal is an AI that works li
 
 ## Core ideas
 
-- **External memory in `.agent/`** — project state, specs, task packets, drift logs, and handoff notes live in files, not in chat history. Any fresh session can pick up exactly where the last one stopped.
+- **External memory in `.dj-agents/`** — project state, specs, task packets, drift logs, and handoff notes live in files, not in chat history. Any fresh session can pick up exactly where the last one stopped.
 - **Living specs** — Feature Spec → Phase → Task Packet, all revisable. When reality diverges from the plan, drift is logged and triggers a replan — never a silent restart from zero.
 - **Small task packets** — one conceptual objective, clear validation commands, human-reviewable in 10–20 minutes.
 - **Specialist subagents** — scout, planner, implementer, reviewers, writer. Each has one job, restricted tools, and a defined output format.
-- **A light orchestrator** — the main session plans, delegates, and reviews; it does not write code or hold diffs. Heavy steps run in subagents with their own context, state is saved to `.agent/` at every task close, and the session stays disposable.
+- **A light orchestrator** — the main session plans, delegates, and reviews; it does not write code or hold diffs. Heavy steps run in subagents with their own context, state is saved to `.dj-agents/` at every task close, and the session stays disposable.
 - **Evidence-based review** — a finding without evidence is a question, not a finding. No invented race conditions, no impossible edge cases, no zero-value nits.
 - **Clear language policy** — converse in whatever language you prefer; everything that leaves your machine (code, commits, PR descriptions, review comments) is always English.
 - **Self-contained** — the system has zero dependencies on third-party skills. External expertise skills are optional plugins registered per project, never requirements.
 
 ## How it fits together
 
-Five pieces: visible commands, the `.agent/` directory as external memory, specialist subagents, small optional skills, and deterministic hooks/scripts. A typical interaction:
+Five pieces: visible commands, the `.dj-agents/` root as external memory, specialist subagents, small optional skills, and deterministic hooks/scripts. A typical interaction:
 
 ```text
 You
@@ -37,7 +37,7 @@ Visible command (/dj-task T-03)
   ↓
 Main Claude session
   ↓
-Reads .agent/ (current state, task packet, spec)
+Reads .dj-agents/ (current state, task packet, spec)
   ↓
 Delegates the heavy steps to subagents (scout, implementer, reviewers, guide writer)
   ↓
@@ -113,7 +113,7 @@ Each installed skill is invocable by its name (e.g. `/dj-start`, `/dj-task`). Th
 
 | Command | Purpose |
 |---|---|
-| `/dj-start` | Start a new project from an idea or brain-dump: smart intake, work mode, base `.agent/` files, focused discovery |
+| `/dj-start` | Start a new project from an idea or brain-dump: smart intake, work mode, base `.dj-agents/` files, focused discovery |
 | `/dj-map` | Understand an existing repo or repo area before planning — produces a compact codebase map |
 | `/dj-plan` | Turn intent into a living spec, phases, task packets, and PR strategy; also replans after drift |
 | `/dj-task` | Execute one task packet end-to-end: implement, validate, audit tests, review, report, guide |
@@ -127,7 +127,7 @@ Each installed skill is invocable by its name (e.g. `/dj-start`, `/dj-task`). Th
 | Subagent | Purpose |
 |---|---|
 | `dj-scout` | Read-only repo exploration: relevant files, existing patterns, reusable code, duplication risk |
-| `dj-planner` | Turns intent into feature spec, delivery plan, task packets, and PR strategy — writes only inside `.agent/` |
+| `dj-planner` | Turns intent into feature spec, delivery plan, task packets, and PR strategy — writes only inside `.dj-agents/` |
 | `dj-implementer` | Implements one task packet: stays in scope, reuses existing patterns, runs real validation |
 | `dj-ts-reviewer` | TypeScript/Node review lens: types, duplication, modularity, error handling, async flows |
 | `dj-elixir-reviewer` | Elixir review lens: Ecto queries and changesets, error tuples, OTP/process use, context boundaries |
@@ -184,6 +184,6 @@ Each installed skill is invocable by its name (e.g. `/dj-start`, `/dj-task`). Th
 
 For full workflows, work modes, drift handling, session management, hooks, and the external skills policy, read **[GUIDE.md](GUIDE.md)**.
 
-## A note on `.agent/`
+## A note on `.dj-agents/`
 
-The commands generate a `.agent/` directory in each project you use them on. It is working memory — project context, current state, specs, task packets, reports — not part of this repo. You will usually want to add `.agent/` to that project's `.gitignore`; keep it tracked only if your team deliberately wants to share planning state.
+The commands generate a `.dj-agents/` root in each project you use them on. It is working memory — project context, current state, specs, task packets, reports — not part of this repo. You will usually want to add `.dj-agents/` to that project's `.gitignore`; keep it tracked only if your team deliberately wants to share planning state.

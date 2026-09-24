@@ -67,7 +67,7 @@ const status = user?.enabled
   : "disabled";
 ```
 
-Apply the same shape to helpers, wrappers, and abstractions: judge the specific case against the 7 questions, not against a blanket rule. When the same over-building mistake repeats across tasks, promote the correction: a rule in `.agent/project.md`, an example in a skill, a lint rule or hook if it can be automated.
+Apply the same shape to helpers, wrappers, and abstractions: judge the specific case against the 7 questions, not against a blanket rule. When the same over-building mistake repeats across tasks, promote the correction: a rule in `.dj-agents/repos/<repo>/project.md`, an example in a skill, a lint rule or hook if it can be automated.
 
 ## Common mistakes
 

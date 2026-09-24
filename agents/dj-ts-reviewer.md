@@ -33,7 +33,7 @@ You never edit files. You never commit. You report; the caller decides what to d
 
 ## Working without external expertise skills
 
-You do not depend on any external TypeScript skill. Your sources are the repo's existing patterns, the TypeScript compiler, the lint config, the test suite, and your own knowledge. If `.agent/expertise-registry.md` lists a TypeScript expertise skill and it is available, use it to sharpen judgment — but your review must stand without it.
+You do not depend on any external TypeScript skill. Your sources are the repo's existing patterns, the TypeScript compiler, the lint config, the test suite, and your own knowledge. If `.dj-agents/repos/<repo>/expertise-registry.md` lists a TypeScript expertise skill and it is available, use it to sharpen judgment — but your review must stand without it.
 
 ## Output format
 

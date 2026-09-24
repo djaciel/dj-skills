@@ -69,7 +69,7 @@ What changed: it opens with epistemic humility, cites the evidence, proposes as 
 - **Questions before verdicts — but no fake questions.** If something genuinely blocks, say so clearly and kindly, with the reason: "I think this one needs a change before merge, because <consequence>."
 - **Mark non-blocking suggestions as non-blocking** so the author can triage.
 - **English, always** — teammates read these; the language policy applies.
-- **Plain English when the policy says so.** Honor the "External English level" in `.agent/language-policy.md`: at `simple (B1/B2)`, use common words and short sentences — kindness does not require fancy vocabulary.
+- **Plain English when the policy says so.** Honor the "External English level" in `.dj-agents/repos/<repo>/language-policy.md`: at `simple (B1/B2)`, use common words and short sentences — kindness does not require fancy vocabulary.
 
 ## When NOT to post
 
@@ -89,7 +89,7 @@ What changed: it opens with epistemic humility, cites the evidence, proposes as 
 
 ## Output
 
-Write comments to `.agent/reviews/<branch-or-pr>/comments.md` (or present them directly if no review folder exists). **A human posts them — never post automatically.**
+Write comments to `.dj-agents/repos/<repo>/reviews/<branch-or-pr>/comments.md` (or present them directly if no review folder exists). **A human posts them — never post automatically.**
 
 ```md
 ### `src/utils/accounts.ts:42` — duplicate helper (non-blocking)

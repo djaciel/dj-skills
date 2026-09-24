@@ -24,7 +24,7 @@ Pick your situation, run the recipe. Every recipe tells you: what to type, what 
 /dj-task T-01                 # first task
 ```
 
-**What happens:** `/dj-start` reads your dump, asks **at most 3–5 blocking questions** (everything else becomes an assumption you can correct), sets the work mode and language, and creates the `.agent/` base files. `/dj-plan` turns that into a spec, phases, and task packets.
+**What happens:** `/dj-start` reads your dump, asks **at most 3–5 blocking questions** (everything else becomes an assumption you can correct), sets the work mode and language, and creates the `.dj-agents/` base files. `/dj-plan` turns that into a spec, phases, and task packets.
 
 **Your job:**
 1. Dump everything you have — messy is fine.
@@ -56,7 +56,7 @@ Pick your situation, run the recipe. Every recipe tells you: what to type, what 
 
 **What happens inside** (automatic; rigor scales with your work mode): read state → scout context → implement (delegated to dj-implementer) → run validations with real output → test audit → stack review → acceptance review → report, guide, and hand off.
 
-**What you get:** a 2-minute report — changes per file, validation evidence, review order, suggested commit — saved to `.agent/features/<feature>/reports/T-XX.md`, plus a review guide appended to `.agent/features/<feature>/guide.md` (file-by-file, test-by-test, every deletion audited). Want the deep dive? Say **"walk me through T-03"** → goal, data-flow map, and file-by-file functions in plain words.
+**What you get:** a 2-minute report — changes per file, validation evidence, review order, suggested commit — saved to `.dj-agents/repos/<repo>/features/<feature>/reports/T-XX.md`, plus a review guide appended to `.dj-agents/repos/<repo>/features/<feature>/guide.md` (file-by-file, test-by-test, every deletion audited). Want the deep dive? Say **"walk me through T-03"** → goal, data-flow map, and file-by-file functions in plain words.
 
 **Your job:**
 1. Read the report (start with the review order).
@@ -74,7 +74,7 @@ A task can end `done`, but also `blocked`, `needs-replan`, `split-needed`... —
 # → copy the drafted English comments into the PR yourself
 ```
 
-**What you get:** a **Reviewer Dossier** (`.agent/reviews/<pr>/reviewer-dossier.md`) written for someone who does *not* know that area of the codebase: every component explained on first mention, the files walked from the most foundational up with every change explained function by function, then *findings worth considering* (with evidence), *questions*, and *discarded suspicions* (things it checked and ruled out, so you don't re-check them). Then `comments.md` with kind, ready-to-paste English comments for the findings you kept.
+**What you get:** a **Reviewer Dossier** (`.dj-agents/repos/<repo>/reviews/<pr>/reviewer-dossier.md`) written for someone who does *not* know that area of the codebase: every component explained on first mention, the files walked from the most foundational up with every change explained function by function, then *findings worth considering* (with evidence), *questions*, and *discarded suspicions* (things it checked and ruled out, so you don't re-check them). Then `comments.md` with kind, ready-to-paste English comments for the findings you kept.
 
 **Depth & cost:** the default is a single careful pass — one reviewer, each file read once, no agent fleets. Add `--deep` only for high-stakes PRs (money, auth, data integrity): it independently verifies Blocking findings, consulting library sources. Deep costs several times more, and it is always your call — the skill will offer it, never assume it.
 
@@ -101,7 +101,7 @@ A task can end `done`, but also `blocked`, `needs-replan`, `split-needed`... —
 /dj-brief team-update
 ```
 
-**What happens:** it writes from the `.agent/` artifacts (task reports, fix reports, dossiers) — it never re-analyzes code. External text is always English, honoring the English level in your language policy (`simple (B1/B2)` = plain words, short sentences).
+**What happens:** it writes from the `.dj-agents/` artifacts (task reports, fix reports, dossiers) — it never re-analyzes code. External text is always English, honoring the English level in your language policy (`simple (B1/B2)` = plain words, short sentences).
 
 **Your job:** read the draft, edit if you want, and post/send/commit it yourself.
 
@@ -130,7 +130,7 @@ When reality stops matching the plan (a task's premise died, scope changed, an a
 
 ```text
 # new session, same project — just say:
-Continue with <feature>. Read .agent/current.md first.
+Continue with <feature>. Read .dj-agents/repos/<repo>/current.md first.
 ```
 
 That's it: `current.md` holds the active task, the current direction, and what NOT to follow; `handoff.md` holds the context. Both are updated automatically when tasks close — if you're ending a session mid-task, ask for the handoff update before closing.
@@ -147,9 +147,9 @@ Everything below is background — the recipes above already apply it for you.
 - **The agent is a mid-senior developer:** competent, in scope, no blind trust — it reports what it finds instead of acting beyond scope.
 - **The system keeps errors small, visible, and cheap to correct:** small tasks, real validation output, evidence-based review, external memory.
 
-## The `.agent/` directory
+## The `.dj-agents/` root
 
-Per-project external memory — chat history is disposable, `.agent/` is not. Usually gitignored.
+Per-project external memory — chat history is disposable, `.dj-agents/` is not. Usually gitignored.
 
 | File | Role |
 |---|---|
@@ -177,7 +177,7 @@ Default commit policy everywhere: no auto-commit, no push, no auto-PR, no co-aut
 
 Branching is policy too: `project.md` records the base branch, the naming convention (`feat/…`, `fix/…`), and whether the agent creates branches or only suggests them. `/dj-task` and `/dj-fix` check it before touching files — and if no policy is written, they ask once and record the answer.
 
-**Language policy** (in `.agent/language-policy.md`): *internal* = whatever you converse in; *external* = always English, with an **English level** — `simple (B1/B2)` (plain words, short sentences) or `natural`. Words get simplified, facts never. The policy also carries a **writing style** for everything you share (cautious tone, impersonal register for reports, no dashes as punctuation, depth on demand) — `dj-writer` applies it to every artifact, and its defaults kick in even when the file doesn't exist.
+**Language policy** (in `.dj-agents/repos/<repo>/language-policy.md`): *internal* = whatever you converse in; *external* = always English, with an **English level** — `simple (B1/B2)` (plain words, short sentences) or `natural`. Words get simplified, facts never. The policy also carries a **writing style** for everything you share (cautious tone, impersonal register for reports, no dashes as punctuation, depth on demand) — `dj-writer` applies it to every artifact, and its defaults kick in even when the file doesn't exist.
 
 ## Living acceptance & task end states
 
@@ -187,11 +187,11 @@ Tasks end in one of: `done · done-with-drift · blocked · needs-replan · spli
 
 ## Sessions & context
 
-The orchestrating session is designed to stay light: implementation and reviews run in subagents (only compact results return), and every task close saves state to `.agent/` — so the session is disposable at any moment. Guidance, not law: up to ~75% of context, keep going; at 75–85%, close the slice and start fresh; past 85%, don't start anything new. When you do cut, prefer a fresh session over compacting — compaction produces a variable summary, while `.agent/` always restores the same state. Recipe 9 makes fresh sessions cheap.
+The orchestrating session is designed to stay light: implementation and reviews run in subagents (only compact results return), and every task close saves state to `.dj-agents/` — so the session is disposable at any moment. Guidance, not law: up to ~75% of context, keep going; at 75–85%, close the slice and start fresh; past 85%, don't start anything new. When you do cut, prefer a fresh session over compacting — compaction produces a variable summary, while `.dj-agents/` always restores the same state. Recipe 9 makes fresh sessions cheap.
 
 ## Multi-repo setups
 
-One `.agent/` at the root, one `CLAUDE.md` per repo. Register sibling repos and shared docs **once** in `project.md` under "Related repos & context sources" — scout and planner consult them automatically, so you never re-explain the paths. Cross-repo task packets declare the contract explicitly:
+One `.dj-agents/` at the root, one `CLAUDE.md` per repo. Register sibling repos and shared docs **once** in `project.md` under "Related repos & context sources" — scout and planner consult them automatically, so you never re-explain the paths. Cross-repo task packets declare the contract explicitly:
 
 ```md
 ## Repos involved
@@ -233,4 +233,4 @@ Hooks are optional — the system works without them — but they are the cheape
 
 ## External skills policy
 
-dj-skills depends on **zero** third-party skills. A missing expert skill lowers specialized expertise; it never breaks a workflow. If you find a trustworthy one, register it in `.agent/expertise-registry.md` and evaluate it like a dependency first (source, safety, quality — see the template in `skills/dj-start/templates/expertise-registry.md`). No external skill goes straight into production work; sandbox it first.
+dj-skills depends on **zero** third-party skills. A missing expert skill lowers specialized expertise; it never breaks a workflow. If you find a trustworthy one, register it in `.dj-agents/repos/<repo>/expertise-registry.md` and evaluate it like a dependency first (source, safety, quality — see the template in `skills/dj-start/templates/expertise-registry.md`). No external skill goes straight into production work; sandbox it first.

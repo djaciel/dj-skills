@@ -1,6 +1,6 @@
 ---
 name: dj-drift-management
-description: Use when reality diverges from the plan — a task no longer matches current intent, the user requests a scope change mid-feature, a discovery during implementation invalidates spec assumptions, or .agent/ documents contradict each other about the current direction.
+description: Use when reality diverges from the plan — a task no longer matches current intent, the user requests a scope change mid-feature, a discovery during implementation invalidates spec assumptions, or .dj-agents/ documents contradict each other about the current direction.
 ---
 
 # Drift Management
@@ -14,7 +14,7 @@ Plans are hypotheses, so drift is normal — silent drift is not. When reality a
 - Mid-implementation, a task packet's assumptions turn out to be wrong.
 - The user changes direction: "actually, let's do X instead."
 - An acceptance review (see **dj-acceptance-review**) ends in `done-with-drift`, `needs-replan`, or `split-needed`.
-- Two `.agent/` documents disagree and you must decide which one to trust.
+- Two `.dj-agents/` documents disagree and you must decide which one to trust.
 
 When NOT to use:
 
@@ -23,7 +23,7 @@ When NOT to use:
 
 ## Step 1 — Record it
 
-Write an entry in `.agent/features/<feature>/drift-log.md` (created by **dj-plan**; if the file doesn't exist, create it with a `# Drift Log` heading and append entries). Format at the end of this skill. Do this BEFORE acting on the drift — the entry is what keeps the next session sane.
+Write an entry in `.dj-agents/repos/<repo>/features/<feature>/drift-log.md` (created by **dj-plan**; if the file doesn't exist, create it with a `# Drift Log` heading and append entries). Format at the end of this skill. Do this BEFORE acting on the drift — the entry is what keeps the next session sane.
 
 ## Step 2 — Size it and route it
 
@@ -41,7 +41,7 @@ Acceptance checks are living contracts: if a check no longer applies, update it 
 
 This is the step most often skipped, and the one that matters most:
 
-- Update `.agent/current.md` with a **"Do not follow"** list naming the outdated docs or sections (e.g. "Do not follow spec.md §3 — old API shape"). A stale spec that isn't flagged WILL be obeyed by a future session.
+- Update `.dj-agents/repos/<repo>/current.md` with a **"Do not follow"** list naming the outdated docs or sections (e.g. "Do not follow spec.md §3 — old API shape"). A stale spec that isn't flagged WILL be obeyed by a future session.
 - In the entry's Impact section, classify affected artifacts: still valid / obsolete / needs migration.
 - Mark dead tasks with their end state (`obsolete`, `merged-into-next`) in the delivery plan.
 

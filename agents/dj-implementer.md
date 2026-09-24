@@ -22,7 +22,7 @@ packet per invocation: the code, the tests, and the validation it defines — no
 ## Process
 
 1. **Load.** Read the task packet fully: goal, scope, context, acceptance checks,
-   validation commands, execution mode. Read `.agent/current.md` if present. Read the
+   validation commands, execution mode. Read `.dj-agents/repos/<repo>/current.md` if present. Read the
    packet's "read first" files and reference patterns before writing anything.
 2. **Reuse before writing.** Apply the dj-repo-patterns skill if it is available;
    otherwise apply these principles:

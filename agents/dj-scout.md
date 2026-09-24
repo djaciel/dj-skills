@@ -33,11 +33,11 @@ You never edit files. You never commit.
 1. **Restate the question.** One sentence: what does the caller need to know? If the
    request bundles several unrelated questions, answer the most important ones and say
    which you skipped.
-2. **Start from existing maps.** If `.agent/codebase-map.md` or
-   `.agent/features/*/codebase-map.md` exists, read it before searching — it is a far
+2. **Start from existing maps.** If `.dj-agents/repos/<repo>/codebase-map.md` or
+   `.dj-agents/repos/<repo>/features/*/codebase-map.md` exists, read it before searching — it is a far
    cheaper starting point than a fresh crawl. Treat it as a hypothesis, not truth:
    verify anything load-bearing for this question, and flag stale entries in Notes.
-   Same for "Related repos & context sources" in `.agent/project.md`: when the
+   Same for "Related repos & context sources" in `.dj-agents/repos/<repo>/project.md`: when the
    question crosses repo boundaries (contracts, schemas, docs), consult the
    registered paths instead of asking the caller to spell them out.
 3. **Search wide, read narrow.** Use Glob and Grep to find candidates by name, import,

@@ -26,12 +26,14 @@ When NOT to use:
 
 ## Inputs
 
+Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
+
 Read before planning, in this order:
 
-1. `.agent/current.md` — active state. Never plan against stale intent.
-2. `.agent/project.md` — work mode (`human_loop`, `commit_policy`, `pr_policy`), stack, constraints.
-3. `.agent/features/<feature>/brief.md` and `discovery.md`, if they exist.
-4. `.agent/features/<feature>/codebase-map.md`, if it exists. If the area is unfamiliar and there is no map, run /dj-map first.
+1. `.dj-agents/repos/<repo>/current.md` — active state. Never plan against stale intent.
+2. `.dj-agents/repos/<repo>/project.md` — work mode (`human_loop`, `commit_policy`, `pr_policy`), stack, constraints.
+3. `.dj-agents/repos/<repo>/features/<feature>/brief.md` and `discovery.md`, if they exist.
+4. `.dj-agents/repos/<repo>/features/<feature>/codebase-map.md`, if it exists. If the area is unfamiliar and there is no map, run /dj-map first.
 
 If something essential is missing, ask at most 3–5 **blocking questions** — questions whose answers change planning decisions, not checklist questions.
 
@@ -44,13 +46,13 @@ Everything else becomes an assumption listed in the spec for the human to correc
 
 ## Delegation
 
-Delegate drafting to the **dj-planner** subagent: pass it the inputs above **plus the contents (or absolute paths) of this skill's templates** — `templates/feature-spec.md`, `templates/phase.md`, `templates/task-packet.md`, `templates/pr-strategy.md`, `templates/drift-log.md` — since the subagent cannot see this skill's folder on its own. Let it produce the spec, delivery plan, task packets, and PR strategy. dj-planner writes only inside `.agent/` and never edits source code.
+Delegate drafting to the **dj-planner** subagent: pass it the inputs above **plus the contents (or absolute paths) of this skill's templates** — `templates/feature-spec.md`, `templates/phase.md`, `templates/task-packet.md`, `templates/pr-strategy.md`, `templates/drift-log.md` — since the subagent cannot see this skill's folder on its own. Let it produce the spec, delivery plan, task packets, and PR strategy. dj-planner writes only inside `.dj-agents/` and never edits source code.
 
 If the dj-planner subagent is not available, do the planning inline in the main session, following the same rules and templates.
 
 ## Outputs
 
-All under `.agent/features/<feature>/`:
+All under `.dj-agents/repos/<repo>/features/<feature>/`:
 
 | File | Template | When |
 |---|---|---|
@@ -60,7 +62,7 @@ All under `.agent/features/<feature>/`:
 | `pr-strategy.md` | `templates/pr-strategy.md` | When `pr_policy` is not `none` |
 | `drift-log.md` | `templates/drift-log.md` | Initialize empty on first plan |
 
-Then update `.agent/current.md` with the active feature, current phase, and next task.
+Then update `.dj-agents/repos/<repo>/current.md` with the active feature, current phase, and next task.
 
 ## Plan detailed vs sketch
 
@@ -127,7 +129,7 @@ Acceptance checks are living contracts: they can change, but consciously — thr
 4. Update `spec.md` if intent changed: assumptions, constraints, out-of-scope.
 5. Recalculate future tasks from T-XX onward. Give new tasks fresh numbers continuing the sequence.
 6. Re-check `pr-strategy.md` — drift often changes the reviewable story.
-7. Update `.agent/current.md`, including a "Do not follow" note pointing at superseded docs, so old specs never override the new direction.
+7. Update `.dj-agents/repos/<repo>/current.md`, including a "Do not follow" note pointing at superseded docs, so old specs never override the new direction.
 
 ## Human checkpoint
 

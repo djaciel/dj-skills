@@ -46,11 +46,13 @@ A good review may legitimately conclude: "No blockers. Two questions and one min
 
 ## Inputs
 
+Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
+
 - The diff: `git diff <base>...<branch>`, `gh pr diff <number>`, or a pasted diff
 - The PR description and any linked issue/ticket, if available
-- `.agent/language-policy.md` and `.agent/project.md`, if present
+- `.dj-agents/repos/<repo>/language-policy.md` and `.dj-agents/repos/<repo>/project.md`, if present
 
-Create `.agent/reviews/<branch-or-pr>/` as the working folder for this review.
+Create `.dj-agents/repos/<repo>/reviews/<branch-or-pr>/` as the working folder for this review.
 
 ## The process (single pass, in order)
 
@@ -78,7 +80,7 @@ For each main flow the diff touches, build a compact `input → transform → ou
 
 Three lenses over the core files, one read, no delegation:
 
-- **Precedents/duplication:** targeted grep for similar names/helpers — does the repo already have what this PR re-implements? Does it diverge from an established pattern? (Not a full repo crawl. Consult `.agent/**/codebase-map.md` if one exists.)
+- **Precedents/duplication:** targeted grep for similar names/helpers — does the repo already have what this PR re-implements? Does it diverge from an established pattern? (Not a full repo crawl. Consult `.dj-agents/repos/<repo>/**/codebase-map.md` if one exists.)
 - **Tests:** apply the **dj-test-quality** skill — do the tests validate the behavior this PR introduces, or implementation details? What realistic cases are missing?
 - **Stack quality:** apply the **dj-repo-patterns** skill — consistency with the repo's own conventions beats abstract best practice. For TypeScript, watch the dj-ts-reviewer checklist areas: unsafe casts, duplicated types/utilities, mishandled async flows. For Elixir, watch the dj-elixir-reviewer areas: N+1 queries and missing preloads, get-then-insert races, swallowed error tuples, context boundaries bypassed.
 
@@ -119,7 +121,7 @@ For each **Blocking** finding: one independent verification pass (the **dj-pr-re
 
 ### 8. Write the Reviewer Dossier
 
-Fill `templates/reviewer-dossier.md` and save it to `.agent/reviews/<branch-or-pr>/reviewer-dossier.md`, in the internal language from `.agent/language-policy.md`.
+Fill `templates/reviewer-dossier.md` and save it to `.dj-agents/repos/<repo>/reviews/<branch-or-pr>/reviewer-dossier.md`, in the internal language from `.dj-agents/repos/<repo>/language-policy.md`.
 
 **Dossier writing rules** (they override habit):
 
@@ -132,7 +134,7 @@ Fill `templates/reviewer-dossier.md` and save it to `.agent/reviews/<branch-or-p
 
 The human decides which findings and questions are worth raising. For the selected ones, apply the **dj-human-comments** skill (via the **dj-writer** subagent if available, otherwise inline): kind, non-accusatory, evidence-linked, questions before verdicts, always in English.
 
-Save drafts to `.agent/reviews/<branch-or-pr>/comments.md`. **Never post comments to the PR yourself** — the human copies, edits, and posts.
+Save drafts to `.dj-agents/repos/<repo>/reviews/<branch-or-pr>/comments.md`. **Never post comments to the PR yourself** — the human copies, edits, and posts.
 
 ## Scaling rigor
 
@@ -150,6 +152,6 @@ This flow is guidance, not ceremony. A docs-only or mechanical PR does not need 
 
 ## Output
 
-- `.agent/reviews/<branch-or-pr>/reviewer-dossier.md` — the dossier (internal language)
-- `.agent/reviews/<branch-or-pr>/comments.md` — draft comments in English, only after the human filters
+- `.dj-agents/repos/<repo>/reviews/<branch-or-pr>/reviewer-dossier.md` — the dossier (internal language)
+- `.dj-agents/repos/<repo>/reviews/<branch-or-pr>/comments.md` — draft comments in English, only after the human filters
 - A short summary to the user: intent in one line, finding counts by type, and where the dossier lives

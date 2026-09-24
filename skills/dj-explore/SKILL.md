@@ -65,7 +65,9 @@ Strong: "Should webhook retries live in the queue worker or in a dedicated retry
 | Migration safety | Can it ship incrementally? Is there a rollback story? |
 | Operational load | What does it add to run and debug in production? |
 
-3. Read the relevant context: if scoped to a task, the task packet `.agent/features/<feature>/tasks/T-XX.md` and the feature spec; otherwise whatever framing the user provided.
+3. Read the relevant context: if scoped to a task, the task packet `.dj-agents/repos/<repo>/features/<feature>/tasks/T-XX.md` and the feature spec; otherwise whatever framing the user provided.
+
+   Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
 
 ### Step 2: Propose the approaches
 
@@ -92,7 +94,7 @@ If the paper comparison produces a clear winner, skip Step 4 and go to Step 5.
 - Delegate technical evaluation to the stack reviewer — the **dj-ts-reviewer** subagent for TypeScript, the **dj-elixir-reviewer** subagent for Elixir; for other stacks, review against repo patterns and stack knowledge. If no reviewer subagent is available, do this evaluation inline in the main session.
 - For on-paper comparisons, reviewers judge the described design and sketched interfaces — mark those verdicts as speculative where they are.
 
-Scale rigor by work mode (from `.agent/project.md`, guidance not law):
+Scale rigor by work mode (from `.dj-agents/repos/<repo>/project.md`, guidance not law):
 
 - `production-work`: run both evaluations, even for on-paper comparisons.
 - `personal-medium`: acceptance evaluation is enough unless the approaches differ mainly in technical risk.
@@ -100,10 +102,10 @@ Scale rigor by work mode (from `.agent/project.md`, guidance not law):
 
 ### Step 6: Choose and discard
 
-1. Write the comparison using `templates/approach-comparison.md` to `.agent/features/<feature>/approach-comparison.md` (suffix with the task id when scoped, e.g. `approach-comparison-T-03.md`; standalone questions can live at `.agent/approach-comparison-<topic>.md`).
+1. Write the comparison using `templates/approach-comparison.md` to `.dj-agents/repos/<repo>/features/<feature>/approach-comparison.md` (suffix with the task id when scoped, e.g. `approach-comparison-T-03.md`; standalone questions can live at `.dj-agents/repos/<repo>/approach-comparison-<topic>.md`).
 2. Recommendation and Why are mandatory. A comparison without a decision just postpones the uncertainty at full price.
 3. Discard the losers explicitly: remove their worktrees/branches, and record why each lost so the question is not reopened later by someone (or some session) that never saw the comparison.
-4. Feed the choice back into the plan: update the task packet with the chosen approach; if the choice invalidates future tasks, log it in `.agent/features/<feature>/drift-log.md` and replan via `/dj-plan --replan-from T-XX`.
+4. Feed the choice back into the plan: update the task packet with the chosen approach; if the choice invalidates future tasks, log it in `.dj-agents/repos/<repo>/features/<feature>/drift-log.md` and replan via `/dj-plan --replan-from T-XX`.
 
 ## Common mistakes
 
@@ -121,7 +123,7 @@ Scale rigor by work mode (from `.agent/project.md`, guidance not law):
 After writing the comparison, report:
 
 ```text
-Approach comparison written: .agent/features/<feature>/approach-comparison.md
+Approach comparison written: .dj-agents/repos/<repo>/features/<feature>/approach-comparison.md
 Mode: <on paper | worktree prototypes>
 Approaches: A <name> · B <name> [· C <name>]
 Recommendation: <A/B/C> — <one-line why>

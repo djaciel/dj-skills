@@ -1,6 +1,6 @@
 ---
 name: dj-task
-description: "Use when executing one task packet from a delivery plan (e.g. /dj-task T-03) — a task file exists in .agent/features/<feature>/tasks/ and is ready to be worked on. Also for short sequences (/dj-task T-01..T-04) and for resuming a task after human feedback."
+description: "Use when executing one task packet from a delivery plan (e.g. /dj-task T-03) — a task file exists in .dj-agents/repos/<repo>/features/<feature>/tasks/ and is ready to be worked on. Also for short sequences (/dj-task T-01..T-04) and for resuming a task after human feedback."
 ---
 
 # Task Execution
@@ -32,17 +32,19 @@ The loop delegates to specialist subagents (**dj-scout**, **dj-implementer**, **
 
 ### 1. Load state
 
-Read `.agent/current.md` first — it is the source of truth for active mode, current direction, and anything marked "Do not follow". Then read the task packet (`.agent/features/<feature>/tasks/T-XX.md`): objective, context files, acceptance checks (hard/soft/exploratory/deferred), validation commands, commit policy. If `current.md` and the packet disagree, `current.md` wins — flag the mismatch before implementing.
+Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
 
-**Branch check.** Read the Branching section of `.agent/project.md`. On the base branch with `branch_creation: agent`? Create the feature branch (per the naming convention) from the up-to-date base before touching files. `suggest-only`? Tell the human which branch to create and wait. Already on a matching feature branch? Continue. No policy written? Ask once, record the answer in `project.md`, and move on.
+Read `.dj-agents/repos/<repo>/current.md` first — it is the source of truth for active mode, current direction, and anything marked "Do not follow". Then read the task packet (`.dj-agents/repos/<repo>/features/<feature>/tasks/T-XX.md`): objective, context files, acceptance checks (hard/soft/exploratory/deferred), validation commands, commit policy. If `current.md` and the packet disagree, `current.md` wins — flag the mismatch before implementing.
+
+**Branch check.** Read the Branching section of `.dj-agents/repos/<repo>/project.md`. On the base branch with `branch_creation: agent`? Create the feature branch (per the naming convention) from the up-to-date base before touching files. `suggest-only`? Tell the human which branch to create and wait. Already on a matching feature branch? Continue. No policy written? Ask once, record the answer in `project.md`, and move on.
 
 ### 2. Scout context and precedents
 
-Delegate to the **dj-scout** subagent: relevant files, existing patterns, reusable helpers, duplication risk. Save the returned Scout Result verbatim to `.agent/features/<feature>/scout/T-XX.md` — the implementer and reviewers read the file, and a future session resuming this task does not re-scout. **Skip this step** if the packet already lists context files and you know the area — say so in the report.
+Delegate to the **dj-scout** subagent: relevant files, existing patterns, reusable helpers, duplication risk. Save the returned Scout Result verbatim to `.dj-agents/repos/<repo>/features/<feature>/scout/T-XX.md` — the implementer and reviewers read the file, and a future session resuming this task does not re-scout. **Skip this step** if the packet already lists context files and you know the area — say so in the report.
 
 ### 3. Implement
 
-**Delegate to the dj-implementer subagent — always.** The orchestrating session writes no code; all implementation happens in the implementer's own context, and only its Implementation Report comes back. Hand it pointers, not content: the packet path, the scout result file (step 2), and `.agent/current.md`. The implementer applies dj-repo-patterns and dj-simplicity-lens internally.
+**Delegate to the dj-implementer subagent — always.** The orchestrating session writes no code; all implementation happens in the implementer's own context, and only its Implementation Report comes back. Hand it pointers, not content: the packet path, the scout result file (step 2), and `.dj-agents/repos/<repo>/current.md`. The implementer applies dj-repo-patterns and dj-simplicity-lens internally.
 
 Implement inline only as degradation — when dj-implementer is not installed — and then:
 
@@ -75,15 +77,15 @@ Collect the small, clear findings from steps 5–7 (a missing edge-case test, an
 
 ### 9. Report, guide, and hand off
 
-**REQUIRED SUB-SKILL:** dj-task-report — produce the compact report (format at the end of this file) and save the same content to `.agent/features/<feature>/reports/T-XX.md`.
-**Guide step:** delegate to the **dj-guide-writer** subagent (contract in the **dj-guide** skill) to append this task's section to `.agent/features/<feature>/guide.md` — pass it the packet path, the commit range, and the report path. Inline as degradation. Scale detail by work mode: full on `production-work`, minimal on `personal-small`.
+**REQUIRED SUB-SKILL:** dj-task-report — produce the compact report (format at the end of this file) and save the same content to `.dj-agents/repos/<repo>/features/<feature>/reports/T-XX.md`.
+**Guide step:** delegate to the **dj-guide-writer** subagent (contract in the **dj-guide** skill) to append this task's section to `.dj-agents/repos/<repo>/features/<feature>/guide.md` — pass it the packet path, the commit range, and the report path. Inline as degradation. Scale detail by work mode: full on `production-work`, minimal on `personal-small`.
 **REQUIRED SUB-SKILL:** dj-commit-message — suggest a commit message matching the repo's convention.
 
 The human reviews the diff, the report, and the guide, then commits (unless commit policy says otherwise). Declare the task's end state.
 
 ## Review rigor by work mode
 
-Read the mode from `.agent/project.md`. Guidance, not law — the human can dial it either way per task.
+Read the mode from `.dj-agents/repos/<repo>/project.md`. Guidance, not law — the human can dial it either way per task.
 
 | Work mode | Steps 5–7 |
 |---|---|
@@ -115,7 +117,7 @@ Any drift — even under `done-with-drift` — gets a drift-log entry via **dj-d
 
 ## Commit policy
 
-Default (from `.agent/project.md`, `commit_policy: human-only`):
+Default (from `.dj-agents/repos/<repo>/project.md`, `commit_policy: human-only`):
 
 - No automatic commit. No push. No automatic PR. No co-author lines.
 - Suggest `type(scope): message` after checking `git log --oneline -n 20` for the repo's actual convention (**REQUIRED SUB-SKILL:** dj-commit-message).
@@ -126,8 +128,8 @@ Default (from `.agent/project.md`, `commit_policy: human-only`):
 When a task closes (any end state):
 
 1. Update the packet itself (`T-XX.md`): set `Status:` to the end state and fill the one-line `Outcome:` — a fresh session reading the packet must see the truth without this conversation.
-2. Update `.agent/current.md`: current task, direction, anything now in "Do not follow".
-3. Update `.agent/handoff.md` at every task close — recap (where we stand), what changed, decisions taken, open question if any, next action. Not only when the session is ending: the orchestrating session must stay disposable at all times.
+2. Update `.dj-agents/repos/<repo>/current.md`: current task, direction, anything now in "Do not follow".
+3. Update `.dj-agents/repos/<repo>/handoff.md` at every task close — recap (where we stand), what changed, decisions taken, open question if any, next action. Not only when the session is ending: the orchestrating session must stay disposable at all times.
 4. Update the drift-log if direction changed.
 5. Mark the next task.
 6. If the same human correction has now appeared more than once across tasks, propose making it structural — a lint rule, a test, a `project.md` line — instead of trusting memory.

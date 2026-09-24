@@ -32,17 +32,19 @@ Everything else in the flow scales with judgment. These two do not.
 
 ## Inputs
 
+Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
+
 - The issue: a tracker reference (GH-123, JIRA-45), a pasted report, or a verbal description
-- `.agent/project.md` (work mode, commit_policy, test commands) and `.agent/language-policy.md`, if present
+- `.dj-agents/repos/<repo>/project.md` (work mode, commit_policy, test commands) and `.dj-agents/repos/<repo>/language-policy.md`, if present
 - A repo where you can run the tests
 
 ## The process
 
-Create `.agent/issues/<issue-id>/` as the working folder. Read `.agent/current.md` first if it exists. Then do the branch check from the Branching section of `.agent/project.md`: on the base branch with `branch_creation: agent`, create `fix/<issue-id>` (or the repo's convention) from the up-to-date base; with `suggest-only`, tell the human which branch to create; if no policy is written, ask once and record it in `project.md`.
+Create `.dj-agents/repos/<repo>/issues/<issue-id>/` as the working folder. Read `.dj-agents/repos/<repo>/current.md` first if it exists. Then do the branch check from the Branching section of `.dj-agents/repos/<repo>/project.md`: on the base branch with `branch_creation: agent`, create `fix/<issue-id>` (or the repo's convention) from the up-to-date base; with `suggest-only`, tell the human which branch to create; if no policy is written, ask once and record it in `project.md`.
 
 ### 1. Read the issue
 
-Extract: what was reported, expected vs actual behavior, environment, severity, and what is still unknown. Save as `.agent/issues/<issue-id>/issue-context.md`. If the report is too vague to act on, ask the user the blocking questions now — before touching code.
+Extract: what was reported, expected vs actual behavior, environment, severity, and what is still unknown. Save as `.dj-agents/repos/<repo>/issues/<issue-id>/issue-context.md`. If the report is too vague to act on, ask the user the blocking questions now — before touching code.
 
 ### 2. Locate the affected flow
 
@@ -50,7 +52,7 @@ Delegate to the **dj-scout** subagent: which files implement the reported behavi
 
 ### 3. Reproduce — before any fix
 
-Write a failing test that captures the reported behavior. If that is infeasible (needs live third-party state, hardware, prod-only data), record a reproducible script or exact manual steps instead. Save what you did and the real output in `.agent/issues/<issue-id>/reproduction.md`.
+Write a failing test that captures the reported behavior. If that is infeasible (needs live third-party state, hardware, prod-only data), record a reproducible script or exact manual steps instead. Save what you did and the real output in `.dj-agents/repos/<repo>/issues/<issue-id>/reproduction.md`.
 
 If you cannot reproduce it at all: report that back with what you tried. Do not guess-fix an unreproduced bug.
 
@@ -60,7 +62,7 @@ The reproduction tells you *where* it breaks; now establish *why*. Trace from sy
 
 ### 5. Write a short fix plan
 
-Save `.agent/issues/<issue-id>/fix-plan.md` — a few lines, not a document:
+Save `.dj-agents/repos/<repo>/issues/<issue-id>/fix-plan.md` — a few lines, not a document:
 
 ```md
 # Fix Plan — <issue-id>
@@ -79,7 +81,7 @@ The smallest change that removes the root cause. Stay in scope: no drive-by refa
 
 ### 7. Run the tests
 
-The failing test from step 3 must now pass. Run the relevant suite plus typecheck/lint per `.agent/project.md`. Report real output — never "tests pass" without evidence. If a pre-existing test breaks, the fix changed a contract: investigate, don't edit the test to green.
+The failing test from step 3 must now pass. Run the relevant suite plus typecheck/lint per `.dj-agents/repos/<repo>/project.md`. Report real output — never "tests pass" without evidence. If a pre-existing test breaks, the fix changed a contract: investigate, don't edit the test to green.
 
 ### 8. Audit edge cases
 
@@ -95,10 +97,10 @@ Delegate to the **dj-acceptance-reviewer** subagent with the issue context, fix 
 
 ### 11. Report and hand off
 
-- Fill `templates/issue-fix-report.md` and save as `.agent/issues/<issue-id>/fix-report.md`.
-- Generate the PR description through the **dj-brief** skill (English, per `.agent/language-policy.md`), using the fix report as source material.
-- Suggest a commit message following the repo's convention. **Never commit or push** unless `commit_policy` in `.agent/project.md` explicitly allows it.
-- Update `.agent/current.md` (and `handoff.md` if the session is closing).
+- Fill `templates/issue-fix-report.md` and save as `.dj-agents/repos/<repo>/issues/<issue-id>/fix-report.md`.
+- Generate the PR description through the **dj-brief** skill (English, per `.dj-agents/repos/<repo>/language-policy.md`), using the fix report as source material.
+- Suggest a commit message following the repo's convention. **Never commit or push** unless `commit_policy` in `.dj-agents/repos/<repo>/project.md` explicitly allows it.
+- Update `.dj-agents/repos/<repo>/current.md` (and `handoff.md` if the session is closing).
 
 ## Scaling rigor
 
@@ -126,6 +128,6 @@ Steps 3 (reproduce) and 4 (root cause) never scale away — they are the fix.
 
 ## Output
 
-- `.agent/issues/<issue-id>/` containing `issue-context.md`, `reproduction.md`, `fix-plan.md`, `fix-report.md`
+- `.dj-agents/repos/<repo>/issues/<issue-id>/` containing `issue-context.md`, `reproduction.md`, `fix-plan.md`, `fix-report.md`
 - A PR description draft (via **dj-brief**) and a suggested commit message
 - A short summary to the user: root cause in one line, files changed, validation evidence, remaining risk

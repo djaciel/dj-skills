@@ -34,7 +34,7 @@ The repo's history is the style guide: suggest a message that fits it, and stop 
 
 ## Commit policy
 
-Honor `commit_policy` from `.agent/project.md`:
+Honor `commit_policy` from `.dj-agents/repos/<repo>/project.md`:
 
 | Policy | Behavior |
 |---|---|
@@ -42,7 +42,7 @@ Honor `commit_policy` from `.agent/project.md`:
 | `allowed-if-explicit` | Commit only when the user's current instruction explicitly says to. |
 | `autonomous` | May commit after the task's validation passes (e.g. `/dj-task T-01..T-04 --autonomous`). Still: no push, no automatic PR, no co-author. |
 
-If `.agent/project.md` does not exist, behave as `human-only`.
+If `.dj-agents/repos/<repo>/project.md` does not exist, behave as `human-only`.
 
 ## One commit, one change
 

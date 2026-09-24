@@ -21,11 +21,11 @@ A guide exists so a human can review a change they did not write, file by file a
 
 ## Language
 
-The guide is an internal artifact: write it in the **internal language** from `.agent/language-policy.md` (default: whatever the user converses in). Code, identifiers, and every quoted block stay exactly as written in the repo — never translated.
+The guide is an internal artifact: write it in the **internal language** from `.dj-agents/repos/<repo>/language-policy.md` (default: whatever the user converses in). Code, identifiers, and every quoted block stay exactly as written in the repo — never translated.
 
 ## Where it lives
 
-APPEND — never overwrite — to `.agent/features/<feature>/guide.md`. One section per task:
+APPEND — never overwrite — to `.dj-agents/repos/<repo>/features/<feature>/guide.md`. One section per task:
 
 ```markdown
 ## T-03 — Add funding recovery retries
@@ -35,7 +35,7 @@ Sections stay in execution order (T-01, then T-02, ...). The guide is per-featur
 
 ## Detail level
 
-Two modes, decided once per section. Read `.agent/expertise-registry.md` if it exists — it maps stacks to the user's expertise; no file or no match → known stack.
+Two modes, decided once per section. Read `.dj-agents/repos/<repo>/expertise-registry.md` if it exists — it maps stacks to the user's expertise; no file or no match → known stack.
 
 | Mode | When | What it changes |
 |---|---|---|

@@ -22,7 +22,7 @@ A PR description is a review aid, not a changelog. Its job is to let a reviewer 
 1. The diff: `git diff <base>...HEAD --stat`, then the core files themselves.
 2. The original task, issue, or spec — the "why" comes from intent, not from the code.
 3. Validation evidence that was actually executed: task reports, fix reports, CI output.
-4. `.agent/features/<feature>/pr-strategy.md` if it exists — reuse its review story and file categories instead of rebuilding them.
+4. `.dj-agents/repos/<repo>/features/<feature>/pr-strategy.md` if it exists — reuse its review story and file categories instead of rebuilding them.
 
 ## Structure
 

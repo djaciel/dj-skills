@@ -7,7 +7,7 @@ description: "Use when finished or planned work needs to be communicated to huma
 
 ## Overview
 
-Analysis and communication are separate acts: the technical truth already lives in `.agent/` artifacts and diffs, and this skill only translates it for a human audience. Never re-analyze code in order to write about it — read what was already produced, then write.
+Analysis and communication are separate acts: the technical truth already lives in `.dj-agents/` artifacts and diffs, and this skill only translates it for a human audience. Never re-analyze code in order to write about it — read what was already produced, then write.
 
 **Announce at start:** "I'm using the dj-brief skill to produce a [output type] from [source material]."
 
@@ -26,7 +26,7 @@ Analysis and communication are separate acts: the technical truth already lives 
 
 ## Language policy
 
-Read `.agent/language-policy.md` before writing anything. Two layers:
+Read `.dj-agents/repos/<repo>/language-policy.md` before writing anything. Two layers:
 
 - **Conversation with the user:** internal language — whatever the user converses in.
 - **The artifact itself** (PR description, commit message, review comment, ticket, update): external language — **English, always**. It leaves the user's machine.
@@ -35,7 +35,7 @@ The policy may also set an **External English level** (e.g. `simple (B1/B2)`): w
 
 The policy may also define a **Writing style** section (tone, register, punctuation, depth). It governs every artifact produced here — delegated to dj-writer or drafted inline — so read it before writing a word. Absent the file, dj-writer's style contract defaults apply: cautious tone, impersonal register for reports, no dashes as punctuation, brief unless the user asks for depth.
 
-If `.agent/language-policy.md` does not exist, default to exactly that split: converse in the user's language, write artifacts in English.
+If `.dj-agents/repos/<repo>/language-policy.md` does not exist, default to exactly that split: converse in the user's language, write artifacts in English.
 
 ## Routing
 
@@ -45,7 +45,7 @@ Pick the lens for the requested output:
 |---|---|---|
 | PR description | **REQUIRED SUB-SKILL:** dj-pr-description | PR body — user posts it |
 | Commit message | **REQUIRED SUB-SKILL:** dj-commit-message | Suggestion — user commits |
-| Review comments | **REQUIRED SUB-SKILL:** dj-human-comments | `.agent/reviews/<branch-or-pr>/comments.md` — user posts |
+| Review comments | **REQUIRED SUB-SKILL:** dj-human-comments | `.dj-agents/repos/<repo>/reviews/<branch-or-pr>/comments.md` — user posts |
 | Ticket (Jira/Linear) | format below | User's tracker |
 | Team update | format below | Slack / email — user sends |
 | Technical summary | format below | Doc or message — user sends |
@@ -58,9 +58,11 @@ Infer from the request, ask one question if ambiguous. Audience determines depth
 
 ### 2. Gather source material — read, don't re-analyze
 
+Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
+
 Prefer existing artifacts, in this order:
 
-1. `.agent/` artifacts: task reports, `issues/<id>/fix-report.md`, `reviews/<branch-or-pr>/reviewer-dossier.md`, `features/<feature>/spec.md`, `pr-strategy.md`, `drift-log.md`.
+1. `.dj-agents/` artifacts: task reports, `issues/<id>/fix-report.md`, `reviews/<branch-or-pr>/reviewer-dossier.md`, `features/<feature>/spec.md`, `pr-strategy.md`, `drift-log.md`.
 2. The actual diff (`git diff <base>...HEAD --stat`) and `git log` — to confirm file lists and scope, not to re-judge quality.
 3. The original issue/task text, when the output must reference intent.
 
@@ -76,12 +78,12 @@ Either way, the lens skill's structure and tone rules govern the draft — dj-wr
 
 - Show the draft to the user: explanations in the internal language, the artifact itself in English.
 - **Nothing is posted, committed, or submitted automatically.** The user sends the update, posts the comment, runs the commit.
-- Persist artifacts that belong in `.agent/` (review comments, a suggested PR description next to a fix report). One-off updates and tickets are only saved if the user asks.
+- Persist artifacts that belong in `.dj-agents/` (review comments, a suggested PR description next to a fix report). One-off updates and tickets are only saved if the user asks.
 - If the user edits the draft, incorporate the edits — their voice wins over the template.
 
 ## Hand-offs and system coherence
 
-- Commit suggestions produced here still obey `commit_policy` in `.agent/project.md` — dj-brief never makes committing more autonomous than the policy allows.
+- Commit suggestions produced here still obey `commit_policy` in `.dj-agents/repos/<repo>/project.md` — dj-brief never makes committing more autonomous than the policy allows.
 - Review comments produced here inherit the evidence rule from /dj-review: a finding the human discarded from the dossier does not come back as a comment.
 - PR descriptions for a fix should cite the fix report's validation ("failing test before fix / passing after") — that evidence already exists; reuse it.
 - If /dj-fix or /dj-task called dj-brief, return the artifact to that flow's report rather than presenting it as a separate deliverable.
@@ -108,7 +110,7 @@ Out: <what explicitly does not>
 - <observable check>
 
 ## References
-- <links, related PRs, relevant .agent/ artifacts>
+- <links, related PRs, relevant .dj-agents/ artifacts>
 ```
 
 ### Team update
@@ -124,7 +126,7 @@ Aim for something readable in under a minute:
 
 ### Technical summary
 
-Scale to the audience. Cover, in order: what changed, why, current state, open risks/follow-ups. A good summary is readable in about 2 minutes; link to `.agent/` artifacts or the PR for depth instead of inlining it.
+Scale to the audience. Cover, in order: what changed, why, current state, open risks/follow-ups. A good summary is readable in about 2 minutes; link to `.dj-agents/` artifacts or the PR for depth instead of inlining it.
 
 ## Common mistakes
 

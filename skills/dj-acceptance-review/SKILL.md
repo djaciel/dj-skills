@@ -21,7 +21,7 @@ Acceptance review answers one question: was the right thing built? It judges the
 
 Read, in this order:
 
-1. The task packet (`.agent/features/<feature>/tasks/T-XX.md`) or issue context.
+1. The task packet (`.dj-agents/repos/<repo>/features/<feature>/tasks/T-XX.md`) or issue context.
 2. The relevant spec section.
 3. The diff.
 4. The tests.

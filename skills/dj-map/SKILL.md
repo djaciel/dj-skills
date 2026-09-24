@@ -27,8 +27,8 @@ When NOT to use:
 
 | Scope | Command | Output |
 |-------|---------|--------|
-| Feature/area map (default) | `/dj-map <area-or-feature>` | `.agent/features/<feature>/codebase-map.md` |
-| Whole-repo map | `/dj-map --repo` | `.agent/codebase-map.md` |
+| Feature/area map (default) | `/dj-map <area-or-feature>` | `.dj-agents/repos/<repo>/features/<feature>/codebase-map.md` |
+| Whole-repo map | `/dj-map --repo` | `.dj-agents/repos/<repo>/codebase-map.md` |
 
 Prefer the feature-scoped map. A whole-repo map is worth writing on first contact with a codebase or for small repos; for anything large it goes stale fast and reads like documentation nobody asked for.
 
@@ -36,7 +36,9 @@ Prefer the feature-scoped map. A whole-repo map is worth writing on first contac
 
 ### Step 1: Frame the scope
 
-1. If `.agent/current.md` exists, read it first — it may already say what the upcoming work is.
+Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
+
+1. If `.dj-agents/repos/<repo>/current.md` exists, read it first — it may already say what the upcoming work is.
 2. Establish the consumer of the map: what feature or decision must this map serve? If unclear, ask the user one question. A map without a consumer becomes an encyclopedia.
 3. Decide: feature map or whole-repo map.
 
@@ -93,13 +95,13 @@ Strong: - `src/billing/invoice.service.ts`: owns invoice state transitions — t
 
 Target: the whole map readable in under 5 minutes.
 
-Scale depth by work mode (from `.agent/project.md`, guidance not law): for `personal-small`, relevant files + commands + patterns may be enough; for `production-work`, fill every section including risks and fixtures.
+Scale depth by work mode (from `.dj-agents/repos/<repo>/project.md`, guidance not law): for `personal-small`, relevant files + commands + patterns may be enough; for `production-work`, fill every section including risks and fixtures.
 
 ### Step 5: Hand off
 
 1. Summarize the map to the user in 5–10 lines: stack, the 2–3 most important findings, the top risk.
 2. Point to the next step: `/dj-plan <feature>` consumes this map to produce the spec and tasks.
-3. If `.agent/current.md` exists, note there that the map was created and where.
+3. If `.dj-agents/repos/<repo>/current.md` exists, note there that the map was created and where.
 
 ## Refreshing an existing map
 
@@ -126,7 +128,7 @@ For small and medium projects, Glob/Grep/Read exploration is the default and is 
 - **Mapping without a consumer** — "map the repo" with no upcoming work in mind produces shelf-ware. Frame the scope first.
 - **Guessed commands** — copying commands from memory or convention instead of the repo's own config. Verify.
 - **Skipping patterns and fixtures** — the most valuable sections are the ones that prevent reinvention. Stack and zones alone are not a map.
-- **Re-mapping known ground** — if the area is fresh in memory and `.agent/` already has a recent map, update it instead of rewriting it.
+- **Re-mapping known ground** — if the area is fresh in memory and `.dj-agents/` already has a recent map, update it instead of rewriting it.
 - **Treating the map as frozen** — if implementation later contradicts the map, fix the map; it is working memory, not a spec.
 
 ## Output
@@ -134,7 +136,7 @@ For small and medium projects, Glob/Grep/Read exploration is the default and is 
 After writing the map, report:
 
 ```text
-Codebase map written: .agent/features/<feature>/codebase-map.md
+Codebase map written: .dj-agents/repos/<repo>/features/<feature>/codebase-map.md
 Scope: <area/feature it serves>
 Highlights:
 - <finding 1>
