@@ -44,17 +44,17 @@ stdout carries only the path, so `$(dj-root repo)` is safe inside other scripts.
 ```
 .dj-agents/
   knowledge/
-    index.md                      what lives where; the first file any skill reads
-    glossary.md                   canonical terms, aliases, source of each definition
-    flows/<slug>.md               one business flow per file: entry, layers crossed, tables and states, effects, anchors
-    decisions.md                  repo-level decisions with rejected alternatives; replace when changed
-    questions.md                  questions to the team with the answer and the decision it unblocked; no names
-    library/<date>-<slug>.md      append-only stories: PRs reviewed, explanations worth keeping, investigations
-    review/rules.md               team review rules, anonymized; replace when changed
-    review/false-positives.md     findings discarded with reason; reviewers read it before reporting
-    inbox/<date>-<slug>.md        staging with provenance labels, routed by the human
-    architecture/<repo>.md        per-repo architecture with evidence; replace when changed
-    patterns/<repo>/<capability>.md  the exemplar to imitate per capability, with anchors
+    index.md                      what lives where; the first file any skill reads [template: index.md]
+    glossary.md                   canonical terms, aliases, source of each definition [template: glossary.md]
+    flows/<slug>.md               one business flow per file: entry, layers crossed, tables and states, effects, anchors [template: flow.md]
+    decisions.md                  repo-level decisions with rejected alternatives; replace when changed [template: decisions.md]
+    questions.md                  questions to the team with the answer and the decision it unblocked; no names [template: questions.md]
+    library/<date>-<slug>.md      append-only stories: PRs reviewed, explanations worth keeping, investigations [template: library-entry.md]
+    review/rules.md               team review rules, anonymized; replace when changed [template: review-rules.md]
+    review/false-positives.md     findings discarded with reason; reviewers read it before reporting [template: false-positives.md]
+    inbox/<date>-<slug>.md        staging with provenance labels, routed by the human [template: inbox-entry.md]
+    architecture/<repo>.md        per-repo architecture with evidence; replace when changed [template: architecture.md]
+    patterns/<repo>/<capability>.md  the exemplar to imitate per capability, with anchors [template: pattern.md]
   repos/<repo>/
     current.md                    index of active features only
     handoff.md                    last real state, next step, what is unverified; rewritten at close
@@ -67,6 +67,8 @@ stdout carries only the path, so `$(dj-root repo)` is safe inside other scripts.
     reports/<date>-<slug>.md      work outside a feature
 ```
 
+Each `knowledge/` path names its template in brackets; the templates live in the dj-map skill under `templates/knowledge/`, and each one states its update rule and provenance labels in its header.
+
 The human creates `features/<feature>/` with its `init.md` and hands the path to `/dj-plan`; the skills write the rest. Extra files a human adds are fine as long as `knowledge/index.md` or the feature's `state.md` says what they are for.
 
 ## Rule of place
@@ -77,11 +79,13 @@ The human creates `features/<feature>/` with its `init.md` and hands the path to
 
 ## Update rules
 
-| Kind | Files | Rule |
+The rule names are the values of the `Update rule:` line in each template header.
+
+| Rule | Files | What it means |
 |---|---|---|
-| Replace when changed | `index.md`, `glossary.md`, `flows/<slug>.md`, `decisions.md`, `review/rules.md`, `review/false-positives.md`, `architecture/<repo>.md`, `patterns/<repo>/<capability>.md`; in `repos/<repo>/`: `current.md`, `handoff.md`, `project.md`, `language-policy.md`, `expertise-registry.md`, each feature's `state.md` | Rewrite the file so it always reads as the current truth. Rule text that stops applying moves to `knowledge/library/superseded-rules.md` with the date it was replaced. |
-| Append dated entries | `questions.md`, `library/<date>-<slug>.md`, `repos/<repo>/reports/<date>-<slug>.md`, each feature's `drift-log.md` and `follow-ups.md` | Add a new entry with its date; earlier entries stay as written. Found by grep, never loaded by default. |
-| Staging | `inbox/<date>-<slug>.md` | Written with a provenance label: "verified in code" or "said by someone". The human routes each item to its file; the staged file leaves the inbox once routed. |
+| `replace-when-changed` | `index.md`, `glossary.md`, `flows/<slug>.md`, `decisions.md`, `review/rules.md`, `review/false-positives.md`, `architecture/<repo>.md`, `patterns/<repo>/<capability>.md`; in `repos/<repo>/`: `current.md`, `handoff.md`, `project.md`, `language-policy.md`, `expertise-registry.md`, each feature's `state.md` | Rewrite the file so it always reads as the current truth. Rule text that stops applying moves to `knowledge/library/superseded-rules.md` with the date it was replaced. `review/false-positives.md` also gains a row for each new discarded shape. |
+| `append-dated` | `questions.md`, `library/<date>-<slug>.md` (and `library/superseded-rules.md`), `repos/<repo>/reports/<date>-<slug>.md`, each feature's `drift-log.md` and `follow-ups.md` | Add a new entry with its date; earlier entries stay as written. A block in `questions.md` is edited in place once, when it is answered. The library is found by grep, never loaded by default. |
+| `staging` | `inbox/<date>-<slug>.md` | Every item carries a provenance label: `verified in code <file:line, date, sha>`, `said by someone <date>` or `explained by the agent <date>`. The human routes each item to its file; once routed, the staged file moves to `inbox/processed/`. |
 
 Written once: packets, scout results and reports inside `features/<feature>/`, and the files under `reviews/<pr>/` and `issues/<id>/`. A later correction goes to the drift log or to a new dated entry, not into the original. `guide.md` inside a feature gains one section per task, newest first.
 

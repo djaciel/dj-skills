@@ -137,6 +137,8 @@ For small and medium projects, Glob/Grep/Read exploration is the default and is 
 
 ## Output
 
+The templates for the shared map under `.dj-agents/knowledge/`, including the per-repo `architecture/<repo>.md` and `patterns/<repo>/`, live under `templates/knowledge/`.
+
 After writing the map, report:
 
 ```text
