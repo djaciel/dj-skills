@@ -68,7 +68,7 @@ Renamed: `<old filename with the name removed from this report>` to `<new filena
 
 ## Next steps
 
-1. `/dj-map --architecture` in this repo: the architecture file has only the seeded Sharp edges.
-2. `/dj-ingest --apply` on each entry left in `knowledge/inbox/`: route or drop each pending row with a reason.
-3. <`project.md` missing: write it from the dj-start template by hand | none>
+1. <`/dj-start --adopt` from inside the repository: fills `project.md` and `language-policy.md` when missing | none: both were copied>
+2. `/dj-map --architecture` in this repo: the architecture file has only the seeded Sharp edges.
+3. `/dj-ingest --apply` on each entry left in `knowledge/inbox/`: route or drop each pending row with a reason.
 4. <`init.md` or `memo.md` files with pasted threads: run `/dj-ingest` on them | none>

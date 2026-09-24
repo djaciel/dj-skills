@@ -182,5 +182,5 @@ Marked: <n> old folders with MIGRATED.md; nothing else in them changed.
 Committed in .dj-agents/: <commit subjects>
 Reports: repos/<repo>/archive/migration-<date>.md, knowledge/library/<date>-migration-<hostname>.md
 
-Next: /dj-map --architecture in each repo; /dj-ingest --apply on each entry left in knowledge/inbox/.
+Next: /dj-start --adopt in each repository first (it writes the missing project.md and language-policy.md), then /dj-map --architecture, then /dj-ingest --apply on each entry left in knowledge/inbox/.
 ```

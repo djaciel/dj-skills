@@ -1,6 +1,6 @@
 ---
 name: dj-start
-description: "Use when starting a NEW project from scratch: the user arrives with an idea, brain-dump, notes, links, or a pasted conversation with another AI, and no work area exists for it under .dj-agents/ yet. Use with --adopt when an existing repository has no repos/<repo>/ area under .dj-agents/ yet. Not for a repository that already has its area (use dj-map to understand the code, dj-plan to plan work)."
+description: "Use when starting a NEW project from scratch: the user arrives with an idea, brain-dump, notes, links, or a pasted conversation with another AI, and no work area exists for it under .dj-agents/ yet. Use with --adopt when an existing repository has no repos/<repo>/ area under .dj-agents/ yet, or its area lacks base files (a migrated repository has no project.md). Not for a repository whose area already has its base files (use dj-map to understand the code, dj-plan to plan work)."
 ---
 
 # Starting a New Project
@@ -19,7 +19,7 @@ Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; res
 
 - A new project starts from an idea, notes, restrictions, links, or a pasted brainstorming conversation with another AI.
 - The project has no `repos/<repo>/` area under `.dj-agents/` yet (the root itself may already exist next to other repositories).
-- An existing repository with no `repos/<repo>/` area under `.dj-agents/`: `/dj-start --adopt`.
+- An existing repository with no `repos/<repo>/` area under `.dj-agents/`, or an area that lacks base files (a migrated repository has no `project.md`): `/dj-start --adopt`.
 
 When NOT to use:
 
@@ -146,13 +146,16 @@ If the dj-plan skill is not available, tell the user planning is the next step a
 `/dj-start --adopt` gives an existing repository its `repos/<repo>/` area. Run it from inside the repository. It reads the repository and writes only under `.dj-agents/`; nothing is written inside the client repository (no files, no branches, no `git fetch`).
 
 1. **Resolve the root.** Run `dj-root`. If it prints a root, use it. If it exits 1, ask one question with a default: "Where should `.dj-agents/` live? Default: `<parent of the repository>`" (the parent of the main checkout, the directory that owns `git rev-parse --git-common-dir`, so a worktree or a subdirectory does not move it). Then create `.dj-agents/knowledge/` and `.dj-agents/repos/` there, seed `knowledge/index.md` from the dj-map skill's `templates/knowledge/index.md` (an empty map: the Files list as the template has it, the Rewritten date, an empty "Repos" list), put a `.gitkeep` in `repos/`, run `git init` inside `.dj-agents/`, and make a first commit with those two directories ("Initialize .dj-agents"). A root that exists without `knowledge/index.md` gets it seeded the same way. A root that exists without its own `.git` gets the same `git init` and first commit.
-2. **Resolve the repo name.** Run `dj-root name`. Exit 2 means the session is not inside a git repository: stop and say so. If `.dj-agents/repos/<repo>/` already exists, stop: "already adopted; edit `project.md` by hand".
+2. **Resolve the repo name.** Run `dj-root name`. Exit 2 means the session is not inside a git repository: stop and say so. If `.dj-agents/repos/<repo>/` already exists with all four base files (`project.md`, `language-policy.md`, `current.md`, `handoff.md`), stop: "already adopted; edit `project.md` by hand".
+   If it exists and one or more base files are missing, run in fill-missing mode and say so in the first line of the reply, before any question: "Area exists: filling <files>; keeping <files>".
+
+   **Fill-missing mode.** Steps 3 to 5 run only for the missing files, `project.md` first. Step 4 asks only what those files need: project type, `human_loop`, `commit_policy` and `pr_policy` for `project.md`; internal language and English level for `language-policy.md`. A file that exists is never rewritten, merged or reformatted, and `features/`, `reviews/`, `issues/` and `archive/` are not touched. `knowledge/index.md` changes (the repo's line and its Rewritten date) only when the "Repos" list lacks the repo. In a migrated area, the knowledge that belonged in `project.md` (environment notes, standing rules) is already staged in the `state` inbox entry, `knowledge/inbox/<date>-migration-<repo>-state.md`: `project.md` names each such entry under "Assumptions (correct me)" by path and item count, without quoting its items (they are routed from the inbox, never kept in two places), or says none was found.
 3. **Detect from the repository, not from memory.** Stack and commands from the manifests that exist (`package.json` scripts, `mix.exs` aliases, `pyproject.toml`, `Makefile` targets, CI config under `.github/workflows/` or similar). Quote each command as the manifest defines it and keep its source file. Branching from `git branch -a` and `git log --oneline -n 30` (naming convention, merge style). The base branch from the remote HEAD (`git symbolic-ref --short refs/remotes/origin/HEAD`); with no remote, the current branch, listed as an assumption.
 4. **Ask only what the repository cannot answer**, at most 3 to 5 blocking questions, in one message: project type and work mode (`human_loop`), `commit_policy`, `pr_policy`, internal language and external English level. Skip any the conversation already answers. Everything else becomes an assumption.
-5. **Write the base files** under `.dj-agents/repos/<repo>/` from the templates (table in step 5 above): `project.md` (detected values, each command with its source file, and every unconfirmed value under "Assumptions (correct me)"), `language-policy.md`, `current.md` (from the index template, with no feature line) and `handoff.md` (from its template; last real state: adopted, nothing implemented yet). Then add the repo's line to the "Repos" list of `knowledge/index.md` and update its Rewritten date.
+5. **Write the base files** under `.dj-agents/repos/<repo>/` from the templates (the table in step 5 of The process): `project.md` (detected values, each command with its source file, and every unconfirmed value under "Assumptions (correct me)"), `language-policy.md`, `current.md` (from the index template, with no feature line) and `handoff.md` (from its template; last real state: adopted, nothing implemented yet). Then add the repo's line to the "Repos" list of `knowledge/index.md` and update its Rewritten date.
 6. **Do not create a feature.** The human creates `.dj-agents/repos/<repo>/features/<feature>/init.md` and runs `/dj-plan` with that path.
-7. **Commit inside `.dj-agents/`**: `git -C <root> add repos/<repo> knowledge/index.md` and `git -C <root> commit -m "Adopt <repo>"`. The client repository's commit policy does not apply here, and no commit is made in it.
-8. **Report** with the adopt variant of the Output block: paths written, detected values with their source, assumptions to correct, next step (`/dj-map <area>` for unfamiliar ground, or `/dj-plan` once a feature's `init.md` exists).
+7. **Commit inside `.dj-agents/`**: `git -C <root> add repos/<repo> knowledge/index.md` and `git -C <root> commit -m "Adopt <repo>"`. In fill-missing mode, stage only the files written, plus `knowledge/index.md` when it changed, never `add -A`: `git -C <root> add repos/<repo>/<each file written>` and `git -C <root> commit -m "Fill missing base files for <repo>"`. The client repository's commit policy does not apply here, and no commit is made in it.
+8. **Report** with the adopt variant of the Output block: paths written, detected values with their source, assumptions to correct, next step (`/dj-map --architecture` for unfamiliar ground, or `/dj-plan` once a feature's `init.md` exists).
 
 ## Common mistakes
 
@@ -164,6 +167,7 @@ If the dj-plan skill is not available, tell the user planning is the next step a
 - **Treating the original brain-dump as an active source** — after intake, the pasted conversation is archive material; the feature's `state.md` and the brief are the truth.
 - **Adopting by copying rules from memory instead of reading the manifests and the git history**: every command and branching value in an adopted `project.md` has a source in the repository, or it is listed as an assumption.
 - **Writing anything inside the client repository**: adopt mode reads the repository and writes only under `.dj-agents/`.
+- **Rewriting a base file that migration or an earlier adopt already wrote**: fill-missing writes only absent files.
 
 ## Output
 
@@ -200,6 +204,7 @@ Adopt variant (`--adopt`):
 Repository adopted: <repo>
 
 Root: <path>/.dj-agents (created now | existing)
+Area: <new area | fill-missing>
 Mode: <project type> (human_loop: <task | checkpoint | phase>, commit_policy: <policy>, pr_policy: <policy>)
 Language: internal <language> / external English (<simple (B1/B2) | natural>)
 
@@ -209,6 +214,9 @@ Generated:
 - .dj-agents/repos/<repo>/current.md
 - .dj-agents/repos/<repo>/handoff.md
 
+Kept (already present):
+- .dj-agents/repos/<repo>/<file> | none
+
 Detected (source):
 - test: <command> (package.json)
 - base_branch: <branch> (origin/HEAD)
@@ -216,9 +224,9 @@ Detected (source):
 Assumptions I made (correct me in project.md):
 1. <assumption>
 
-Committed in .dj-agents/: "Adopt <repo>". Nothing written inside the repository.
+Committed in .dj-agents/: "Adopt <repo>" | "Fill missing base files for <repo>". Nothing written inside the repository.
 
-Next: create .dj-agents/repos/<repo>/features/<feature>/init.md and run /dj-plan with it; run /dj-map <area> first if the ground is unfamiliar.
+Next: create .dj-agents/repos/<repo>/features/<feature>/init.md and run /dj-plan with it; run /dj-map --architecture first if the ground is unfamiliar.
 ```
 
 Signal over ceremony: if the project is tiny and a step is obviously unnecessary (e.g. no discovery decisions exist), say so in the report and skip it — don't perform empty sections.
