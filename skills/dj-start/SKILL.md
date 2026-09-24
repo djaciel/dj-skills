@@ -98,7 +98,8 @@ Generate the minimal set — planning documents come later, from dj-plan. Defaul
 | File | Template | New project | Adopt | Purpose |
 |---|---|---|---|---|
 | `.dj-agents/repos/<repo>/project.md` | `templates/project.md` | yes | yes | Stable context: stack, commands, constraints, work mode. |
-| `.dj-agents/repos/<repo>/current.md` | `templates/current.md` | yes | yes, with no active feature | Active work state — always read first. |
+| `.dj-agents/repos/<repo>/current.md` | `templates/current.md` | yes, one index line for `main` | yes, with no active feature | Index of active features, always read first. |
+| `.dj-agents/repos/<repo>/features/main/state.md` | `templates/feature-state.md` | yes | no | The feature's active state: direction, "Do not follow", next task. |
 | `.dj-agents/repos/<repo>/handoff.md` | `templates/handoff.md` | yes | yes, empty state | Session-to-session handoff (starts nearly empty). |
 | `.dj-agents/repos/<repo>/language-policy.md` | `templates/language-policy.md` | yes | yes | Internal vs external language rules. |
 | `.dj-agents/repos/<repo>/features/main/brief.md` | `templates/brief.md` | yes | no | What to build, for whom, which problem — plus assumptions. |
@@ -148,7 +149,7 @@ If the dj-plan skill is not available, tell the user planning is the next step a
 2. **Resolve the repo name.** Run `dj-root name`. Exit 2 means the session is not inside a git repository: stop and say so. If `.dj-agents/repos/<repo>/` already exists, stop: "already adopted; edit `project.md` by hand".
 3. **Detect from the repository, not from memory.** Stack and commands from the manifests that exist (`package.json` scripts, `mix.exs` aliases, `pyproject.toml`, `Makefile` targets, CI config under `.github/workflows/` or similar). Quote each command as the manifest defines it and keep its source file. Branching from `git branch -a` and `git log --oneline -n 30` (naming convention, merge style). The base branch from the remote HEAD (`git symbolic-ref --short refs/remotes/origin/HEAD`); with no remote, the current branch, listed as an assumption.
 4. **Ask only what the repository cannot answer**, at most 3 to 5 blocking questions, in one message: project type and work mode (`human_loop`), `commit_policy`, `pr_policy`, internal language and external English level. Skip any the conversation already answers. Everything else becomes an assumption.
-5. **Write the base files** under `.dj-agents/repos/<repo>/` from the templates (table in step 5 above): `project.md` (detected values, each command with its source file, and every unconfirmed value under "Assumptions (correct me)"), `language-policy.md`, `current.md` (the index with no active feature) and `handoff.md` (empty state: adopted, nothing implemented yet).
+5. **Write the base files** under `.dj-agents/repos/<repo>/` from the templates (table in step 5 above): `project.md` (detected values, each command with its source file, and every unconfirmed value under "Assumptions (correct me)"), `language-policy.md`, `current.md` (from the index template, with no feature line) and `handoff.md` (from its template; last real state: adopted, nothing implemented yet).
 6. **Do not create a feature.** The human creates `.dj-agents/repos/<repo>/features/<feature>/init.md` and runs `/dj-plan` with that path.
 7. **Commit inside `.dj-agents/`**: `git -C <root> add repos/<repo>` and `git -C <root> commit -m "Adopt <repo>"`. The client repository's commit policy does not apply here, and no commit is made in it.
 8. **Report** with the adopt variant of the Output block: paths written, detected values with their source, assumptions to correct, next step (`/dj-map <area>` for unfamiliar ground, or `/dj-plan` once a feature's `init.md` exists).
@@ -160,7 +161,7 @@ If the dj-plan skill is not available, tell the user planning is the next step a
 - **Infinite discovery** — researching things that don't change what gets built next.
 - **Giant spikes** — a spike that builds 80% of the app is an implementation phase in disguise; a spike that installs a huge project "just to try one thing" is not justified.
 - **Skipping the language policy** — it must be a written contract, or later output arrives in the wrong language.
-- **Treating the original brain-dump as an active source** — after intake, the pasted conversation is archive material; `current.md` and the brief are the truth.
+- **Treating the original brain-dump as an active source** — after intake, the pasted conversation is archive material; the feature's `state.md` and the brief are the truth.
 - **Adopting by copying rules from memory instead of reading the manifests and the git history**: every command and branching value in an adopted `project.md` has a source in the repository, or it is listed as an assumption.
 - **Writing anything inside the client repository**: adopt mode reads the repository and writes only under `.dj-agents/`.
 
@@ -179,6 +180,7 @@ Generated:
 - .dj-agents/repos/<repo>/current.md
 - .dj-agents/repos/<repo>/handoff.md
 - .dj-agents/repos/<repo>/language-policy.md
+- .dj-agents/repos/<repo>/features/main/state.md
 - .dj-agents/repos/<repo>/features/main/brief.md
 - .dj-agents/repos/<repo>/features/main/discovery.md
 

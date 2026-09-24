@@ -40,7 +40,7 @@ Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; res
 
 ## The process
 
-Create `.dj-agents/repos/<repo>/issues/<issue-id>/` as the working folder. Read `.dj-agents/repos/<repo>/current.md` first if it exists. Then do the branch check from the Branching section of `.dj-agents/repos/<repo>/project.md`: on the base branch with `branch_creation: agent`, create `fix/<issue-id>` (or the repo's convention) from the up-to-date base; with `suggest-only`, tell the human which branch to create; if no policy is written, ask once and record it in `project.md`.
+Create `.dj-agents/repos/<repo>/issues/<issue-id>/` as the working folder. Read `.dj-agents/repos/<repo>/current.md` (the index of active features) first if it exists, then, if the issue belongs to a feature, that feature's `features/<feature>/state.md`. Then do the branch check from the Branching section of `.dj-agents/repos/<repo>/project.md`: on the base branch with `branch_creation: agent`, create `fix/<issue-id>` (or the repo's convention) from the up-to-date base; with `suggest-only`, tell the human which branch to create; if no policy is written, ask once and record it in `project.md`.
 
 ### 1. Read the issue
 
@@ -100,7 +100,7 @@ Delegate to the **dj-acceptance-reviewer** subagent with the issue context, fix 
 - Fill `templates/issue-fix-report.md` and save as `.dj-agents/repos/<repo>/issues/<issue-id>/fix-report.md`.
 - Generate the PR description through the **dj-brief** skill (English, per `.dj-agents/repos/<repo>/language-policy.md`), using the fix report as source material.
 - Suggest a commit message following the repo's convention. **Never commit or push** unless `commit_policy` in `.dj-agents/repos/<repo>/project.md` explicitly allows it.
-- Update `.dj-agents/repos/<repo>/current.md` (and `handoff.md` if the session is closing).
+- Rewrite `.dj-agents/repos/<repo>/handoff.md` from its template and, if a feature is involved, its `features/<feature>/state.md` and index line in `current.md`. Rewrite, never append: what stops being active moves to the fix report.
 
 ## Scaling rigor
 

@@ -24,6 +24,10 @@ branch_creation: <agent | suggest-only>
 Internal: <internal language>. External: English.
 Full rules: `.dj-agents/repos/<repo>/language-policy.md`.
 
+## Report style
+<internal language>, short, with review order and validation evidence.
+Walkthrough: <off | on-request | always>
+
 ## Stack
 - <language / framework / runtime / db / etc>
 

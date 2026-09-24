@@ -32,7 +32,7 @@ If `dj-root repo` fails or prints a path that does not exist yet, stop and tell 
 
 Read before planning, in this order:
 
-1. `.dj-agents/repos/<repo>/current.md` — active state. Never plan against stale intent.
+1. `.dj-agents/repos/<repo>/current.md` (the index of active features) and, for an existing feature, its `features/<feature>/state.md` (direction and "Do not follow"). Never plan against stale intent.
 2. `.dj-agents/repos/<repo>/project.md` — work mode (`human_loop`, `commit_policy`, `pr_policy`), stack, constraints.
 3. `.dj-agents/repos/<repo>/features/<feature>/brief.md` and `discovery.md`, if they exist.
 4. `.dj-agents/repos/<repo>/features/<feature>/codebase-map.md`, if it exists. If the area is unfamiliar and there is no map, run /dj-map first.
@@ -64,7 +64,7 @@ All under `.dj-agents/repos/<repo>/features/<feature>/`:
 | `pr-strategy.md` | `templates/pr-strategy.md` | When `pr_policy` is not `none` |
 | `drift-log.md` | `templates/drift-log.md` | Initialize empty on first plan |
 
-Then update `.dj-agents/repos/<repo>/current.md` with the active feature, current phase, and next task.
+Then create or rewrite `.dj-agents/repos/<repo>/features/<feature>/state.md` (template: `skills/dj-start/templates/feature-state.md`) with the active mode, current phase and next task, and add or rewrite the feature's line in the `.dj-agents/repos/<repo>/current.md` index.
 
 ## Plan detailed vs sketch
 
@@ -131,7 +131,7 @@ Acceptance checks are living contracts: they can change, but consciously — thr
 4. Update `spec.md` if intent changed: assumptions, constraints, out-of-scope.
 5. Recalculate future tasks from T-XX onward. Give new tasks fresh numbers continuing the sequence.
 6. Re-check `pr-strategy.md` — drift often changes the reviewable story.
-7. Update `.dj-agents/repos/<repo>/current.md`, including a "Do not follow" note pointing at superseded docs, so old specs never override the new direction.
+7. Rewrite `.dj-agents/repos/<repo>/features/<feature>/state.md`, including a "Do not follow" note pointing at superseded docs, so old specs never override the new direction; then rewrite the feature's line in the `current.md` index.
 
 ## Human checkpoint
 
@@ -144,4 +144,4 @@ Present the plan before any implementation: spec summary, phase list, the detail
 - Marking every acceptance check Hard — when everything is hard, judgment disappears and drift becomes invisible.
 - Replanning by regenerating everything — you lose completed context and the human's earlier corrections.
 - Treating the PR strategy as dogma — it is a hypothesis with a checkpoint; revise it when evidence arrives.
-- Planning without reading `current.md` first — plans built on stale state create instant drift.
+- Planning without reading the index and the feature's `state.md` first — plans built on stale state create instant drift.

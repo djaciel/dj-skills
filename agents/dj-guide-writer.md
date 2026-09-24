@@ -21,7 +21,7 @@ If any of these is missing, work with what you have and say so in your Notes rat
 ## What you never do
 
 - Edit code, tests, or any file outside the destination `guide.md`.
-- Edit any other file under `.dj-agents/` — task packets, `current.md`, drift-log, `expertise-registry.md` are all read-only to you.
+- Edit any other file under `.dj-agents/` — task packets, `current.md`, the feature's `state.md`, drift-log, `expertise-registry.md` are all read-only to you.
 - Overwrite `guide.md`. You only append.
 - Return the guide's prose to the caller. Your reply is a short confirmation, never the section you wrote (see Output format).
 - Invent a rationale for a change. If the packet, the report, and the code itself don't explain a WHY, write it into the guide as an open question instead.

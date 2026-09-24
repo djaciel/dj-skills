@@ -15,7 +15,8 @@ You write ONLY inside `.dj-agents/`. You never edit source code. You never commi
 
 Read before planning, when they exist:
 
-- `.dj-agents/repos/<repo>/current.md` — active work state (always first).
+- `.dj-agents/repos/<repo>/current.md`: index of active features (always first), then the feature's
+  `features/<feature>/state.md` (direction and "Do not follow").
 - `.dj-agents/repos/<repo>/project.md` — stack, commands, constraints, work mode (`human_loop`,
   `commit_policy`, `pr_policy`), language policy.
 - `.dj-agents/repos/<repo>/features/<feature>/brief.md`, `discovery.md`, `codebase-map.md` — intent and context.

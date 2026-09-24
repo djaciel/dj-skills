@@ -41,15 +41,15 @@ Acceptance checks are living contracts: if a check no longer applies, update it 
 
 This is the step most often skipped, and the one that matters most:
 
-- Update `.dj-agents/repos/<repo>/current.md` with a **"Do not follow"** list naming the outdated docs or sections (e.g. "Do not follow spec.md §3 — old API shape"). A stale spec that isn't flagged WILL be obeyed by a future session.
+- Rewrite `.dj-agents/repos/<repo>/features/<feature>/state.md` with a **"Do not follow"** list naming the outdated docs or sections (e.g. "Do not follow spec.md §3 — old API shape"). A stale spec that isn't flagged WILL be obeyed by a future session.
 - In the entry's Impact section, classify affected artifacts: still valid / obsolete / needs migration.
 - Mark dead tasks with their end state (`obsolete`, `merged-into-next`) in the delivery plan.
 
 ## Context hierarchy (when documents contradict)
 
-Most recent intent wins. Read and trust in this order:
+Most recent intent wins. `current.md` is the index above all: it says which features are active and where their state lives. Within a feature, read and trust in this order:
 
-1. `current.md` (including its "Do not follow" list)
+1. `state.md` (including its "Do not follow" list)
 2. The active task packet
 3. `drift-log.md`
 4. Phase spec
@@ -75,7 +75,7 @@ If replanning can't happen now (context nearly exhausted, or the **dj-planner** 
 - **Absorbing major drift to "keep momentum"** — you'll implement three more tasks against a dead spec.
 - **Replanning without invalidating old docs** — the next session reads the old spec and undoes the pivot.
 - **Treating every wobble as a replan** — most drift is minor; absorb it and move on.
-- **Recording drift only in conversation** — if it isn't in drift-log + current.md, it doesn't exist next session.
+- **Recording drift only in conversation** — if it isn't in drift-log + the feature's `state.md`, it doesn't exist next session.
 - **Restarting the plan from zero** — throws away valid work and human-approved decisions.
 
 ## Output format — drift-log entry
@@ -100,5 +100,5 @@ Impact:
 
 Action:
 - Replan from T-04 (`/dj-plan --replan-from T-04`).
-- current.md updated: "Do not follow spec.md §3 (old API shape)."
+- state.md rewritten: "Do not follow spec.md §3 (old API shape)."
 ```

@@ -105,7 +105,7 @@ Scale depth by work mode (from `.dj-agents/repos/<repo>/project.md`, guidance no
 
 1. Summarize the map to the user in 5–10 lines: stack, the 2–3 most important findings, the top risk.
 2. Point to the next step: `/dj-plan <feature>` consumes this map to produce the spec and tasks.
-3. If `.dj-agents/repos/<repo>/current.md` exists, note there that the map was created and where.
+3. Note that the map was created, and where, in the feature's `features/<feature>/state.md` (Read first); if no feature exists yet, in the `.dj-agents/repos/<repo>/current.md` index line for the upcoming work, if the index exists.
 
 ## Refreshing an existing map
 

@@ -36,7 +36,13 @@ Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; res
 
 If `dj-root repo` fails or prints a path that does not exist yet, stop and tell the human to run `/dj-start --adopt` first.
 
-Read `.dj-agents/repos/<repo>/current.md` first — it is the source of truth for active mode, current direction, and anything marked "Do not follow". Then read the task packet (`.dj-agents/repos/<repo>/features/<feature>/tasks/T-XX.md`): objective, context files, acceptance checks (hard/soft/exploratory/deferred), validation commands, commit policy. If `current.md` and the packet disagree, `current.md` wins — flag the mismatch before implementing.
+Read in this order:
+
+1. `.dj-agents/repos/<repo>/current.md`: the index of active features. Find this feature's line.
+2. `.dj-agents/repos/<repo>/features/<feature>/state.md`: the source of truth for active mode, current direction, and anything marked "Do not follow".
+3. The task packet (`.dj-agents/repos/<repo>/features/<feature>/tasks/T-XX.md`): objective, context files, acceptance checks (hard/soft/exploratory/deferred), validation commands, commit policy.
+
+If `state.md` and the packet disagree, `state.md` wins: flag the mismatch before implementing.
 
 **Branch check.** Read the Branching section of `.dj-agents/repos/<repo>/project.md`. On the base branch with `branch_creation: agent`? Create the feature branch (per the naming convention) from the up-to-date base before touching files. `suggest-only`? Tell the human which branch to create and wait. Already on a matching feature branch? Continue. No policy written? Ask once, record the answer in `project.md`, and move on.
 
@@ -46,7 +52,7 @@ Delegate to the **dj-scout** subagent: relevant files, existing patterns, reusab
 
 ### 3. Implement
 
-**Delegate to the dj-implementer subagent — always.** The orchestrating session writes no code; all implementation happens in the implementer's own context, and only its Implementation Report comes back. Hand it pointers, not content: the packet path, the scout result file (step 2), and `.dj-agents/repos/<repo>/current.md`. The implementer applies dj-repo-patterns and dj-simplicity-lens internally.
+**Delegate to the dj-implementer subagent — always.** The orchestrating session writes no code; all implementation happens in the implementer's own context, and only its Implementation Report comes back. Hand it pointers, not content: the packet path, the scout result file (step 2), and the feature's `state.md`. The implementer applies dj-repo-patterns and dj-simplicity-lens internally.
 
 Implement inline only as degradation — when dj-implementer is not installed — and then:
 
@@ -113,7 +119,7 @@ Every task ends in exactly one of these:
 | `needs-replan` | Discovery invalidates this task's premise or later tasks | Stop; `/dj-plan --replan-from T-XX` |
 | `split-needed` | Task is bigger than one reviewable unit | Report the natural split; replan the packet into two |
 | `merged-into-next` | Remaining work is trivial and belongs with the next task | Note it in the next packet; close this one |
-| `obsolete` | Direction changed; task no longer makes sense | Mark obsolete in the plan and in `current.md` |
+| `obsolete` | Direction changed; task no longer makes sense | Mark obsolete in the plan, the packet and the feature's `state.md` |
 
 Any drift — even under `done-with-drift` — gets a drift-log entry via **dj-drift-management** so future tasks and the spec stay honest.
 
@@ -127,25 +133,27 @@ Default (from `.dj-agents/repos/<repo>/project.md`, `commit_policy: human-only`)
 
 ## Closing the task: state and session
 
-When a task closes (any end state):
+When a task closes (any end state), follow this checklist in order. State files are rewritten, never appended: each one holds only what is active after this close. Templates: `skills/dj-start/templates/feature-state.md`, `current.md`, `handoff.md`.
 
-1. Update the packet itself (`T-XX.md`): set `Status:` to the end state and fill the one-line `Outcome:` — a fresh session reading the packet must see the truth without this conversation.
-2. Update `.dj-agents/repos/<repo>/current.md`: current task, direction, anything now in "Do not follow".
-3. Update `.dj-agents/repos/<repo>/handoff.md` at every task close — recap (where we stand), what changed, decisions taken, open question if any, next action. Not only when the session is ending: the orchestrating session must stay disposable at all times.
-4. Update the drift-log if direction changed.
-5. Mark the next task.
-6. If the same human correction has now appeared more than once across tasks, propose making it structural — a lint rule, a test, a `project.md` line — instead of trusting memory.
+1. **Packet.** In `T-XX.md`, set `Status:` to the end state and fill the one-line `Outcome:`. A fresh session reading the packet must see the truth without this conversation.
+2. **Feature state.** Rewrite `.dj-agents/repos/<repo>/features/<feature>/state.md` from its template: active mode, current phase, current task and the next one, current direction, "Do not follow", recent changes that are still active, read first.
+3. **Index.** Rewrite this feature's line in `.dj-agents/repos/<repo>/current.md` (phase, current task, next action) and its `Rewritten:` line. Add the line when the feature starts; remove it when the feature closes. The index holds nothing else.
+4. **Handoff.** Rewrite `.dj-agents/repos/<repo>/handoff.md` from its template: last real state (and what was verified), next step, not verified, do not rely on. Do it at every task close, not only when the session is ending: the orchestrating session must stay disposable at all times. Never append the previous handoff below.
+5. **Drift log.** If direction changed, add an entry to `features/<feature>/drift-log.md` (**dj-drift-management**).
+6. **Next task.** Mark it in the delivery plan and in `state.md`.
+7. **Nothing is discarded, it moves.** Anything that leaves a state file in steps 2 to 4 goes to a named destination before it is removed: task detail to the packet (`Outcome:`) or the report (`features/<feature>/reports/T-XX.md`); decisions, dead ideas and feature history to `features/<feature>/` (drift log, spec, follow-ups); anything not yet classified to the knowledge inbox once it exists. It is never deleted and never appended as a "Previous" block.
+8. If the same human correction has now appeared more than once across tasks, propose making it structural (a lint rule, a test, a `project.md` line) instead of trusting memory.
 
 Context guidance (judgment, not thresholds-as-law):
 
 | Context used | Guidance |
 |---|---|
 | 0–50% | Continue normally |
-| 50–75% | Continue if the work is cohesive; update handoff when closing tasks |
-| 75–85% | Close the current slice, update `current.md` + `handoff.md`, open a fresh session |
+| 50–75% | Continue if the work is cohesive; run the close checklist when closing tasks |
+| 75–85% | Close the current slice, run the close checklist, open a fresh session |
 | 85%+ | Don't start a new task — summarize, close, hand off |
 
-Before opening a fresh session, `handoff.md` must state: what is true now, what changed, discarded ideas, the next task, and **what must NOT be followed anymore** — so the new session never obeys a dead spec.
+Before opening a fresh session, `handoff.md` must state the last real state, the next step, what is not verified, and **what must NOT be relied on anymore**, so the new session never obeys a dead spec.
 
 ## Common mistakes
 
@@ -155,6 +163,7 @@ Before opening a fresh session, `handoff.md` must state: what is true now, what 
 - **Silently absorbing drift** — if reality differed from the packet, say so and log it, even when the outcome is fine.
 - **Running all reviewers on a personal-small project** — ceremony without payoff. Scale down and say you did.
 - **Fixing an out-of-scope bug "while you're here"** — report it; fixing it is a separate task (or a `/dj-fix`).
+- **Appending a "Previous" block to `current.md` or `handoff.md` instead of rewriting them**: history moves to the packet, the report or the feature folder; the state files hold only what is active.
 - **Starting T-05 at 90% context** — close the session properly instead; the handoff costs 5 minutes, a contaminated session costs the task.
 
 ## Report format
@@ -167,4 +176,4 @@ Changes · Validation · Self-review · Skipped steps · Acceptance ·
 Out of scope · Review order · Suggested commit · Walkthrough (on request)
 ```
 
-Readable in 2 minutes; drop empty sections. The Walkthrough (goal in one line, data-flow map, core files function by function) is produced only when the user asks or when `current.md`'s Report style says `Walkthrough: always`.
+Readable in 2 minutes; drop empty sections. The Walkthrough (goal in one line, data-flow map, core files function by function) is produced only when the user asks or when the Report style section of `.dj-agents/repos/<repo>/project.md` says `Walkthrough: always`.

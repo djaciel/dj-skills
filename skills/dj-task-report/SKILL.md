@@ -49,7 +49,7 @@ Scaling: a trivial task gets a trivial report — outcome, changes, validation, 
 
 ## The optional Walkthrough
 
-Off by default — the base report stays readable in 2 minutes. Produce it when the user asks ("walk me through T-03"), or when `.dj-agents/repos/<repo>/current.md` sets `Walkthrough: always` under Report style. Three parts, in the internal language, ordered so the reader never drowns:
+Off by default — the base report stays readable in 2 minutes. Produce it when the user asks ("walk me through T-03"), or when the Report style section of `.dj-agents/repos/<repo>/project.md` sets `Walkthrough: always`. Three parts, in the internal language, ordered so the reader never drowns:
 
 1. **Goal** — the task's objective restated in one line.
 2. **Data flow** — a compact `input → transform → output` map of the changed flow (apply **dj-data-flow-review**), one line per path.
