@@ -1,0 +1,183 @@
+#!/usr/bin/env bash
+# diff-metrics: added and removed lines per file between two points, split by kind.
+#
+# Usage:
+#   diff-metrics [--summary] [--in <path-or-prefix>]... <base> [<head> | working-tree]
+#
+# <head> defaults to HEAD. With working-tree, the tracked changes are git diff <base>
+# and every untracked file (git ls-files --others --exclude-standard) counts as a new
+# file with all its lines added. A rename counts as a deleted file plus a new file.
+# Paths are relative to the repository root, from any subdirectory.
+#
+# Kinds, first match wins:
+#   test       a directory named test, tests, spec or __tests__; a basename *.test.*,
+#              *.spec.*, *_test.*, *_spec.* or test_*
+#   docs       *.md, *.txt, *.rst, or a directory named docs
+#   generated  package-lock.json, yarn.lock, pnpm-lock.yaml, mix.lock, Cargo.lock,
+#              poetry.lock, Gemfile.lock, go.sum, *.snap
+#   config     *.json, *.yml, *.yaml, *.toml, *.ini, *.config.*, a basename starting with .
+#   code       anything else
+# Comment lines are added lines of code files whose first non-blank characters are
+# //, /*, *, # (not #!), --, ;;, % or <!--. This is a prefix heuristic, not a parser.
+# --in may repeat: a file whose path starts with none of the given prefixes is marked
+# outside scope. Without --in, nothing is marked.
+#
+# stdout: a Markdown table | File | Kind | Added | Removed | Note | and one summary line;
+# with --summary, only the summary line. Messages go to stderr. Reads git and files;
+# writes nothing to the working tree or the staging area (git may refresh its index stat cache).
+# Exit codes: 0 ok, 1 not inside a git repository or a ref does not resolve, 64 bad usage.
+# Needs bash, git, coreutils and grep only.
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: diff-metrics [--summary] [--in <path-or-prefix>]... <base> [<head> | working-tree]
+  <base>          commit the changes are measured from
+  <head>          commit they are measured to (default HEAD)
+  working-tree    measure to the working tree: tracked changes plus untracked files
+  --in <prefix>   mark files outside these path prefixes (repeatable, repository-relative)
+  --summary       print only the summary line
+Prints a Markdown table of added and removed lines per file, by kind, and a summary.
+USAGE
+}
+
+die() { echo "diff-metrics: $2" >&2; exit "$1"; }
+
+GIT_DIFF=(git --literal-pathspecs diff --no-color --no-ext-diff --no-textconv --no-renames --no-relative)
+COMMENT_RE='[[:space:]]*(//|/\*|\*|#([^!]|$)|--|;;|%|<!--)'
+
+summary=0
+scopes=()
+args=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --summary) summary=1; shift ;;
+    --in)      [ $# -ge 2 ] || { usage >&2; exit 64; }; scopes+=("$2"); shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    --)        shift; while [ $# -gt 0 ]; do args+=("$1"); shift; done ;;
+    -*)        usage >&2; exit 64 ;;
+    *)         args+=("$1"); shift ;;
+  esac
+done
+[ ${#args[@]} -ge 1 ] && [ ${#args[@]} -le 2 ] || { usage >&2; exit 64; }
+
+top="$(git rev-parse --show-toplevel 2>/dev/null)" || die 1 "$PWD is not inside a git repository"
+cd "$top"
+
+base="${args[0]}"
+head="HEAD"
+[ ${#args[@]} -eq 2 ] && head="${args[1]}"
+git rev-parse -q --verify "$base^{commit}" >/dev/null || die 1 "$base does not resolve to a commit"
+if [ "$head" = "working-tree" ]; then
+  range=("$base")
+else
+  git rev-parse -q --verify "$head^{commit}" >/dev/null || die 1 "$head does not resolve to a commit"
+  range=("$base" "$head")
+fi
+
+# Sets KIND for one repository-relative path.
+classify() {
+  local p="$1" b="${1##*/}"
+  case "/$p" in */test/*|*/tests/*|*/spec/*|*/__tests__/*) KIND=test; return ;; esac
+  case "$b" in *.test.*|*.spec.*|*_test.*|*_spec.*|test_*) KIND=test; return ;; esac
+  case "$b" in *.md|*.txt|*.rst) KIND=docs; return ;; esac
+  case "/$p" in */docs/*) KIND=docs; return ;; esac
+  case "$b" in
+    package-lock.json|yarn.lock|pnpm-lock.yaml|mix.lock|Cargo.lock|poetry.lock|Gemfile.lock|go.sum|*.snap)
+      KIND=generated; return ;;
+  esac
+  case "$b" in *.json|*.yml|*.yaml|*.toml|*.ini|*.config.*|.*) KIND=config; return ;; esac
+  KIND=code
+}
+
+in_scope() {
+  local s
+  [ ${#scopes[@]} -eq 0 ] && return 0
+  for s in "${scopes[@]}"; do
+    case "$1" in "$s"*) return 0 ;; esac
+  done
+  return 1
+}
+
+# Added comment lines of one file: from the diff, or from the whole file when untracked.
+count_comments() {
+  if [ "$2" = untracked ]; then
+    grep -cE "^$COMMENT_RE" -- "$1" || true
+  else
+    "${GIT_DIFF[@]}" -U0 "${range[@]}" -- "$1" | grep -cE "^\+$COMMENT_RE" || true
+  fi
+}
+
+# Newline-separated list, led by a newline, of the paths git reports with one status letter.
+paths_with_status() {
+  local p list=$'\n'
+  while IFS= read -r -d '' p; do
+    list="$list$p"$'\n'
+  done < <("${GIT_DIFF[@]}" --name-only -z --diff-filter="$1" "${range[@]}")
+  printf '%s' "$list"
+}
+
+add_code=0 add_comments=0 add_tests=0 add_docs=0 add_cg=0 removed=0
+files=0 files_code=0 files_tests=0 files_docs=0 files_cg=0 outside=0
+header_done=0
+
+# record <path> <added|-> <removed|-> <note> <tracked|untracked>
+record() {
+  local p="$1" a="$2" r="$3" note="$4" na nr c=0
+  classify "$p"
+  if [ "$a" = "-" ]; then
+    note="${note:+$note, }binary"; na=0; nr=0
+  else
+    na="$a"; nr="$r"
+  fi
+  case "$KIND" in
+    code)
+      [ "$na" -gt 0 ] && c="$(count_comments "$p" "$5")"
+      add_code=$((add_code + na - c)); add_comments=$((add_comments + c)); files_code=$((files_code + 1)) ;;
+    test) add_tests=$((add_tests + na)); files_tests=$((files_tests + 1)) ;;
+    docs) add_docs=$((add_docs + na)); files_docs=$((files_docs + 1)) ;;
+    *)    add_cg=$((add_cg + na)); files_cg=$((files_cg + 1)) ;;
+  esac
+  removed=$((removed + nr)); files=$((files + 1))
+  if ! in_scope "$p"; then
+    note="${note:+$note, }outside scope"; outside=$((outside + 1))
+  fi
+  [ "$summary" = 1 ] && return 0
+  if [ "$header_done" = 0 ]; then
+    echo "| File | Kind | Added | Removed | Note |"
+    echo "|---|---|---|---|---|"
+    header_done=1
+  fi
+  printf '| %s | %s | %s | %s | %s |\n' "${p//|/\\|}" "$KIND" "$a" "$r" "$note"
+}
+
+# $(...) drops the trailing newline, so it is added back to frame the last path.
+new_paths="$(paths_with_status A)"$'\n'
+deleted_paths="$(paths_with_status D)"$'\n'
+
+while IFS=$'\t' read -r -d '' a r p; do
+  note=""
+  case "$new_paths" in *$'\n'"$p"$'\n'*) note="new" ;; esac
+  case "$deleted_paths" in *$'\n'"$p"$'\n'*) note="deleted" ;; esac
+  record "$p" "$a" "$r" "$note" tracked
+done < <("${GIT_DIFF[@]}" --numstat -z "${range[@]}")
+
+if [ "$head" = "working-tree" ]; then
+  while IFS= read -r -d '' p; do
+    ns="$(git diff --no-index --no-color --no-ext-diff --no-textconv --numstat -- /dev/null "$p" || true)"
+    a="${ns%%$'\t'*}"
+    [ -n "$a" ] || a=0
+    record "$p" "$a" "0" "new" untracked
+  done < <(git ls-files --others --exclude-standard -z)
+fi
+
+if [ ${#scopes[@]} -eq 0 ]; then
+  scope_text="not checked (no --in)"
+else
+  scope_text="$outside files"
+fi
+[ "$header_done" = 1 ] && echo
+printf '+%d -%d in %d files. Added by kind: code %d, comments %d, tests %d, docs %d, config and generated %d. Files by kind: code %d, tests %d, docs %d, config and generated %d. Outside scope: %s. Comments are counted by line prefix, a heuristic.\n' \
+  "$((add_code + add_comments + add_tests + add_docs + add_cg))" "$removed" "$files" \
+  "$add_code" "$add_comments" "$add_tests" "$add_docs" "$add_cg" \
+  "$files_code" "$files_tests" "$files_docs" "$files_cg" "$scope_text"

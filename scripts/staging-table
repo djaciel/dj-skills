@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+# staging-table: the unstaged hunks git add -p will offer, numbered, per file.
+#
+# Usage:
+#   staging-table [<path>...]
+#
+# Reads git diff (working tree against the index, default context, git diff order):
+# one row per hunk, numbered across files, with "n of m" per file next to the @@
+# header. A mode change is the first hunk of its file, as git add -p offers it.
+# Hunks are listed before any split (s) inside git add -p. A binary file gets one
+# row: git add -p skips it. Then one row per untracked file (git ls-files --others
+# --exclude-standard), staged with git add <path>. Paths are relative to the
+# repository root; <path> arguments are relative to the current directory.
+#
+# stdout: a Markdown table | # | File | Hunk | Added | Removed | First changed line |,
+# or "nothing to stage". First changed line is the first added line of the hunk, or
+# the first removed line marked (removed) when nothing was added. Messages go to
+# stderr. Reads git and files, writes nothing to the working tree or the staging area (git may refresh its index stat cache).
+# Exit codes: 0 ok (also when there is nothing to stage), 1 not inside a git
+# repository, 64 bad usage.
+# Needs bash, git, coreutils and grep only.
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: staging-table [<path>...]
+  <path>   limit the table to these files or directories (default: the whole repository)
+Prints the unstaged hunks as git add -p will offer them, numbered, then the untracked
+files, as a Markdown table; "nothing to stage" when the working tree has no changes.
+USAGE
+}
+
+die() { echo "staging-table: $2" >&2; exit "$1"; }
+
+paths=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    --)        shift; while [ $# -gt 0 ]; do paths+=("$1"); shift; done ;;
+    -*)        usage >&2; exit 64 ;;
+    *)         paths+=("$1"); shift ;;
+  esac
+done
+
+top="$(git rev-parse --show-toplevel 2>/dev/null)" || die 1 "$PWD is not inside a git repository"
+prefix="$(git rev-parse --show-prefix)"
+cd "$top"
+
+# Pathspecs relative to the root; "--" keeps the pathspec list well formed when empty.
+specs=(--)
+for p in ${paths[@]+"${paths[@]}"}; do
+  case "$p" in
+    /*) specs+=("$p") ;;
+    *)  specs+=("$prefix$p") ;;
+  esac
+done
+
+rows=0
+file=""
+
+row() {
+  if [ "$rows" = 0 ]; then
+    echo "| # | File | Hunk | Added | Removed | First changed line |"
+    echo "|---|---|---|---|---|---|"
+  fi
+  rows=$((rows + 1))
+  printf '| %d | %s | %s | %s | %s | %s |\n' "$rows" "${1//|/\\|}" "$2" "$3" "$4" "${5//|/\\|}"
+}
+
+# A path as the caller types it from the current directory (the diff paths are root-relative).
+rel() {
+  case "$1" in
+    "$prefix"*) printf '%s' "${1#"$prefix"}" ;;
+    *)           printf ':/%s' "$1" ;;
+  esac
+}
+
+code_span() {
+  case "$1" in
+    *'`'*) printf '%s' "$1" ;;
+    *)     printf '`%s`' "$1" ;;
+  esac
+}
+
+# Hunks of the current file: header, added, removed, first changed line.
+H_HDR=() H_ADD=() H_DEL=() H_FIRST=()
+cur=-1
+binary=0
+old_mode=""
+first_removed=""
+
+new_hunk() {
+  H_HDR+=("$1"); H_ADD+=(0); H_DEL+=(0); H_FIRST+=("$2")
+  cur=$((${#H_HDR[@]} - 1))
+}
+
+# A hunk with no added text line shows its first removed line instead.
+finish_hunk() {
+  if [ "$cur" -ge 0 ] && [ -z "${H_FIRST[$cur]}" ] && [ -n "$first_removed" ]; then
+    H_FIRST[$cur]="(removed) $(code_span "$first_removed")"
+  fi
+  first_removed=""
+}
+
+# Print the hunks of the current file, then clear them.
+flush() {
+  local i=0 m=${#H_HDR[@]}
+  finish_hunk
+  while [ "$i" -lt "$m" ]; do
+    row "$file" "$((i + 1)) of $m ${H_HDR[$i]}" "${H_ADD[$i]}" "${H_DEL[$i]}" "${H_FIRST[$i]}"
+    i=$((i + 1))
+  done
+  if [ "$binary" = 1 ]; then
+    row "$file" "binary, git add -p skips it" "-" "-" "$(code_span "git add $(rel "$file")")"
+  fi
+  H_HDR=() H_ADD=() H_DEL=() H_FIRST=()
+  cur=-1
+  binary=0
+}
+
+strip_blank() { local t="$1"; printf '%s' "${t#"${t%%[![:space:]]*}"}"; }
+
+in_header=0
+while IFS= read -r line || [ -n "$line" ]; do
+  case "$line" in
+    'diff --git '*)
+      flush
+      # With --no-prefix and no renames, both halves of the line are the same path.
+      rest="${line#diff --git }"
+      file="${rest:0:$(( (${#rest} - 1) / 2 ))}"
+      in_header=1
+      continue ;;
+  esac
+  if [ "$in_header" = 1 ]; then
+    case "$line" in
+      'old mode '*) old_mode="${line#old mode }" ;;
+      'new mode '*) new_hunk "mode change" "$(code_span "$old_mode -> ${line#new mode }")" ;;
+      'Binary files '*) binary=1 ;;
+      '@@ '*) in_header=0 ;;
+    esac
+    [ "$in_header" = 1 ] && continue
+  fi
+  case "$line" in
+    '@@ '*)
+      finish_hunk
+      h="${line#@@ }"
+      new_hunk "$(code_span "@@ ${h%% @@*} @@")" "" ;;
+    '+'*)
+      H_ADD[$cur]=$((H_ADD[$cur] + 1))
+      t="$(strip_blank "${line#+}")"
+      if [ -z "${H_FIRST[$cur]}" ] && [ -n "$t" ]; then
+        H_FIRST[$cur]="$(code_span "$t")"
+      fi ;;
+    '-'*)
+      H_DEL[$cur]=$((H_DEL[$cur] + 1))
+      t="$(strip_blank "${line#-}")"
+      if [ -z "$first_removed" ] && [ -n "$t" ]; then
+        first_removed="$t"
+      fi ;;
+  esac
+done < <(git --literal-pathspecs -c core.quotePath=false diff --no-color --no-ext-diff \
+           --no-textconv --no-relative --no-renames --no-prefix "${specs[@]}")
+flush
+
+while IFS= read -r -d '' p; do
+  ns="$(git diff --no-index --no-color --no-ext-diff --no-textconv --numstat -- /dev/null "$p" || true)"
+  a="${ns%%$'\t'*}"
+  [ -n "$a" ] || a=0
+  row "$p" "new file" "$a" "0" "$(code_span "git add $(rel "$p")")"
+done < <(git --literal-pathspecs ls-files --others --exclude-standard -z "${specs[@]}")
+
+[ "$rows" = 0 ] && echo "nothing to stage"
+exit 0

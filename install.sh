@@ -7,6 +7,8 @@
 #
 # Scripts land in <target>/scripts/dj/: ~/.claude/scripts/dj/ for a user-level
 # install, <project>/.claude/scripts/dj/ for a project-level one. Plain bash.
+# A project-level install writes .claude/ inside that project, so for client
+# repositories use the user-level install: nothing is installed in a client repository.
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -35,3 +37,6 @@ echo "Installed $(find "$REPO_DIR/skills" -mindepth 1 -maxdepth 1 -type d | wc -
 echo "Installed $(ls "$REPO_DIR"/agents/*.md | wc -l | tr -d ' ') agents  -> $TARGET/agents/"
 echo "Installed $(ls "$REPO_DIR"/scripts | wc -l | tr -d ' ') scripts -> $TARGET/scripts/dj/"
 echo "Re-run this script after every 'git pull' or local edit."
+if [ $# -gt 0 ]; then
+  echo "note: project-level install writes .claude/ inside $BASE; for client repositories use the user-level install" >&2
+fi

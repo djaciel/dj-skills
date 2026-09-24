@@ -25,7 +25,7 @@ Example with two repositories and one worktree:
 
 ### Running the scripts
 
-The scripts are plain bash and need only git and coreutils. Look for them project-level first, `<project>/.claude/scripts/dj/`, then user-level, `~/.claude/scripts/dj/`. Run them from inside the repository, from any subdirectory or worktree: `bash <path>/dj-root repo`.
+The scripts need only bash (3.2 compatible), git, coreutils and grep. Look for them project-level first, `<project>/.claude/scripts/dj/`, then user-level, `~/.claude/scripts/dj/`. Run them from inside the repository, from any subdirectory or worktree: `bash <path>/dj-root repo`.
 
 | Command | Prints | Exit code |
 |---|---|---|
@@ -34,8 +34,14 @@ The scripts are plain bash and need only git and coreutils. Look for them projec
 | `dj-root repo` | `<root>/repos/<repo>` | 1 or 2 as above |
 | `dj-root knowledge` | `<root>/knowledge` | 1 as above |
 | any other word | usage on stderr | 64 |
+| `diff-metrics [--summary] [--in <prefix>]... <base> [<head> \| working-tree]` | a Markdown table of added and removed lines per file with its kind (code, test, docs, config, generated) and a note (new, deleted, binary, outside scope), then one summary line: added lines by kind, with comments apart from code by a line-prefix heuristic, removed lines, files by kind, files outside the `--in` prefixes; `--summary` prints only that line. `<head>` defaults to `HEAD`; `working-tree` adds uncommitted changes and untracked files | 1 when the cwd is not inside a git repository or a ref does not resolve; 64 bad usage |
+| `staging-table [<path>...]` | the unstaged hunks as `git add -p` will offer them, numbered across files, `n of m` per file, with added and removed lines and the first changed line; then one row per untracked file with its `git add <path>`; `nothing to stage` when there is nothing | 1 when the cwd is not inside a git repository; 64 bad usage |
+| `pr-meter <target>` | one line: commits, files, core (code) files and `+added -removed` since `git merge-base <target> HEAD`, working tree and untracked files included, and whether uncommitted work is part of it | 1 when the cwd is not inside a git repository, `<target>` does not resolve or there is no merge base; 64 bad usage |
+| `line-count <file>[#<T-XX>]...` | `<lines><TAB><argument>` per argument: the whole file, or the section from its `## <T-XX>` heading to the next `## ` heading | 1 when a file is missing, 2 when a section is not found, both after printing the counts found; 64 bad usage |
 
 stdout carries only the path, so `$(dj-root repo)` is safe inside other scripts. `dj-root` never creates directories; `/dj-start --adopt` does.
+
+The measuring scripts read git and files and print numbers; they never write, and no skill treats a number as a limit. They take explicit refs and paths: `dj-root` does not resolve feature paths, the caller passes them.
 
 ## Layout
 

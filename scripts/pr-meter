@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# pr-meter: the size of the pull request so far, from its base to the working tree.
+#
+# Usage:
+#   pr-meter <target>
+#
+# <target> is the branch the pull request will merge into. The base is
+# git merge-base <target> HEAD; the count covers base to the working tree, untracked
+# files included, through diff-metrics --summary <base> working-tree. "core" files are
+# the files of kind code in diff-metrics. The line is a measurement for the human:
+# it sets no limit and no exit code depends on the size.
+#
+# stdout: one line, "PR since <base sha7> (merge-base with <target>): <n> commits,
+# <n> files (<n> core), +<added> -<removed>, uncommitted included: <yes | no>".
+# Messages go to stderr. Reads git and files, writes nothing to the working tree or the staging area (git may refresh its index stat cache).
+# Exit codes: 0 ok, 1 not inside a git repository, a ref does not resolve or there is
+# no merge base, 64 bad usage.
+# Needs bash, git, coreutils and grep only, and diff-metrics next to this script.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+usage() {
+  cat <<'USAGE'
+Usage: pr-meter <target>
+  <target>  the branch the pull request will merge into
+Prints one line: commits, files, core files and lines since the merge base with
+<target>, uncommitted work included.
+USAGE
+}
+
+die() { echo "pr-meter: $2" >&2; exit "$1"; }
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  -*|'')     usage >&2; exit 64 ;;
+esac
+[ $# -eq 1 ] || { usage >&2; exit 64; }
+target="$1"
+
+git rev-parse --show-toplevel >/dev/null 2>&1 || die 1 "$PWD is not inside a git repository"
+git rev-parse -q --verify "$target^{commit}" >/dev/null || die 1 "$target does not resolve to a commit"
+base="$(git merge-base "$target" HEAD 2>/dev/null)" || die 1 "no merge base between $target and HEAD"
+
+commits="$(git rev-list --count "$base..HEAD")"
+summary="$("$BASH" "$SCRIPT_DIR/diff-metrics" --summary "$base" working-tree)" || exit 1
+
+# The summary starts with "+<added> -<removed> in <files> files." and carries
+# "Files by kind: code <n>,".
+added="${summary%% *}"; added="${added#+}"
+rest="${summary#* }"
+removed="${rest%% *}"; removed="${removed#-}"
+rest="${rest#* in }"
+files="${rest%% *}"
+core="${summary#*Files by kind: code }"; core="${core%%,*}"
+for n in "$added" "$removed" "$files" "$core"; do
+  case "$n" in ''|*[!0-9]*) die 1 "unexpected summary from diff-metrics: $summary" ;; esac
+done
+
+if [ -n "$(git --no-optional-locks status --porcelain --untracked-files=normal)" ]; then
+  uncommitted=yes
+else
+  uncommitted=no
+fi
+
+printf 'PR since %s (merge-base with %s): %s commits, %s files (%s core), +%s -%s, uncommitted included: %s\n' \
+  "$(git rev-parse --short=7 "$base")" "$target" "$commits" "$files" "$core" "$added" "$removed" "$uncommitted"
