@@ -61,9 +61,17 @@ Method: <how this was produced; the commands listed under Derived plus what was 
 |---|---|---|
 | <system> | `<module or path>` | `<path>`, `<path>` |
 
+## Shared building blocks
+
+<!-- One row per existing helper, client, validator or utility that new code tends to duplicate. A reviewer who reads only the diff names a duplicate by pointing at a row here. Verified is the command that counts its call sites and its result. -->
+
+| Block | What it does | Path | Verified |
+|---|---|---|---|
+| <name> | <one line> | `<path:line>` | `<command>` → <n> call sites |
+
 ## Invariants
 
-<!-- One row per invariant. Each one is a command a human can re-run; a rule no command can check goes to Cross-cutting conventions or Open questions. -->
+<!-- One row per invariant. Each one is a command a human can re-run; a rule no command can check goes to Cross-cutting conventions or Open questions. The Result states the denominator, "0 of 23 controllers", never a bare count: a check that matches zero files is a false green. -->
 
 | Invariant | Command | Result | Verified |
 |---|---|---|---|

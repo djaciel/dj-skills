@@ -1,6 +1,6 @@
 ---
 name: dj-map
-description: Use when starting work in an existing repository for the first time, when planning a feature that touches an unfamiliar area of the codebase, or when returning to a repo after long enough that the mental model has gone stale. Run before /dj-plan when the ground is unfamiliar.
+description: Use when starting work in an existing repository for the first time, when planning a feature that touches an unfamiliar area of the codebase, when returning to a repo after long enough that the mental model has gone stale, or when a repo needs its architecture written or refreshed for planning and review. Run before /dj-plan when the ground is unfamiliar.
 ---
 
 # Codebase Mapping
@@ -9,7 +9,7 @@ description: Use when starting work in an existing repository for the first time
 
 Build a compact, actionable map of the code you are about to touch — a reading order, not an encyclopedia. The map exists so planning and implementation reuse what the repo already has instead of reinventing it.
 
-**Announce at start:** "I'm using the dj-map skill to map <area/feature or the whole repo>."
+**Announce at start:** "I'm using the dj-map skill to map <area/feature, or the architecture of the repo>."
 
 ## When to use
 
@@ -30,9 +30,10 @@ When NOT to use:
 | Scope | Command | Output |
 |-------|---------|--------|
 | Feature/area map (default) | `/dj-map <area-or-feature>` | `.dj-agents/repos/<repo>/features/<feature>/codebase-map.md` |
-| Whole-repo map | `/dj-map --repo` | `.dj-agents/repos/<repo>/codebase-map.md` |
+| Architecture of the repo | `/dj-map --architecture` | `.dj-agents/knowledge/architecture/<repo>.md` plus `.dj-agents/knowledge/patterns/<repo>/` |
+| Architecture refresh | `/dj-map --architecture --refresh` | the same files, each recorded command re-run and marked `unchanged`, `changed` or `failed` |
 
-Prefer the feature-scoped map. A whole-repo map is worth writing on first contact with a codebase or for small repos; for anything large it goes stale fast and reads like documentation nobody asked for.
+The feature map is a reading order for one piece of work. There is no whole-repo codebase map: it went stale fast and read like documentation nobody asked for. What holds across the whole repo (layers, placement, invariants, deviations) lives in the architecture file, with evidence that `--refresh` re-runs. See "Architecture mode".
 
 ## The process
 
@@ -44,7 +45,7 @@ If `dj-root repo` fails or prints a path that does not exist yet, stop and tell 
 
 1. If `.dj-agents/repos/<repo>/current.md` exists, read it first — it may already say what the upcoming work is.
 2. Establish the consumer of the map: what feature or decision must this map serve? If unclear, ask the user one question. A map without a consumer becomes an encyclopedia.
-3. Decide: feature map or whole-repo map.
+3. Decide: feature map, or architecture mode for rules that hold across the whole repo.
 
 ### Step 2: Explore
 
@@ -107,6 +108,23 @@ Scale depth by work mode (from `.dj-agents/repos/<repo>/project.md`, guidance no
 2. Point to the next step: `/dj-plan <feature>` consumes this map to produce the spec and tasks.
 3. Note that the map was created, and where, in the feature's `features/<feature>/state.md` (Read first); if no feature exists yet, in the `.dj-agents/repos/<repo>/current.md` index line for the upcoming work, if the index exists.
 
+## Architecture mode
+
+`/dj-map --architecture` writes the rules of one repo and the code that shows them, for planning and review in that repo. It is not a feature map: no reading order, no file list for one piece of work.
+
+1. **Inputs.** Resolve the repo name with `dj-root name` and the destinations with `dj-root knowledge`: `<knowledge>/architecture/<repo>.md` and `<knowledge>/patterns/<repo>/`. Look for the repo's own docs (ARCHITECTURE, ADRs, CONTRIBUTING, agent instruction files such as CLAUDE.md or AGENTS.md); they are hypotheses to verify, never text to copy. Pass the absolute paths of this skill's `templates/knowledge/architecture.md` and `templates/knowledge/pattern.md` to the agent.
+2. **Delegate** to the **dj-repo-mapper** subagent with a concrete brief, for example:
+
+   > "Write the architecture of <repo> at <repo path> into <knowledge>/architecture/<repo>.md from <architecture template>, and one <knowledge>/patterns/<repo>/<capability>.md from <pattern template> for each capability seen at least twice. Read <docs found> as hypotheses to verify, never as text to copy. Record every command behind Derived; give every layer, boundary, seam, shared building block and invariant its command and result, and each invariant its denominator ("0 of 23 controllers"); count the call sites of any concern handled two ways and say which way is go-forward; anything you could not prove goes to Open questions. Do not touch the repository and write nowhere else. Reply with the confirmation only."
+
+3. **Evidence rule.** Every layer, boundary, seam and invariant carries a command and its result, written next to the claim as `` (`command` → result) `` or in the Invariants table. A claim without a command goes to "Open questions" with its provenance label, never into the sections above it.
+4. **Derived.** Top-level zones, the import or module graph summary (with the stack's own tool when it runs without writing to the repo, for example `mix xref graph --format stats` over an existing build; otherwise a grep of imports) and git hot spots come from commands the mapper records in the file, so `--refresh` re-runs exactly those lines. `Method:` says what the commands cannot see (macros, behaviours, dynamic imports).
+5. **Deviations.** Framework conventions the repo breaks on purpose, and concerns handled by two mechanisms, each with the call-site count of both and which one is documented as go-forward (and where, or "nowhere"). "Multiple ways of doing the same thing" is the clue; the counts say which way the repo is moving.
+6. **Patterns by capability.** One `patterns/<repo>/<capability>.md` per capability that appears in more than one place, with the exemplar snippet and its anchors. A capability seen once gets no file; the reply lists it as skipped.
+7. **Refresh.** `--refresh` re-runs the Derived and Invariants commands (and the counts under Shared building blocks and Deviations), marks each `unchanged`, `changed` or `failed`, touches the narrative only where an invariant changed, and updates the Verified date and sha. When an invariant changed because the rule itself changed, move the old rule text to `knowledge/library/superseded-rules.md` with the date once the human confirms; the mapper does not write there.
+8. **After writing.** Add or update the repo's line in `knowledge/index.md` (`- <repo>: architecture/<repo>.md, patterns/<repo>/`) and its `Rewritten:` date. If a feature is active in `repos/<repo>/current.md`, note the map in that feature's `state.md`.
+9. **Degradation.** If the dj-repo-mapper subagent is not available, run the same steps inline in the main session with Glob/Grep/Read/Bash: same brief, same evidence rule, same two destinations, same confirmation to the human.
+
 ## Refreshing an existing map
 
 When a map already exists for the area:
@@ -115,6 +133,8 @@ When a map already exists for the area:
 2. Update in place: remove stale entries, add what changed, keep the reading order current.
 3. Note the refresh date at the top of the Scope section.
 4. If the old map is mostly wrong (big refactor since), rewrite it and say so to the user.
+
+The architecture file refreshes differently: `/dj-map --architecture --refresh` re-runs its recorded commands (see "Architecture mode", point 7).
 
 ## Knowledge-graph tools (optional)
 
@@ -134,6 +154,10 @@ For small and medium projects, Glob/Grep/Read exploration is the default and is 
 - **Skipping patterns and fixtures** — the most valuable sections are the ones that prevent reinvention. Stack and zones alone are not a map.
 - **Re-mapping known ground** — if the area is fresh in memory and `.dj-agents/` already has a recent map, update it instead of rewriting it.
 - **Treating the map as frozen** — if implementation later contradicts the map, fix the map; it is working memory, not a spec.
+- **Copying generic architecture theory instead of this repo's verified layout.** "Hexagonal" or "clean architecture" says nothing a command did not confirm in this repo.
+- **Writing a boundary without the command that proves it.** No command, no boundary: it goes to Open questions.
+- **Turning the architecture file into a file inventory.** That is the feature codebase-map's job; the architecture file holds rules, exemplars and counts.
+- **Adding a lessons list.** Rules replace; the rule that stops applying moves to `library/superseded-rules.md`, and stories go to the library.
 
 ## Output
 
@@ -148,5 +172,17 @@ Highlights:
 - <finding 1>
 - <finding 2>
 - <top risk>
+Next: /dj-plan <feature>
+```
+
+After architecture mode, report:
+
+```text
+Architecture written: .dj-agents/knowledge/architecture/<repo>.md
+Patterns: .dj-agents/knowledge/patterns/<repo>/<capability>.md, ... (skipped, seen once: <capability>, ...)
+Invariants: <n> verified, <n> failed
+Deviations: <n> found | none found
+Open questions: <n>
+Refresh (only with --refresh): <n> unchanged, <n> changed, <n> failed; Verified <old> to <new>
 Next: /dj-plan <feature>
 ```

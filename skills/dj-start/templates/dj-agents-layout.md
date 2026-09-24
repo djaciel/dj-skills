@@ -69,6 +69,8 @@ stdout carries only the path, so `$(dj-root repo)` is safe inside other scripts.
 
 Each `knowledge/` path names its template in brackets; the templates live in the dj-map skill under `templates/knowledge/`, and each one states its update rule and provenance labels in its header.
 
+`architecture/<repo>.md` and `patterns/<repo>/` are written by `/dj-map --architecture` and refreshed by `/dj-map --architecture --refresh`.
+
 The human creates `features/<feature>/` with its `init.md` and hands the path to `/dj-plan`; the skills write the rest. Extra files a human adds are fine as long as `knowledge/index.md` or the feature's `state.md` says what they are for.
 
 ## Rule of place
