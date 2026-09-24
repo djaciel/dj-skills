@@ -52,7 +52,7 @@ stdout carries only the path, so `$(dj-root repo)` is safe inside other scripts.
     library/<date>-<slug>.md      append-only stories: PRs reviewed, explanations worth keeping, investigations [template: library-entry.md]
     review/rules.md               team review rules, anonymized; replace when changed [template: review-rules.md]
     review/false-positives.md     findings discarded with reason; reviewers read it before reporting [template: false-positives.md]
-    inbox/<date>-<slug>.md        staging with provenance labels, routed by the human [template: inbox-entry.md]
+    inbox/<date>-<slug>.md        staging with provenance labels, routed by the human; written by `/dj-ingest` and `/dj-migrate`; processed entries move to `inbox/processed/` [template: inbox-entry.md]
     architecture/<repo>.md        per-repo architecture with evidence; replace when changed [template: architecture.md]
     patterns/<repo>/<capability>.md  the exemplar to imitate per capability, with anchors [template: pattern.md]
   repos/<repo>/

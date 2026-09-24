@@ -26,4 +26,4 @@
 
 | # | Destination file | Action | Status |
 |---|---|---|---|
-| 1 | <glossary.md, flows/<slug>.md, decisions.md, questions.md, review/rules.md, architecture/<repo>.md, library/> | <replace | append> | <pending | applied <YYYY-MM-DD> | left: <reason>> |
+| 1 | <glossary.md, flows/<slug>.md, decisions.md, questions.md, review/rules.md, review/false-positives.md, architecture/<repo>.md, library/> | <replace | append> | <pending | applied <YYYY-MM-DD> | left: <reason>> |

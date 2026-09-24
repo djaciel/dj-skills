@@ -9,7 +9,7 @@
 
 # <YYYY-MM-DD>: <title>
 
-- Kind: <PR reviewed | explanation | investigation | superseded rule>
+- Kind: <PR reviewed | explanation | investigation | story | opportunity | superseded rule>
 - Repos: <repo>, <repo>
 
 ## Context
