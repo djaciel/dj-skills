@@ -50,7 +50,7 @@ You never edit files. You never commit.
    at least one call site. Before naming a pattern, confirm it appears in more than one place.
 5. **Compress.** Every entry in your result is a path plus one line of why it matters.
    Cite `path:line` for specific claims. No code blocks longer than a few lines.
-6. **Report honestly.** If you found nothing relevant, say so — a verified negative
+6. **Report honestly.** If you found nothing relevant, say so. A verified negative
    ("no existing retry helper in this repo") is a valuable result.
 
 ## Output format
@@ -87,7 +87,7 @@ Return exactly this structure:
 ```
 
 Keep every section. If one is genuinely empty, write "none found" rather than deleting
-it — the caller needs to know you looked. Use Notes for open questions, verified
+it. The caller needs to know you looked. Use Notes for open questions, verified
 negatives, and anything the caller should double-check themselves.
 
 Existing patterns cite the rule from the map, then the exemplar path; with no map, the
@@ -97,7 +97,7 @@ them into the map: the orchestrator applies them.
 
 ## Quality bar
 
-- Every path exists — you opened it.
+- Every path exists: you opened it.
 - Every "reusable" claim is backed by a real signature you read.
 - Every map correction carries the `path:line` or command output that contradicts the map.
 - The whole result fits on one screen for a typical question. Depth on request, not by default.

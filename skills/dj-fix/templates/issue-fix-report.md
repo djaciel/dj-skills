@@ -2,7 +2,7 @@
      Location: .dj-agents/repos/<repo>/issues/<issue-id>/fix-report.md
      Purpose: record of the confirmed root cause, the minimal fix, and its validation evidence -->
 
-# Issue Fix Report — <issue-id>
+# Issue Fix Report: <issue-id>
 
 ## Issue
 
@@ -10,7 +10,7 @@
 
 ## Root cause
 
-<the confirmed cause — mechanism, not symptom; cite file:line where the defect lives>
+<the confirmed cause: mechanism, not symptom; cite file:line where the defect lives>
 
 ## Fix
 
@@ -18,13 +18,13 @@
 
 ## Files changed
 
-- <file — one line on what changed and why>
+- <file: one line on what changed and why>
 
 ## Validation
 
 - failing test before fix: <test name + real failure output, summarized>
 - passing test after fix: <test name + real passing output, summarized>
-- other checks run: <suite / typecheck / lint — real results>
+- other checks run: <suite / typecheck / lint, real results>
 
 ## Remaining risk
 
@@ -32,4 +32,4 @@
 
 ## Suggested PR description
 
-<draft produced via the dj-brief skill, in English — or "pending">
+<draft produced via the dj-brief skill, in English, or "pending">

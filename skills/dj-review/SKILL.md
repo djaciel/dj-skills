@@ -1,6 +1,6 @@
 ---
 name: dj-review
-description: Use when reviewing someone else's pull request, branch, or diff — a teammate's PR, an external contribution, or any change the user did not write and needs to understand and evaluate before commenting or approving.
+description: Use when reviewing someone else's pull request, branch, or diff: a teammate's PR, an external contribution, or any change the user did not write and needs to understand and evaluate before commenting or approving.
 ---
 
 # PR Review (Someone Else's Code)
@@ -19,20 +19,20 @@ Comprehension before criticism, and code before the author's account. Read what 
 
 When NOT to use:
 
-- Reviewing your own just-implemented task — the review loop inside **dj-task** covers that
-- Diagnosing a bug — use **dj-fix**
-- Only writing a PR description or comment from existing analysis — use **dj-brief**
+- Reviewing your own just-implemented task: the review loop inside **dj-task** covers that
+- Diagnosing a bug: use **dj-fix**
+- Only writing a PR description or comment from existing analysis: use **dj-brief**
 
-## Review depth — the cost contract
+## Review depth: the cost contract
 
 Two depths. **Cost is the user's choice, never a surprise.**
 
 | Depth | What runs | When |
 |---|---|---|
 | `standard` (default) | ONE delegated pass to the **dj-pr-reviewer** subagent under the blind contract (`Output: dossier`), then this session composes the dossier and runs the human filter. Inline only as degradation, when the subagent is missing; the session then follows the same contract and does not read the description until step 3. No parallel fleets, no library-source spelunking. | Every review, unless the user asks for deep |
-| `--deep` | Standard flow, then independent verification of **Blocking findings only** (one verifier per finding, not a panel), which may consult installed library sources. | Only when the user explicitly asks — high-stakes PRs: money, auth, data integrity |
+| `--deep` | Standard flow, then independent verification of **Blocking findings only** (one verifier per finding, not a panel), which may consult installed library sources. | Only when the user explicitly asks (high-stakes PRs: money, auth, data integrity) |
 
-**Hard brake:** never launch multi-agent workflows or parallel reviewer fleets from this skill — not even when the session's effort mode encourages orchestration. If a deeper pass seems warranted, finish the standard review, state what deep verification would add and roughly what it costs, and let the user decide.
+**Hard brake:** never launch multi-agent workflows or parallel reviewer fleets from this skill, not even when the session's effort mode encourages orchestration. If a deeper pass seems warranted, finish the standard review, state what deep verification would add and roughly what it costs, and let the user decide.
 
 The standard pass is one call to **dj-pr-reviewer**, right after step 1, with exactly this hand-off, followed by an `Expertise: <skill>` line only when an expertise skill for the stack of the diff is available:
 
@@ -54,11 +54,11 @@ Never approach this as "find issues in this PR." The contract is:
 
 > Understand this PR. Only report findings that are supported by code evidence and likely to matter in production or maintenance.
 
-A good review may legitimately conclude: "No blockers. Two questions and one minor nit." Do not manufacture findings to look thorough — ten findings where seven are noise is a failed review.
+A good review may legitimately conclude: "No blockers. Two questions and one minor nit." Do not manufacture findings to look thorough. Ten findings where seven are noise is a failed review.
 
 ## Inputs
 
-Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
+Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `.dj-agents/repos/<repo>/` with `dj-root repo`.
 
 - The diff: `git diff <base>..<head>` with the Range rule below, `gh pr diff <number>`, or a pasted diff; `--base <ref>` (optional, the human's explicit base)
 - The PR description and any linked issue or ticket, if available: read at step 3, after the Intent paragraph, never before
@@ -75,7 +75,7 @@ Standard depth: step 1 here, the delegated pass (steps 2 and 4 to 6, and the Int
 
 Fetch the diff (or fix the range for the hand-off) and the PR or branch metadata: title, base and head, linked issue id. Set the description and the ticket aside unread; step 3 reads them. Fix the range as the Range bullet says, and check it is not empty (`git diff --stat <base>..<head>`) before the hand-off.
 
-### 2. Triage files (internal — not a dossier section)
+### 2. Triage files (internal, not a dossier section)
 
 Sort changed files into core / tests / config / mechanical / generated / docs **to allocate your attention**: read core files fully, skim the rest. A 30-file diff with 5 core files is a small review. This triage guides you; it does not appear in the dossier.
 
@@ -102,8 +102,8 @@ For each main flow the diff touches, build a compact `input → transform → ou
 Three lenses over the core files, one read. Steps 4 and 5 are done by dj-pr-reviewer in the standard pass; the session does not repeat them.
 
 - **Precedents/duplication:** read the architecture file's "Shared building blocks", "Placement guide", "Layers" and "Deviations and migrations in progress" rows, then the touched files and the files they import. Does the PR re-implement a block the map lists? Does it diverge from a placement, a layer rule or the go-forward side of a migration? No search beyond the touched files and their imports; what the map and those files cannot settle goes to "Couldn't verify".
-- **Tests:** apply the **dj-test-quality** skill — do the tests validate the behavior this PR introduces, or implementation details? What realistic cases are missing?
-- **Stack quality:** apply the **dj-repo-patterns** skill — consistency with the repo's own conventions beats abstract best practice. For TypeScript, watch the dj-ts-reviewer checklist areas: unsafe casts, duplicated types/utilities, mishandled async flows. For Elixir, watch the dj-elixir-reviewer areas: N+1 queries and missing preloads, get-then-insert races, swallowed error tuples, context boundaries bypassed.
+- **Tests:** apply the **dj-test-quality** skill: do the tests validate the behavior this PR introduces, or implementation details? What realistic cases are missing?
+- **Stack quality:** apply the **dj-repo-patterns** skill: consistency with the repo's own conventions beats abstract best practice. For TypeScript, watch the dj-ts-reviewer checklist areas: unsafe casts, duplicated types/utilities, mishandled async flows. For Elixir, watch the dj-elixir-reviewer areas: N+1 queries and missing preloads, get-then-insert races, swallowed error tuples, context boundaries bypassed.
 
 ### 6. Filter through the evidence rule
 
@@ -114,7 +114,7 @@ Three lenses over the core files, one read. Steps 4 and 5 are done by dj-pr-revi
 - No theoretical edge cases unless reachable through a realistic user/API flow.
 - No style preferences reported as blockers.
 - No invented missing requirements.
-- If the intent is unclear, ask a question — don't assume the author is wrong.
+- If the intent is unclear, ask a question. Don't assume the author is wrong.
 - Prefer fewer, higher-signal comments.
 ```
 
@@ -134,7 +134,7 @@ The finding shapes are those of dj-pr-reviewer's output, with its field labels a
 
 ### 7. Deep verification (only with `--deep`)
 
-For each **Blocking** finding: one independent verification pass (the **dj-pr-reviewer** subagent if available, otherwise inline with fresh eyes) that tries to refute it — consulting installed library sources when the finding depends on library behavior. Hand the verifier the finding, the relevant excerpts, and your evidence — not the whole repo. Downgrade or discard findings that do not survive.
+For each **Blocking** finding: one independent verification pass (the **dj-pr-reviewer** subagent if available, otherwise inline with fresh eyes) that tries to refute it, consulting installed library sources when the finding depends on library behavior. Hand the verifier the finding, the relevant excerpts, and your evidence, not the whole repo. Downgrade or discard findings that do not survive.
 
 ### 8. Write the Reviewer Dossier
 
@@ -144,9 +144,9 @@ Fill `templates/reviewer-dossier.md` and save it to `.dj-agents/repos/<repo>/rev
 
 - **First screen for a decision.** The sections above the depth marker say what the PR solves, what behavior changes, where the risk lives and the findings, short enough to read in one screen. Depth comes below. Findings are copied from the reviewer's output without rewriting; "What behavior changes" is written from a caller's view (what a client, a user or another module sees), not as a file list.
 - **Audience for the depth sections: a reviewer who does NOT know this area of the codebase.** Every component named gets a one-line explanation on first mention: what it is, where it lives, why it exists. That is what the "Components involved" section is for.
-- **Concrete over abstract.** Not "serializes across processes" — "prevents two replicas from signing with the same nonce at the same time". A one-sentence digression to explain something "obvious" is welcome; unexplained jargon is not.
+- **Concrete over abstract.** Not "serializes across processes", "prevents two replicas from signing with the same nonce at the same time". A one-sentence digression to explain something "obvious" is welcome; unexplained jargon is not.
 - **"Files, from the ground up":** order files from the most foundational to the top-level (dependencies first, orchestration last), and for each file explain **every change in it**, function by function, one or two plain lines each.
-- **No extra sections.** No file-category listings, no ad-hoc context sections — operational facts (topology, wiring, config) go inside the finding whose severity they set.
+- **No extra sections.** No file-category listings, no ad-hoc context sections: operational facts (topology, wiring, config) go inside the finding whose severity they set.
 
 ### 9. Human filters, then the map learns
 
@@ -174,12 +174,12 @@ The standard pass always runs, whatever the size of the PR. A docs-only or mecha
 ## Common mistakes
 
 - **Jumping straight to criticism**: the Intent paragraph and the data flow come before any judgment; findings come from the comprehension passes, not from a hunt for issues.
-- **Fanning out agents to look thorough** — seven agents re-reading the same files multiplies cost, not insight. One careful pass beats a fleet.
-- **Writing for yourself** — a dossier full of unexplained internal component names is useless to the person it is for.
-- **Padding the review** — reporting nits to justify the effort. "No blockers" is a valid, valuable result.
-- **Presenting questions as findings** — if you lack evidence, it is a question for the author.
-- **Hiding discarded suspicions** — listing what you checked and dropped builds trust and saves the human from re-checking.
-- **Posting or pushing anything** — this skill produces material for the human; it never touches the PR.
+- **Fanning out agents to look thorough**: seven agents re-reading the same files multiplies cost, not insight. One careful pass beats a fleet.
+- **Writing for yourself**: a dossier full of unexplained internal component names is useless to the person it is for.
+- **Padding the review**: reporting nits to justify the effort. "No blockers" is a valid, valuable result.
+- **Presenting questions as findings**: if you lack evidence, it is a question for the author.
+- **Hiding discarded suspicions**: listing what you checked and dropped builds trust and saves the human from re-checking.
+- **Posting or pushing anything**: this skill produces material for the human; it never touches the PR.
 - **Reading the description before the code**: the author's account anchors the review and hides the gap between what was promised and what was built. Step 3 reads it after the Intent paragraph.
 - **Writing a teammate's single comment as a team rule**: one comment is marked "one comment, not yet a rule" and needs its own yes; the blind reviewer reads `review/rules.md` as rules.
 

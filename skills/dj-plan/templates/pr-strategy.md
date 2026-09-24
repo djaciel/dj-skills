@@ -2,7 +2,7 @@
      Location: .dj-agents/repos/<repo>/features/<feature>/pr-strategy.md
      Purpose: PR strategy: a revisable hypothesis about PR boundaries; estimates shown, never enforced -->
 
-# PR Strategy — <feature name>
+# PR Strategy: <feature name>
 
 Status: <hypothesis | pr-split-needed | revised>
 <!-- hypothesis when written; pr-split-needed when a task close showed a PR past its estimate and the human agreed, or the human asked (the re-evaluation checkpoint is now); revised after the re-slice, with a drift-log entry -->
@@ -11,7 +11,7 @@ Status: <hypothesis | pr-split-needed | revised>
 <1 PR | sequential PRs | stacked PRs | no PR>
 
 ## Why
-<reasoning — the deciding question is "does each PR tell a reviewable story?", never a file count>
+<reasoning: the deciding question is "does each PR tell a reviewable story?", never a file count>
 
 ## Estimates (informational)
 <!-- order of magnitude; never a limit. One row per PR. Lines: tens, hundreds, a thousand or more. Reading time: minutes, tens of minutes, hours -->
@@ -60,10 +60,10 @@ Docs:
 - ...
 
 ## Alternatives considered
-- <approach> — <why not>
+- <approach>: <why not>
 
 ## Re-evaluation checkpoint
-Re-check after <T-XX — usually an early task>:
+Re-check after <T-XX, usually an early task>:
 - actual files touched;
 - conceptual vs mechanical change;
 - whether the PR count still makes sense.

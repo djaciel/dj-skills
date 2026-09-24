@@ -26,7 +26,7 @@ Staging first, map second. Every source lands as one entry in `knowledge/inbox/`
 
 ## Inputs
 
-Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
+Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `.dj-agents/repos/<repo>/` with `dj-root repo`.
 
 - The source: pasted text, or a path to a file the human points at.
 - The knowledge root: `dj-root knowledge`. If it fails, stop and tell the human to run `/dj-start --adopt` first.

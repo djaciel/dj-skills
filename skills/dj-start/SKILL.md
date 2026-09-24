@@ -9,13 +9,13 @@ description: "Use when starting a NEW project from scratch: the user arrives wit
 
 Turn a raw idea dump into working project memory: extract what the user already knows, ask only what blocks real decisions, set the work mode and language policy, and leave `.dj-agents/` ready for planning.
 
-**Core principle:** Smart intake, not a questionnaire. Read what the user brings, infer everything you can, and ask at most 3–5 questions — only the ones planning would get wrong without.
+**Core principle:** Smart intake, not a questionnaire. Read what the user brings, infer everything you can, and ask at most 3 to 5 questions, only the ones planning would get wrong without.
 
 **Announce at start:** "I'm using the dj-start skill to set up this project."
 
 ## When to use
 
-Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
+Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `.dj-agents/repos/<repo>/` with `dj-root repo`.
 
 - A new project starts from an idea, notes, restrictions, links, or a pasted brainstorming conversation with another AI.
 - The project has no `repos/<repo>/` area under `.dj-agents/` yet (the root itself may already exist next to other repositories).
@@ -25,7 +25,7 @@ When NOT to use:
 
 - First contact with an existing codebase → map it with the **dj-map** skill after adopting it.
 - New feature or scope change in a project that already has `.dj-agents/` → use the **dj-plan** skill.
-- A throwaway one-off script that needs no memory — just write it.
+- A throwaway one-off script that needs no memory: just write it.
 
 ## The process
 
@@ -33,11 +33,11 @@ When NOT to use:
 
 Read everything the user provides: notes, ideas, constraints, links, doubts, pasted conversations. Extract:
 
-- Intent — what they actually want to exist.
-- Problem — what hurts today.
-- Constraints — platform, stack, budget, timeline, "must not" items.
-- Risks and doubts — theirs and yours.
-- External context — other repos, docs, or schemas this project depends on. Record them in `project.md` under "Related repos & context sources" so they never need re-explaining.
+- Intent: what they actually want to exist.
+- Problem: what hurts today.
+- Constraints: platform, stack, budget, timeline, "must not" items.
+- Risks and doubts: theirs and yours.
+- External context: other repos, docs, or schemas this project depends on. Record them in `project.md` under "Related repos & context sources" so they never need re-explaining.
 
 Reflect a compact intake summary back before asking anything:
 
@@ -56,9 +56,9 @@ Blocking questions:
 3. Is login/auth needed?
 ```
 
-### 2. Blocking questions — 3 to 5, maximum
+### 2. Blocking questions: 3 to 5, maximum
 
-A blocking question is one whose answer changes architecture, scope, stack, cost, or core UX — planning would be wrong without it. Everything else becomes an **assumption**, written down for the user to correct.
+A blocking question is one whose answer changes architecture, scope, stack, cost, or core UX: planning would be wrong without it. Everything else becomes an **assumption**, written down for the user to correct.
 
 Don't ask checklist questions. Ask questions that change a decision:
 
@@ -67,7 +67,7 @@ Don't ask checklist questions. Ask questions that change a decision:
 | Is this an MVP or a POC? | Do you expect this to be thrown away after validation, or should the first version be production-quality enough to keep building on? |
 | Who are the users? | Is this only for your personal use, or will teammates/customers use it? That changes how strict we get with error handling, docs and tests. |
 
-If the answer is already inferable from the dump, don't ask — infer it and list it as an assumption.
+If the answer is already inferable from the dump, don't ask. Infer it and list it as an assumption.
 
 ### 3. Set the work mode
 
@@ -76,24 +76,24 @@ Classify the project and recommend a mode; confirm with the user:
 | Project type | human_loop | What it means in practice |
 |---|---|---|
 | personal-small | phase | No PRs, few documents, can work through a whole phase, human review at end of phase. |
-| personal-medium | checkpoint | Grouped tasks, checkpoints every 2–4 tasks, reasonable tests, handoff on session close. |
+| personal-medium | checkpoint | Grouped tasks, checkpoints every 2 to 4 tasks, reasonable tests, handoff on session close. |
 | production-work | task | Human review per task, no automatic commits, mandatory tests/validations, internal review after each task, PR descriptions in English. |
 
 Also set:
 
-- `commit_policy: human-only | allowed-if-explicit | autonomous` — default **human-only**.
+- `commit_policy: human-only | allowed-if-explicit | autonomous`, default **human-only**.
 - `pr_policy: none | phase-as-pr | explicit-pr-strategy`.
 - Branching: base branch, naming convention (`feat/<feature>`, `fix/<issue-id>`), and whether the agent creates branches or only suggests them. For an existing repo, detect the convention from `git branch -a` and recent history instead of inventing one.
 
-These live in `.dj-agents/repos/<repo>/project.md` and are echoed into every task packet later — the mode is written down, not remembered.
+These live in `.dj-agents/repos/<repo>/project.md` and are echoed into every task packet later: the mode is written down, not remembered.
 
 ### 4. Set the language policy
 
-Detect (or ask, if genuinely ambiguous) the language the user converses in — that is the **internal language**. The **external language is always English**: code, comments, tests, commits, PRs, tickets, anything that leaves the user's machine. Also set the **external English level**: `simple (B1/B2)` — plain words, short sentences; the right default when teammates read English as a second language — or `natural`. It is a writing register, never a facts filter. Write `.dj-agents/repos/<repo>/language-policy.md` from `templates/language-policy.md`.
+Detect (or ask, if genuinely ambiguous) the language the user converses in. That is the **internal language**. The **external language is always English**: code, comments, tests, commits, PRs, tickets, anything that leaves the user's machine. Also set the **external English level**: `simple (B1/B2)` (plain words, short sentences; the right default when teammates read English as a second language) or `natural`. It is a writing register, never a facts filter. Write `.dj-agents/repos/<repo>/language-policy.md` from `templates/language-policy.md`.
 
 ### 5. Generate the base files (new project and adopt)
 
-Generate the minimal set — planning documents come later, from dj-plan. Default feature name for a new project: `main`. Adopt mode creates no feature.
+Generate the minimal set: planning documents come later, from dj-plan. Default feature name for a new project: `main`. Adopt mode creates no feature.
 
 | File | Template | New project | Adopt | Purpose |
 |---|---|---|---|---|
@@ -102,8 +102,8 @@ Generate the minimal set — planning documents come later, from dj-plan. Defaul
 | `.dj-agents/repos/<repo>/features/main/state.md` | `templates/feature-state.md` | yes | no | The feature's active state: direction, "Do not follow", next task. |
 | `.dj-agents/repos/<repo>/handoff.md` | `templates/handoff.md` | yes | yes, empty state | Session-to-session handoff (starts nearly empty). |
 | `.dj-agents/repos/<repo>/language-policy.md` | `templates/language-policy.md` | yes | yes | Internal vs external language rules. |
-| `.dj-agents/repos/<repo>/features/main/brief.md` | `templates/brief.md` | yes | no | What to build, for whom, which problem — plus assumptions. |
-| `.dj-agents/repos/<repo>/expertise-registry.md` | `templates/expertise-registry.md` | optional | optional | Optional — only if the user wants to wire external skills per stack. |
+| `.dj-agents/repos/<repo>/features/main/brief.md` | `templates/brief.md` | yes | no | What to build, for whom, which problem, plus assumptions. |
+| `.dj-agents/repos/<repo>/expertise-registry.md` | `templates/expertise-registry.md` | optional | optional | Optional, only if the user wants to wire external skills per stack. |
 
 Do not front-load fifteen documents. Spec, delivery plan, task packets and PR strategy belong to dj-plan.
 
@@ -117,9 +117,9 @@ Write `.dj-agents/repos/<repo>/features/main/discovery.md` from `templates/focus
 |---|---|---|---|---|
 | Storage | localStorage vs IndexedDB | IndexedDB | structured data | medium |
 
-Anything that doesn't block planning goes under "Things we are not deciding yet" — deciding late with more information is a feature, not a failure.
+Anything that doesn't block planning goes under "Things we are not deciding yet": deciding late with more information is a feature, not a failure.
 
-### 7. Spikes — only if small and justified
+### 7. Spikes: only if small and justified
 
 A spike answers one concrete technical question with the least code possible. It does not deliver product functionality, does not implement a whole module, and does not decide architecture by accident.
 
@@ -137,9 +137,9 @@ Keep the vocabulary straight: **spike** = answer a small question · **prototype
 
 ### 8. Hand off to planning
 
-**NEXT STEP:** the **dj-plan** skill. It turns `brief.md` + `discovery.md` into the feature spec, delivery plan, task packets and — if `pr_policy` requires it — a PR strategy. dj-start does NOT generate spec, plan or tasks itself.
+**NEXT STEP:** the **dj-plan** skill. It turns `brief.md` + `discovery.md` into the feature spec, delivery plan, task packets and (if `pr_policy` requires it) a PR strategy. dj-start does NOT generate spec, plan or tasks itself.
 
-If the dj-plan skill is not available, tell the user planning is the next step and offer to draft a minimal spec and task list inline — don't silently skip planning.
+If the dj-plan skill is not available, tell the user planning is the next step and offer to draft a minimal spec and task list inline. Don't silently skip planning.
 
 ## Adopt mode (`--adopt`)
 
@@ -159,12 +159,12 @@ If the dj-plan skill is not available, tell the user planning is the next step a
 
 ## Common mistakes
 
-- **Questionnaire mode** — asking blocks of questions the idea dump already answers. Extract first, ask last.
-- **Label questions** — "MVP or POC?" is ambiguous and useless; the work mode captures what actually matters (human control, quality bar, PRs, commit rights).
-- **Infinite discovery** — researching things that don't change what gets built next.
-- **Giant spikes** — a spike that builds 80% of the app is an implementation phase in disguise; a spike that installs a huge project "just to try one thing" is not justified.
-- **Skipping the language policy** — it must be a written contract, or later output arrives in the wrong language.
-- **Treating the original brain-dump as an active source** — after intake, the pasted conversation is archive material; the feature's `state.md` and the brief are the truth.
+- **Questionnaire mode**: asking blocks of questions the idea dump already answers. Extract first, ask last.
+- **Label questions**: "MVP or POC?" is ambiguous and useless; the work mode captures what actually matters (human control, quality bar, PRs, commit rights).
+- **Infinite discovery**: researching things that don't change what gets built next.
+- **Giant spikes**: a spike that builds 80% of the app is an implementation phase in disguise; a spike that installs a huge project "just to try one thing" is not justified.
+- **Skipping the language policy**: it must be a written contract, or later output arrives in the wrong language.
+- **Treating the original brain-dump as an active source**: after intake, the pasted conversation is archive material; the feature's `state.md` and the brief are the truth.
 - **Adopting by copying rules from memory instead of reading the manifests and the git history**: every command and branching value in an adopted `project.md` has a source in the repository, or it is listed as an assumption.
 - **Writing anything inside the client repository**: adopt mode reads the repository and writes only under `.dj-agents/`.
 - **Rewriting a base file that migration or an earlier adopt already wrote**: fill-missing writes only absent files.
@@ -229,4 +229,4 @@ Committed in .dj-agents/: "Adopt <repo>" | "Fill missing base files for <repo>".
 Next: create .dj-agents/repos/<repo>/features/<feature>/init.md and run /dj-plan with it; run /dj-map --architecture first if the ground is unfamiliar.
 ```
 
-Signal over ceremony: if the project is tiny and a step is obviously unnecessary (e.g. no discovery decisions exist), say so in the report and skip it — don't perform empty sections.
+Signal over ceremony: if the project is tiny and a step is obviously unnecessary (e.g. no discovery decisions exist), say so in the report and skip it. Don't perform empty sections.

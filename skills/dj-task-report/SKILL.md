@@ -1,6 +1,6 @@
 ---
 name: dj-task-report
-description: Use when reporting a completed or blocked task to the human — after implementation and validation finish, when closing a work session that produced reviewable changes, or when a previous report was too long or vague to act on.
+description: Use when reporting a completed or blocked task to the human, after implementation and validation finish, when closing a work session that produced reviewable changes, or when a previous report was too long or vague to act on.
 ---
 
 # Task Report
@@ -13,13 +13,13 @@ The report is for the human only: nothing in it is posted, sent or pasted into a
 
 ## When to use
 
-- A task reaches an end state (`done`, `done-with-drift`, `blocked`, `needs-replan`, ...) — this is the final step of the **dj-task** loop.
+- A task reaches an end state (`done`, `done-with-drift`, `blocked`, `needs-replan`, ...). This is the final step of the **dj-task** loop.
 - Any implementation work (even outside a formal task packet) that the human will review before committing.
 
 When NOT to use:
 
-- Communication that leaves the machine — PR descriptions, tickets, team updates. Route those through **dj-brief**.
-- Mid-task progress updates — a one-line note in conversation is enough.
+- Communication that leaves the machine: PR descriptions, tickets, team updates. Route those through **dj-brief**.
+- Mid-task progress updates: a one-line note in conversation is enough.
 
 ## The rule
 
@@ -29,7 +29,7 @@ First what needs you, then what was done.
 
 ## Persistence
 
-The same report is delivered twice: shown in the conversation for the human, and saved to `.dj-agents/repos/<repo>/features/<feature>/reports/T-XX.md` (work outside a feature: `.dj-agents/repos/<repo>/reports/<date>-<slug>.md`). The saved copy is what lets a fresh session — or **dj-brief** weeks later — reconstruct what happened without the original conversation. A chat-only report is a lost report.
+The same report is delivered twice: shown in the conversation for the human, and saved to `.dj-agents/repos/<repo>/features/<feature>/reports/T-XX.md` (work outside a feature: `.dj-agents/repos/<repo>/reports/<date>-<slug>.md`). The saved copy is what lets a fresh session (or **dj-brief** weeks later) reconstruct what happened without the original conversation. A chat-only report is a lost report.
 
 ## What goes in the report
 
@@ -71,14 +71,14 @@ Scaling: the first screen is never dropped; its parts say "nothing" or "none", b
 
 Off by default: the base report stays at its first screen and the evidence below it. Produce it when the user asks ("walk me through T-03"), or when the Report style section of `.dj-agents/repos/<repo>/project.md` sets `Walkthrough: always`. Three parts, in the internal language, ordered so the reader never drowns:
 
-1. **Goal** — the task's objective restated in one line.
-2. **Data flow** — a compact `input → transform → output` map of the changed flow (apply **dj-data-flow-review**), one line per path.
-3. **File by file, in review order** — for each core file, the functions added or changed, one line each, in plain words. Mechanical files stay grouped — never function by function.
+1. **Goal**: the task's objective restated in one line.
+2. **Data flow**: a compact `input → transform → output` map of the changed flow (apply **dj-data-flow-review**), one line per path.
+3. **File by file, in review order**: for each core file, the functions added or changed, one line each, in plain words. Mechanical files stay grouped, never function by function.
 
 Short lines, no prose paragraphs, no code dumps. The walkthrough explains the change; the diff remains the source of truth.
 
 ```md
-Walkthrough — T-03
+Walkthrough: T-03
 
 Goal: recover the funding flow when account linking fails after token creation.
 
@@ -87,23 +87,23 @@ Data flow:
 
 File by file:
 1. `src/funding/recover.ts`
-   - `resolveRecovery()` — decides retry vs abort from the error code
-   - `scheduleRetry()` — enqueues the retry with backoff (reuses `queue.push`)
+   - `resolveRecovery()`: decides retry vs abort from the error code
+   - `scheduleRetry()`: enqueues the retry with backoff (reuses `queue.push`)
 2. `src/funding/types.ts`
-   - `RecoveryState` — new union: `retrying | aborted | recovered`
+   - `RecoveryState`: new union, `retrying | aborted | recovered`
 ```
 
 ## Common mistakes
 
-- **Narrating the process chronologically** ("first I read, then I tried...") — report results, not the journey.
-- **"All tests pass" with no command output** — validation without evidence is a claim, not a result.
-- **Listing 20 mechanical files individually** — drowns the 3 files that matter. Group them.
+- **Narrating the process chronologically** ("first I read, then I tried..."): report results, not the journey.
+- **"All tests pass" with no command output**: validation without evidence is a claim, not a result.
+- **Listing 20 mechanical files individually**: drowns the 3 files that matter. Group them.
 - **Hiding drift in the middle of the report**: drift changes what the human reviews; it goes in the outcome line, Deviations and Acceptance.
 - **A pending decision buried in Changes or Acceptance instead of "I need from you"**: the human approves what the first screen shows; a decision below it gets approved without being seen.
 - **"Not verified: nothing" when a check ran only by proxy**: a proxy run, an inline blind review or a skipped command is not verified; name it.
 - **Reading the Lengths line as a target to cut to**: it is a measurement for the human; cutting evidence to change it turns results into claims.
-- **Pasting the full diff** — the human has `git diff`; the report's job is to guide it, not duplicate it.
-- **Skipping the review order** — without it, the human reads files alphabetically and misses the story.
+- **Pasting the full diff**: the human has `git diff`; the report's job is to guide it, not duplicate it.
+- **Skipping the review order**: without it, the human reads files alphabetically and misses the story.
 
 ## Output format
 

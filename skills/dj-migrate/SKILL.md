@@ -25,7 +25,7 @@ Never delete the old folder and never move it: copy with `cp -R`, never `mv`, ne
 
 ## Inputs
 
-Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `<area>` with the `dj-root` script.
+Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `.dj-agents/repos/<repo>/` with `dj-root repo`.
 
 - **The root.** Run `dj-root`. If it exits 1, ask one question with a default: "Where should `.dj-agents/` live? Default: the parent of the current repository". Then create it exactly as `/dj-start --adopt` step 1 does: `knowledge/` with `index.md` seeded from the dj-map template, `repos/` with a `.gitkeep`, `git init`, first commit "Initialize .dj-agents". A root without its own `.git` gets the same `git init` and first commit.
 - **The base**: the directory that holds `.dj-agents/`. The old folders are searched there, four levels deep, without entering `node_modules`, `.git` or any `.dj-agents/`, and without entering a v2 folder once found:

@@ -16,7 +16,7 @@
      Do NOT add sections beyond the ones below; operational facts (topology, wiring,
      config) go inside the finding or section whose severity they affect. -->
 
-# Reviewer Dossier — `<branch or PR>` vs `<base>`
+# Reviewer Dossier: `<branch or PR>` vs `<base>`
 
 ## What this PR appears to solve
 

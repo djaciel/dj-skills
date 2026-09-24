@@ -1,29 +1,29 @@
 ---
 name: dj-guide
-description: Use when a completed diff needs a human-review guide — closing a task in the /dj-task loop, or invoked directly for changes already made — so a reviewer can understand and verify the change without reconstructing it from a raw diff.
+description: Use when a completed diff needs a human-review guide (closing a task in the /dj-task loop, or invoked directly for changes already made), so a reviewer can understand and verify the change without reconstructing it from a raw diff.
 ---
 
 # Guide
 
 ## Overview
 
-A guide exists so a human can review a change they did not write, file by file and test by test, and actually understand it instead of skimming a diff and trusting it. It teaches by showing: **real code first, short explanation after**. A guide that describes code without quoting it has failed — the reader should never need the repo open in another window to follow it.
+A guide exists so a human can review a change they did not write, file by file and test by test, and actually understand it instead of skimming a diff and trusting it. It teaches by showing: **real code first, short explanation after**. A guide that describes code without quoting it has failed: the reader should never need the repo open in another window to follow it.
 
 Each task's section has two layers. A first screen carries what the human needs to decide: the business why, the metrics of the diff, what can break and the yes/no questions to approve. The depth sits below a marker and is read when learning the area. Only added lines are quoted and explained; a removed line is shown once, with its verdict. The guide is for the human only: nothing in it is posted.
 
 ## When to use
 
-- At the close of a task in the **dj-task** loop, once code and tests are validated — the step itself is wired in dj-task; this skill only defines what gets written and where.
+- At the close of a task in the **dj-task** loop, once code and tests are validated. The step itself is wired in dj-task; this skill only defines what gets written and where.
 - Invoked directly to produce a review guide for changes already made (an old branch, a change that shipped without one).
 
 **When NOT to use:**
 
-- Reporting a task's outcome to the human in conversation — use **dj-task-report**.
-- Writing a PR description, commit message, or anything that leaves the machine — use **dj-brief**.
+- Reporting a task's outcome to the human in conversation: use **dj-task-report**.
+- Writing a PR description, commit message, or anything that leaves the machine: use **dj-brief**.
 
 ## Language
 
-The guide is an internal artifact: write it in the **internal language** from `.dj-agents/repos/<repo>/language-policy.md` (default: whatever the user converses in). Code, identifiers, and every quoted block stay exactly as written in the repo — never translated.
+The guide is an internal artifact: write it in the **internal language** from `.dj-agents/repos/<repo>/language-policy.md` (default: whatever the user converses in). Code, identifiers, and every quoted block stay exactly as written in the repo, never translated.
 
 ## Where it lives
 
@@ -41,7 +41,7 @@ A new task's section is inserted right under the index, above every earlier sect
 
 ## Detail level
 
-Two modes, decided once per section. Read `.dj-agents/repos/<repo>/expertise-registry.md` if it exists — it maps stacks to the user's expertise; no file or no match → known stack.
+Two modes, decided once per section. Read `.dj-agents/repos/<repo>/expertise-registry.md` if it exists: it maps stacks to the user's expertise; no file or no match → known stack.
 
 | Mode | When | What it changes |
 |---|---|---|
@@ -81,13 +81,13 @@ A depth part with nothing to show says "none", except Concepts, which is left ou
 ## Hard rules
 
 - **Show, then tell.** Any code being explained appears verbatim in a fenced block *before* its explanation. Describing code only by `file:line` references is this guide's primary failure mode.
-- **Short paragraphs.** 2–4 lines each, with a bold lead-in naming the point (`**Why 30 seconds.** ...`). Walls of prose are unreadable next to a diff.
+- **Short paragraphs.** 2 to 4 lines each, with a bold lead-in naming the point (`**Why 30 seconds.** ...`). Walls of prose are unreadable next to a diff.
 - **Deletions as diff blocks.** Every removed line appears in a ```diff block with a verdict under Removed lines, and every file that lost lines has its line under Metrics. A deletion summarized but never shown is not audited.
 - **Only added lines are quoted and explained.** A line that is unchanged in the diff never appears in a code block under File by file, and neither does code from a file the diff does not touch: it is described in one line, never pasted. Evidence is a command and its output, not a pasted block from elsewhere.
 - **The metrics come from `diff-metrics`**, pasted, never retyped or estimated.
 - **Evidence is shown.** A claim resting on repo evidence ("four of the five caches set no TTL") shows the command used (`grep -rn ...`) or the counterpart code.
 - **Reading order, not diff order.** Whatever a file imports or calls comes before it.
-- **Every test gets its three answers** — what, why, what-if-missing.
+- **Every test gets its three answers**: what, why, what-if-missing.
 - **Never invent a reason.** If the WHY is not evident from the packet, the report, or the code, say so as an open question.
 - **Names from the code, the repository and the glossary.** Never an invented term; never a person's name.
 - **Describe, don't sell.** The guide explains the code as it landed, rough edges included.
@@ -100,15 +100,15 @@ Default: the **dj-guide-writer** subagent writes the section. Hand it the task p
 
 ## Common mistakes
 
-- **Describing code by line numbers instead of pasting it** — produces a guide that must be read with the repo open, which defeats its purpose.
-- Long paragraphs that narrate three changes at once — one block, one explanation.
+- **Describing code by line numbers instead of pasting it**: produces a guide that must be read with the repo open, which defeats its purpose.
+- Long paragraphs that narrate three changes at once: one block, one explanation.
 - Writing the guide in English when the internal language is not English.
 - Appending at the bottom or editing an earlier section: new sections go on top, old ones stay byte-identical.
 - Explaining neighboring lines to give context for one added line.
 - Teaching a concept the packet did not mark, or one already taught in this feature.
 - A "To approve" question that cannot be answered by reading the diff.
 - Following git-diff order instead of reading order.
-- Skipping a test because "it's obvious" — every test gets its three answers.
+- Skipping a test because "it's obvious": every test gets its three answers.
 - Guessing at a rationale instead of flagging it as an open question.
 
 ## Output format

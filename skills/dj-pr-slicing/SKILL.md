@@ -1,13 +1,13 @@
 ---
 name: dj-pr-slicing
-description: "Use when deciding PR boundaries — planning how a feature will land as pull requests, judging whether a grown branch should ship as one PR or several, or when pr_policy requires an explicit PR strategy for a feature."
+description: "Use when deciding PR boundaries, planning how a feature will land as pull requests, judging whether a grown branch should ship as one PR or several, or when pr_policy requires an explicit PR strategy for a feature."
 ---
 
 # PR Slicing
 
 ## Overview
 
-A PR boundary is judged by one question — **"Does this PR tell a reviewable story?"** — never by file count. A PR strategy is a revisable hypothesis with a re-evaluation checkpoint, not an eternal contract.
+A PR boundary is judged by one question: **"Does this PR tell a reviewable story?"**, never by file count. A PR strategy is a revisable hypothesis with a re-evaluation checkpoint, not an eternal contract.
 
 Each PR is estimated and the estimate is shown to the human. When a PR is large for the team's `pr_size` preference, a split is the default recommendation, and the human decides. No number is a limit.
 
@@ -19,7 +19,7 @@ Each PR is estimated and the estimate is shown to the human. When a PR is large 
 
 **When NOT to use:**
 
-- `pr_policy: none` — work lands on a shared branch; there are no PR boundaries to design
+- `pr_policy: none`: work lands on a shared branch; there are no PR boundaries to design
 - A trivial one-story change (a small fix does not need a slicing analysis)
 
 ## Classify files first
@@ -28,14 +28,14 @@ File count means nothing until files are classified:
 
 | Category | Examples | Review cost |
 |---|---|---|
-| Core | new business logic, changed contracts, altered behavior | High — read carefully |
-| Tests | new/updated specs, fixtures | Medium — check against behavior |
-| Config | CI, env, build settings | Low — scan for surprises |
-| Mechanical | renames, import updates, codemod output | Near zero — spot-check |
+| Core | new business logic, changed contracts, altered behavior | High, read carefully |
+| Tests | new/updated specs, fixtures | Medium, check against behavior |
+| Config | CI, env, build settings | Low, scan for surprises |
+| Mechanical | renames, import updates, codemod output | Near zero, spot-check |
 | Generated | lockfiles, snapshots, codegen | Near zero |
 | Docs | READMEs, comments-only changes | Low |
 
-A 30-file PR can be perfectly reviewable if 5 files are core, 10 are tests, 5 are config/docs, 10 are mechanical — **and** the description carries a clear review map (apply the **dj-pr-description** skill). A 5-file PR can be terrible if it mixes architecture, UX, tests, a migration, and cleanup into one diff.
+A 30-file PR can be perfectly reviewable if 5 files are core, 10 are tests, 5 are config/docs, 10 are mechanical, **and** the description carries a clear review map (apply the **dj-pr-description** skill). A 5-file PR can be terrible if it mixes architecture, UX, tests, a migration, and cleanup into one diff.
 
 ## Estimate each PR
 
@@ -68,7 +68,7 @@ The answers become a short table, not a big document:
 
 ```text
 PR | Purpose   | Expected files    | Risk   | Depends on
-1  | Contracts | API/types/tests   | Medium | —
+1  | Contracts | API/types/tests   | Medium | none
 2  | SDK       | SDK/tests         | High   | PR 1
 3  | Widget    | UI/hooks/tests    | Medium | PR 2
 ```
@@ -100,7 +100,7 @@ If the second prints nothing, there is no stack: plan separate PRs, rebase the d
 | One conceptual change, whatever the file count | 1 PR with a review map |
 | A dependency chain: foundation and consumer, each reviewable alone | Sequential PRs (the default): each merges onto the base before the next is reviewed |
 | Real dependency chain, the hosting check passed, **and** the team reviews fast | Stacked PRs |
-| The team reviews slowly | Fewer, self-contained PRs — stacked chains rot while waiting |
+| The team reviews slowly | Fewer, self-contained PRs: stacked chains rot while waiting |
 | A mechanical change dwarfs the conceptual change | Separate mechanical from conceptual when possible |
 
 Dependent PRs in real life:
@@ -119,7 +119,7 @@ Every PR strategy includes a re-evaluation checkpoint after the first real tasks
 - whether the PR count still makes sense
 - from then on, at every task close, `pr-meter <target>` shows the PR's size so far next to its estimate (dj-task step 9)
 
-If the strategy changes, update `pr-strategy.md` and note why — silent divergence between plan and branches is drift (apply the **dj-drift-management** skill if it affects tasks).
+If the strategy changes, update `pr-strategy.md` and note why. Silent divergence between plan and branches is drift (apply the **dj-drift-management** skill if it affects tasks).
 
 `pr-strategy.md` carries `Status: hypothesis | pr-split-needed | revised`. It becomes `pr-split-needed` when a task close shows a PR past its estimate and the human agrees, or when the human asks; that moves the re-evaluation checkpoint to now. After the re-slice it becomes `revised`. A PR past its estimate is a question for the human, never an automatic split.
 
@@ -135,10 +135,10 @@ When a branch already holds more than one story:
 
 ## Common mistakes
 
-- Enforcing a file-count ceiling ("max 10 files") as law — file counts are a smell to investigate, not a rule.
+- Enforcing a file-count ceiling ("max 10 files") as law: file counts are a smell to investigate, not a rule.
 - Splitting one coherent story into fragments that cannot be understood alone.
 - Building stacked chains for a team that takes days per review.
-- Burying a behavioral change inside a giant mechanical rename — the diff drowns the story.
+- Burying a behavioral change inside a giant mechanical rename: the diff drowns the story.
 - Treating the initial strategy as frozen and never re-evaluating after real tasks land.
 - Recommending stacked PRs without checking that the contributor can push a branch to the repository where PRs are reviewed. Stacking is a hosting capability, not only a workflow choice.
 - Turning `pr_size` into a limit or slicing to hit a number instead of a seam.
