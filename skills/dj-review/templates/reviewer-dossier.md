@@ -2,12 +2,17 @@
      Location: .dj-agents/repos/<repo>/reviews/<branch-or-pr>/reviewer-dossier.md
      Purpose: comprehension-first summary and evidence-filtered findings for the human reviewer
 
-     AUDIENCE RULE — write for a reviewer who does NOT know this area of the codebase.
-     Every codebase-specific component (service, lock, queue, pattern, helper) gets a
-     short explanation on first mention: what it is, where it lives, why it exists.
-     Prefer concrete phrasing over abstract terms — not "serializes across processes"
-     but "prevents two replicas from signing with the same nonce at the same time".
-     A one-sentence digression to explain something "obvious" is welcome.
+     FIRST SCREEN FIRST: the sections above the Depth marker are written for a decision:
+     what the PR solves, what behavior changes, where the risk lives, the findings. Keep
+     them short enough to read in one screen. Findings keep the reviewer's shape and field
+     labels as written; each scale is ordered by consequence, with no count cap.
+
+     AUDIENCE RULE for the depth sections: write for a reviewer who does NOT know this
+     area of the codebase. Every codebase-specific component (service, lock, queue,
+     pattern, helper) gets a short explanation on first mention: what it is, where it
+     lives, why it exists. Prefer concrete phrasing over abstract terms: not "serializes
+     across processes" but "prevents two replicas from signing with the same nonce at the
+     same time". A one-sentence digression to explain something "obvious" is welcome.
      Do NOT add sections beyond the ones below; operational facts (topology, wiring,
      config) go inside the finding or section whose severity they affect. -->
 
@@ -15,23 +20,63 @@
 
 ## What this PR appears to solve
 
-<the problem and the approach, in plain language — assume no prior knowledge of this area.
-If the PR description claims something the diff does not do (or that already existed), say so here.>
+<from the code alone, before the description was read: the problem and the approach, in
+plain language>
+
+## Description vs code
+
+Description vs code: <matches | promises <X> that the code does not do | does <Y> that the description does not mention>
+
+<both gaps, when both exist, separated by ";". When there is a gap: the question for the author
+it raises, one line>
+
+## What behavior changes
+
+<from a caller's view: what a client, a user or another module sees differently, one line
+per behavior. Not a file list.>
+
+## Where the risk lives
+
+- <path or flow>: <why the risk sits there, one line>
+
+## Findings
+
+### Runtime
+
+<"none" when empty>
+
+- [<Blocking | Should fix | Nit>] <path:line>: <problem>. Trigger: <the realistic sequence that makes it bite>. Evidence: <quote or output>. Fix: <auto | human>. Suggestion: <smallest fix>.
+
+### Structural
+
+<"none" when empty. A structural finding is never Nit.>
+
+- [<Rule broken | Precedent diverged>] <path:line>: <problem>. Boundary or duplicate: <path:line>. Rule or precedent: <rules.md row | architecture section and row | pattern file | touched code path:line>. Resolves: <what changing it resolves>. Fix: <auto | human>. Suggestion: <smallest fix or question>.
+
+## Questions, not findings
+
+- <path:line>: <what looks off and what answer would resolve it>
+
+## Couldn't verify
+
+- <path:line>: <the judgment> needs <the file or fact that would settle it>
+
+<!-- Depth: read when learning the area -->
 
 ## Components involved
 
-<every codebase-specific thing the rest of the dossier mentions — one line each>
+<every codebase-specific thing the rest of the dossier mentions, one line each>
 
 - **<component>** (`<path>`): <what it is, why it exists, and its role in this PR>
 - **<component>** (`<path>`): <...>
 
 ## Before
 
-<how the affected behavior worked before this change — plain language, no unexplained jargon>
+<how the affected behavior worked before this change, in plain language, no unexplained jargon>
 
 ## After
 
-<how it works after this change — behavior, not a file list>
+<how it works after this change: behavior, not a file list>
 
 ## Data flow
 
@@ -40,36 +85,28 @@ points, what consumes the results, and mark the seams where an assumption change
 
 ## Files, from the ground up
 
-<ordered from the most foundational file to the top-level one — dependencies first,
+<ordered from the most foundational file to the top-level one: dependencies first,
 orchestration last. For EACH file: every change in it, function by function or block by
 block, one or two plain-language lines each. Group only truly mechanical files.>
 
-### 1. `<path>` — <one-line role of this file>
+### 1. `<path>`: <one-line role of this file>
 
-- `<functionOrBlock()>` — <new | modified | removed> — <what it does / what changed and why>
-- `<functionOrBlock()>` — <...>
+- `<functionOrBlock()>` (<new | modified | removed>): <what it does or what changed, and why>
+- `<functionOrBlock()>`: <...>
 
-### 2. `<path>` — <one-line role>
+### 2. `<path>`: <one-line role>
 
 - <...>
 
-## Findings worth considering
-
-1. [<Blocking | Should fix | Nit>] <one-line finding>
-   - Evidence: <file:line — what the code actually does>
-   - Why it matters: <concrete production or maintenance impact, explained for someone
-     without full context; include the operational facts that set the severity>
-   - Confidence: <high | medium | low>
-   - Suggestion: <smallest useful change, if any>
-
-## Questions, not findings
-
-1. <something unclear where the author may have context the reviewer lacks>
-
 ## Discarded suspicions
 
-- <suspicion investigated and dropped — why the evidence did not hold>
+- <candidate>: <the false-positives row it matches, or what was checked and why the evidence did not hold>
 
-## Steps skipped
+## How this review ran
 
-<review steps skipped for this PR and why — or "none">
+- Standard pass: <delegated to dj-pr-reviewer | inline: <why>>
+- Map inputs used: architecture <path | missing>; rules <path | missing>; false positives <path | missing>; patterns <paths | none>
+- Verification run: <command → real result, one line each | none available>
+- Deep: <no | yes: <Blocking findings verified and their outcome>>
+- Verdict: <Nothing to report | Findings | Couldn't verify, as the reviewer returned it>
+- Read beyond the diff: <imports the reviewer followed, or none>

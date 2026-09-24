@@ -8,7 +8,7 @@
 
 # <YYYY-MM-DD>: <title of the source>
 
-- Source kind: <Slack thread | memo | ticket | PR packet | session explanation | task close | fix close | migration>
+- Source kind: <Slack thread | memo | ticket | PR packet | PR review | session explanation | task close | fix close | migration>
 - Source date: <YYYY-MM-DD>
 - Status: <pending | applied <YYYY-MM-DD> | left in inbox: <reason>>
 
