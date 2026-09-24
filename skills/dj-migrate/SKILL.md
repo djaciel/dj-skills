@@ -27,7 +27,7 @@ Never delete the old folder and never move it: copy with `cp -R`, never `mv`, ne
 
 Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `.dj-agents/repos/<repo>/` with `dj-root repo`.
 
-- **The root.** Run `dj-root`. If it exits 1, ask one question with a default: "Where should `.dj-agents/` live? Default: the parent of the current repository". Then create it exactly as `/dj-start --adopt` step 1 does: `knowledge/` with `index.md` seeded from the dj-map template, `repos/` with a `.gitkeep`, `git init`, first commit "Initialize .dj-agents". A root without its own `.git` gets the same `git init` and first commit.
+- **The root.** Run `dj-root`. If it exits 1, ask one question with a default: "Where should `.dj-agents/` live? Default: <path>", where the default is the parent of the current repository when the session is inside a git repository, and the current directory otherwise (the folder that holds the repositories). Nothing is created before the human's "go" in step 1: the plan shows `Root: <path> (will be created)`, and only after "go" is it created exactly as `/dj-start --adopt` step 1 does: `knowledge/` with `index.md` seeded from the dj-map template, `repos/` with a `.gitkeep`, `git init`, first commit "Initialize .dj-agents". A root without its own `.git` gets the same `git init` and first commit.
 - **The base**: the directory that holds `.dj-agents/`. The old folders are searched there, four levels deep, without entering `node_modules`, `.git` or any `.dj-agents/`, and without entering a v2 folder once found:
   `find <base> -maxdepth 4 \( -name node_modules -o -name .dj-agents -o -name .git \) -prune -o -type d -name .agent -print -prune`
 - **The repo name** of each old folder: run `dj-root name` from the folder that contains it. Exit 2 means it is not inside a git repository: skip the folder and report it. Two old folders that resolve to the same name (a main checkout and a worktree) go to the same `repos/<repo>/`; the second one follows the merge rules.
@@ -42,10 +42,10 @@ Step 1 covers all old folders at once. Steps 2 to 7 run per old folder. Step 8 c
 
 ### 1. Plan and confirm once
 
-Count, per old folder, what will be copied and where: features (folders and files), reviews, issues, base files, the two state files, other entries at the old root, the sources step 4 will seed from, and the kinds that will be applied without a further question (below). Stop if a found repo already has `repos/<repo>/` with content and `--merge` was not given: "already migrated here; run `/dj-migrate --merge` for data from another machine". Stop too when `git -C <root> status --porcelain` prints anything: the run's commits must hold only what the migration wrote, so the human commits or stashes the root first. Show the plan with the names question of step 5 and wait for one reply that covers every folder:
+Count, per old folder, what will be copied and where: features (folders and files), reviews, issues, base files, the two state files, other entries at the old root, the sources step 4 will seed from, and the kinds that will be applied without a further question (below). Stop if a found repo already has `repos/<repo>/` with content and `--merge` was not given: "already migrated here; run `/dj-migrate --merge` for data from another machine". Stop too when an existing root's `git -C <root> status --porcelain` prints anything: the run's commits must hold only what the migration wrote, so the human commits or stashes the root first. Show the plan with the names question of step 5 and wait for one reply that covers every folder:
 
 ```text
-Root: <root> (created now | existing)
+Root: <root> (will be created | existing)
 Base: <base>, depth 4. Old folders found: <n>
 
 - <repo> (<path>) -> repos/<repo>/

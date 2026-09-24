@@ -67,10 +67,10 @@ Answer these before proposing a PR count:
 The answers become a short table, not a big document:
 
 ```text
-PR | Purpose   | Expected files    | Risk   | Depends on
-1  | Contracts | API/types/tests   | Medium | none
-2  | SDK       | SDK/tests         | High   | PR 1
-3  | Widget    | UI/hooks/tests    | Medium | PR 2
+PR | Purpose   | Core files | Files | Lines    | Reading time    | Independent value           | Depends on
+1  | Contracts | 2          | 6     | hundreds | tens of minutes | types and validation in use | none
+2  | SDK       | 3          | 8     | hundreds | tens of minutes | the SDK callable from code  | PR 1
+3  | Widget    | 2          | 7     | hundreds | tens of minutes | users see the widget        | PR 2
 ```
 
 ## Slicing techniques
