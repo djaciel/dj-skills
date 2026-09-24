@@ -14,6 +14,8 @@
 human_loop: <task | checkpoint | phase>
 commit_policy: <human-only | allowed-if-explicit | autonomous>
 pr_policy: <none | phase-as-pr | explicit-pr-strategy>
+pr_size: <the team's preference in its own words | none>
+<!-- pr_size: a preference the planner compares its PR estimates with, in words; never a limit. Adopt writes none and lists it under Assumptions -->
 dj_agents_commit: <auto | human-only>
 <!-- dj_agents_commit: whether task and fix closes commit inside .dj-agents/ (the user's own folder, never the client repo); adopt writes auto and lists it under Assumptions -->
 

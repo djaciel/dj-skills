@@ -54,6 +54,7 @@ Below the first screen, in this order:
 | Skipped steps | Loop steps skipped and why | One line each ("Skipped scout: packet lists all context") |
 | Acceptance | Hard / soft check status + drift classification | Levels per **dj-acceptance-review**; if drift exists, point to the drift-log entry (**dj-drift-management**) |
 | Out of scope | Discoveries reported, not acted on | Bugs, refactor candidates, missing utilities found along the way |
+| PR meter | When the feature has a PR strategy: `PR <n> so far: <pr-meter line> (estimate: <this PR's row in pr-strategy.md>)` | A measurement next to an estimate, never a limit. Past the estimate: the choice "keep going, or mark `pr-split-needed` and re-slice" goes to "I need from you". "script missing: part skipped" when it cannot run |
 | Staging | When the changes are not committed: the `staging-table` rows plus a Theme column, one theme per group of hunks the human would commit together | Rows and numbers come from the script, never from reading the diff. The themes let the human run `git add -p` theme by theme. "script missing: part skipped" when it cannot run |
 | Review order | Numbered reading order, core file first | This is the human's map to the diff |
 | Suggested commit | One line via **dj-commit-message** | Suggest only; the human commits unless commit_policy says otherwise |
@@ -153,6 +154,8 @@ Acceptance:
 
 Out of scope (not acted on):
 - `src/funding/client.ts` has an unhandled rejection: candidate for /dj-fix
+
+PR 1 so far: PR since 3f2a1c9 (merge-base with main): 2 commits, 7 files (2 core), +96 -3, uncommitted included: yes (estimate: 2 core files, about ten files, hundreds of lines)
 
 Staging (uncommitted; `git add -p` theme by theme):
 

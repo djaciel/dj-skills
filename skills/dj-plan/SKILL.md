@@ -122,9 +122,14 @@ Acceptance checks are living contracts: they can change, but consciously — thr
 
 **REQUIRED SUB-SKILL:** dj-pr-slicing — apply it when drafting `pr-strategy.md`. If it is not available, plan from the judgment question below. The strategy must:
 
-- answer "does each PR tell a reviewable story?" — never argue from file counts (a 30-file PR can be fine when 5 files are core and there is a clear review map);
+- answer "does each PR tell a reviewable story?";
 - classify files: core / tests / config / mechanical / generated / docs;
-- name a **re-evaluation checkpoint** after an early task (usually T-03 or T-04): re-check actual files touched, conceptual vs mechanical change, and whether the PR count still makes sense.
+- estimate each PR (core files, files, lines and reading time as orders of magnitude, and its independent value) and compare it in words with `pr_size` from `project.md`; when a PR is larger than the team's preference, recommend a split as the default, and the human decides at the checkpoint. No number is a limit;
+- plan a dependency chain as sequential PRs, with a branch plan: `<prefix>/<feature>-<n>-<name>`, what each branch is cut from, rebased onto and opened against;
+- run the hosting check before recommending any stack: `git remote -v` and `git ls-remote --heads <review remote> "refs/heads/<branch prefix>/*"`. When the second prints nothing, there is no stack: separate PRs, the dependent branch rebased onto its parent, and the reason written in the strategy;
+- give every task packet and every task line of the delivery plan a `PR:` field (`PR: none` when `pr_policy` is `none`);
+- name a **re-evaluation checkpoint** after an early task (usually T-03 or T-04): re-check actual files touched, conceptual vs mechanical change, and whether the PR count still makes sense; from then on, `pr-meter` at every task close shows each PR's size next to its estimate;
+- never argue from file counts: a 30-file PR can be fine when 5 files are core and there is a clear review map.
 
 ## Replan mode — `/dj-plan --replan-from T-XX`
 
@@ -140,7 +145,7 @@ Acceptance checks are living contracts: they can change, but consciously — thr
 
 ## Human checkpoint
 
-Present the plan before any implementation: spec summary, phase list, the detailed task packets, Architecture fit (tasks that deviate from the map, as open questions), PR strategy, and open assumptions. Scale ceremony to work mode: for `personal-small` a compact summary is enough; for `production-work` walk the human through the review story. The human approves, adjusts, or answers open questions, and confirms or clears each packet's `Learn:` line; each answer to a blocking question is added to `knowledge/questions.md` with the decision it unblocked, following that file's update rule. Then hand off to /dj-task for execution.
+Present the plan before any implementation: spec summary, phase list, the detailed task packets, Architecture fit (tasks that deviate from the map, as open questions), PR strategy with its estimates and the hosting check result, and open assumptions. Scale ceremony to work mode: for `personal-small` a compact summary is enough; for `production-work` walk the human through the review story. The human approves, adjusts, or answers open questions, accepts the recommended split or keeps one PR, and confirms or clears each packet's `Learn:` line; each answer to a blocking question is added to `knowledge/questions.md` with the decision it unblocked, following that file's update rule. Then hand off to /dj-task for execution.
 
 ## Common mistakes
 

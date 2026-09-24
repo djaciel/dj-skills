@@ -5,6 +5,7 @@
 # Phase <N> — <name>
 
 Status: <detailed | sketch>
+PRs: <n, ... | none>
 
 ## Goal
 <what this phase delivers>
@@ -16,9 +17,9 @@ A reviewer should understand this phase by reading:
 3. ...
 
 ## Tasks
-- T-01 — <one-line objective> — <pending | done | done-with-drift | blocked | needs-replan | split-needed | merged-into-next | obsolete>
-- T-02 — ...
-- T-03 — ...
+- T-01: <one-line objective> (PR <n>): <pending | done | done-with-drift | blocked | needs-replan | split-needed | merged-into-next | obsolete>
+- T-02: ...
+- T-03: ...
 
 ## Out of scope
 - <what this phase deliberately does not touch>

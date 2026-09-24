@@ -45,7 +45,7 @@ Read in this order:
 
 If `state.md` and the packet disagree, `state.md` wins: flag the mismatch before implementing.
 
-**Branch check.** Read the Branching section of `.dj-agents/repos/<repo>/project.md`. On the base branch with `branch_creation: agent`? Create the feature branch (per the naming convention) from the up-to-date base before touching files. `suggest-only`? Tell the human which branch to create and wait. Already on a matching feature branch? Continue. No policy written? Ask once, record the answer in `project.md`, and move on.
+**Branch check.** Read the Branching section of `.dj-agents/repos/<repo>/project.md`. When the feature has a `pr-strategy.md`, read the packet's `PR:` line and the strategy's branch plan: the task works on that PR's branch. PR n's branch is cut from PR n-1's branch while PR n-1 is open, or from the base once it merged; without a strategy (or with `PR: none`), the feature branch is cut from the up-to-date base per the naming convention. Not on the task's branch, with `branch_creation: agent`? Create it from that parent before touching files. `suggest-only`? Name the branch and its base to the human and wait. Already on the matching branch? Continue. A packet whose `PR:` disagrees with the branch plan is drift: flag it before implementing. No policy written? Ask once, record the answer in `project.md`, and move on.
 
 ### 2. Scout context and precedents
 
@@ -110,14 +110,15 @@ Nothing a reviewer returns is applied before the orchestrator filters it. **Stag
 
 ### 9. Report, guide, and hand off
 
-The numbers in the report come from two scripts; where they live is in "Running the scripts" of `skills/dj-start/templates/dj-agents-layout.md`.
+The numbers in the report come from scripts; where they live is in "Running the scripts" of `skills/dj-start/templates/dj-agents-layout.md`.
 
 **Staging:** when the task's changes are not committed, run `staging-table` from the repository before the report. Its table goes under "Staging" with one Theme cell per row: the hunks the human would commit together share a theme, so the human can `git add -p` theme by theme. A hunk that mixes two themes names both and says to split it with `s`.
+**PR meter:** when the feature has a `pr-strategy.md`, run `pr-meter <target>` from the repository, with `<target>` from the branch plan (the branch this PR's branch was cut from: PR n-1's branch while it is open, the base otherwise), and write `PR <n> so far: <meter line> (estimate: <this PR's row in Estimates>)` in the report. When the measurement is past the estimate (more core files, or lines of a higher order of magnitude), add one item to "I need from you": keep going on this PR, or mark `pr-strategy.md` as `pr-split-needed` and re-slice at this task boundary (dj-pr-slicing, "Re-slicing existing code"). Nothing else happens without the human's answer: no status change, no new branch, no split.
 **REQUIRED SUB-SKILL:** dj-task-report: produce the report (format at the end of this file) and save the same content to `.dj-agents/repos/<repo>/features/<feature>/reports/T-XX.md`.
 **Guide step:** delegate to the **dj-guide-writer** subagent (contract in the **dj-guide** skill) to insert this task's section at the top of `.dj-agents/repos/<repo>/features/<feature>/guide.md`: pass it the packet path, the range in the step 6 form (`<base>..working-tree` when nothing is committed), and the report path. Inline as degradation. Scale detail by work mode: full on `production-work`, minimal on `personal-small`.
 **REQUIRED SUB-SKILL:** dj-commit-message: suggest a commit message matching the repo's convention.
 **Lengths:** after the guide step, run `line-count <report path> <guide path>#T-XX` and write `Lengths: report <n> lines, guide section <m> lines` as the report's last line, in the saved file and in the reply. Write the line first, then run the script on the saved file and fill in the numbers, so the count includes that line. When the guide file or its section for the task does not exist (exit 1 or 2 for the guide argument), the line says `guide section not found`.
-**Missing script:** when `staging-table` or `line-count` is not found, the report says "script missing: part skipped" in that part. Never estimate the numbers by hand or by reading the diff.
+**Missing script:** when `staging-table`, `pr-meter` or `line-count` is not found, the report says "script missing: part skipped" in that part. Never estimate the numbers by hand or by reading the diff.
 
 The human reviews the diff, the report, and the guide, then commits (unless commit policy says otherwise). Declare the task's end state.
 
@@ -215,7 +216,7 @@ First screen, never dropped:
 <T-ID> <end state> · I need from you · Not verified · Business rules changed · Deviations
 Below:
 Changes · Validation · Review filter · Self-review · Skipped steps · Acceptance ·
-Out of scope · Staging · Review order · Suggested commit · Lengths · Walkthrough (on request)
+Out of scope · PR meter · Staging · Review order · Suggested commit · Lengths · Walkthrough (on request)
 ```
 
 The first-screen parts say "nothing" or "none" when empty; below them, drop empty sections. The Walkthrough (goal in one line, data-flow map, core files function by function) is produced only when the user asks or when the Report style section of `.dj-agents/repos/<repo>/project.md` says `Walkthrough: always`.

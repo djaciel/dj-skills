@@ -7,6 +7,8 @@
 Status: <pending | done | done-with-drift | blocked | needs-replan | split-needed | merged-into-next | obsolete>
 Learn: <what the human wants taught in this task's guide | none>
 <!-- proposed by the planner (for example the first use of a stack feature the expertise registry marks as unknown), confirmed or cleared by the human at the plan checkpoint; none is the default -->
+PR: <n> (<branch from the branch plan in pr-strategy.md>) | none
+<!-- none when pr_policy is none; a task that moves to another PR is drift -->
 Outcome: <one line, filled by dj-task at close — what actually happened>
 
 <!-- only when neither the flow nor the spec states the business why; delete this line otherwise -->

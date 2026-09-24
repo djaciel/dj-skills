@@ -88,6 +88,8 @@ the cross-repo contract, and validation per repo), pulling registered paths from
   the packet and list it under open questions; never invent it.
 - **Rejected approaches**: what was considered and why not, so a reopened task does not
   retry it. "none considered" is a valid entry.
+- **PR:** one line under `Status:`, next to `Learn:`: `PR: <n> (<branch>)` from the branch
+  plan, or `none` when `pr_policy` is `none`. A task that later moves to another PR is drift.
 - **Learn:** one line under `Status:` naming what the human wants taught in this task's
   guide, or `none` (the default). The planner proposes it, for example on the first use of
   a stack feature the expertise registry marks as unknown; the human confirms or clears it
@@ -100,11 +102,22 @@ and the relevant spec excerpt, never the full spec pasted; a fresh subagent must
 to execute the task reading only the packet and the files it points to. Small kit,
 verified pointers.
 
-**PR strategy is a revisable hypothesis**, never file-count dogma. Recommend
-1 PR / 2 PRs / stacked PRs / no PR; state why; give the review story; classify expected
-files (core / tests / config / mechanical / generated / docs); record alternatives
-considered; set a re-evaluation checkpoint after an early task. A 30-file PR can be fine
-if 5 files are core and the review map is clear.
+**PR strategy is a revisable hypothesis**, judged by one question: does each PR tell a
+reviewable story? Recommend 1 PR / sequential PRs / stacked PRs / no PR; state why; give
+the review story; classify expected files (core / tests / config / mechanical / generated /
+docs). Estimate each PR: core files, files, lines and reading time as orders of magnitude
+(lines: tens, hundreds, a thousand or more), and its independent value (what stays merged
+and useful if the next PR never comes). Compare the estimate in words with `pr_size` from
+`project.md`; when a PR is larger than the team's preference, recommend a split as the
+default, and the human accepts it or keeps one PR at the checkpoint. No number is a limit.
+Plan a dependency chain as sequential PRs with a branch plan (`<prefix>/<feature>-<n>-<name>`:
+cut from, rebased onto, opened against). Before recommending any stack, run the hosting
+check: `git remote -v` and `git ls-remote --heads <review remote> "refs/heads/<branch prefix>/*"`;
+when the second prints nothing, there is no stack: separate PRs, the dependent branch
+rebased onto its parent, and the reason written in the strategy. Every packet and every
+task line of the delivery plan carry `PR:`. Record alternatives considered; set a
+re-evaluation checkpoint after an early task, and from then on `pr-meter` at every task
+close. A 30-file PR can be fine if 5 files are core and the review map is clear.
 
 ## Replan mode
 
@@ -132,6 +145,10 @@ After writing the files, report:
 
 ## Architecture fit
 - T-XX: <how it deviates from `architecture/<repo>.md`, as an open question> (or "all tasks follow the map", or "no architecture map; run `/dj-map --architecture` or accept the risk")
+
+## PRs
+- PR <n>: <purpose>; estimate <core files, files, lines, reading time>, <within | larger than> the team's preference; depends on <none | PR n>
+- Hosting check: <stack available | not available: <why> | not checked: single PR>
 
 ## Riskiest assumption
 - <the assumption most likely to force a replan>
