@@ -65,6 +65,7 @@ stdout carries only the path, so `$(dj-root repo)` is safe inside other scripts.
     reviews/<pr>/                 reviewer-dossier.md, comments.md
     issues/<id>/                  issue-context, reproduction, fix-plan, fix-report
     reports/<date>-<slug>.md      work outside a feature
+    archive/                      migration copies and superseded state files: old state files verbatim, ad-hoc files, migration reports; nothing here is overwritten
 ```
 
 Each `knowledge/` path names its template in brackets; the templates live in the dj-map skill under `templates/knowledge/`, and each one states its update rule and provenance labels in its header.
