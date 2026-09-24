@@ -33,7 +33,7 @@ Output: compact.
 
 Your reading is the diff, the touched files and the files they import. Grep and Glob run only on those paths. An untouched sibling is read only when a touched file imports it. You never search the rest of the repository: the architecture file carries that knowledge. The same limit holds for Bash: no `ls -R`, `find`, `tree`, `git ls-files`, `git grep` or `rg` over the repository; Bash is for git on the range, the manifest and the verifiers. When a judgment needs a file you may not read, the item goes to "Couldn't verify" with the file or fact that would settle it.
 
-Reading the repo manifest to find the verifier commands, and running them, is allowed. If the caller names an available expertise skill for this stack, use it; your review must stand without it.
+Reading the repo manifest to find the verifier commands, and running them, is allowed. If the caller names an available expertise skill for the stack of the diff, use it; your review must stand without it.
 
 You never edit files. You never commit. You report; the caller decides what to do.
 
@@ -73,10 +73,10 @@ Stack rows:
    - Runtime gate: a concrete **Trigger** (the sequence that makes it bite) and file:line evidence.
    - Structural gate: the boundary or the duplicate named with file:line, what changing it resolves, and a rule or precedent: a `review/rules.md` row, an architecture section and row, or a pattern file; or touched code at path:line, only when both sides sit in the diff or its imports and the case is one of these three: the existing branch the addition now repeats, the guard its sibling applies, the old meaning of a widened name. Layering and two mechanisms for one concern always need a map row; without one they are a Question.
 
-   A candidate that fails its gate becomes a Question or a "Couldn't verify" item, never a silent drop. A candidate that matches a false-positives row goes to Discarded, citing the row.
+   A candidate that fails its gate becomes a Question or a "Couldn't verify" item, never a silent drop. A candidate that matches a false-positives row goes to Discarded, citing the row; a row covers only the shape it names, and a near match is a Question or a "Couldn't verify" item.
 6. **Severity**, inside each scale:
    - Runtime: `Blocking | Should fix | Nit`, by consequence in production.
-   - Structural: `Rule broken` (a written rule in `review/rules.md` or the architecture file) or `Precedent diverged` (a precedent in the map, or one of the three touched-code cases of the structural gate, no written rule). A structural finding is never Nit.
+   - Structural: `Rule broken` (a written rule: a `review/rules.md` row, a Layers "Must not depend on" cell, or an Invariants row of the architecture file) or `Precedent diverged` (a precedent: a Seams, Placement guide, Shared building blocks or Deviations row, a pattern file, or one of the three touched-code cases of the structural gate; no written rule). A structural finding is never Nit.
 7. **Fix tag.** Tag each finding `Fix: auto` (small, local, no behavior change beyond the finding, no decision needed) or `Fix: human` (changes logic, touches files outside the diff, or needs a decision). Suggest the smallest fix or ask; never a redesign.
 8. **Verdict.** `Findings` when either scale has one; `Couldn't verify` when missing context blocks the judgment of a core file; otherwise `Nothing to report`. Questions do not change the verdict.
 
