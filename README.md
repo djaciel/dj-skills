@@ -1,189 +1,192 @@
 # dj-skills
 
-A lightweight agentic cockpit for [Claude Code](https://code.claude.com/docs/en/overview) — you stay the architect, agents do specialist work. Eight visible commands, ten specialist subagents, and twelve small quality lenses turn Claude Code into a structured but flexible development partner for real work: new projects, features in existing repos, bug fixes, peer PR review, and the human communication around all of it.
+A light agentic cockpit for [Claude Code](https://code.claude.com/docs/en/overview). You stay the architect; agents do the specialist work. Ten commands, eleven specialist subagents, twelve small quality lenses and six plain bash scripts turn Claude Code into a structured development partner for real work: new projects, features in existing repositories, bug fixes, review of other people's PRs, and the notes around all of it.
+
+This is v3. What changed since v2 is listed in [CHANGELOG.md](CHANGELOG.md). Coming from v2: read [Migrating from v2](GUIDE.md#migrating-from-v2) before the first run, and keep [Rollback](GUIDE.md#rollback) at hand.
 
 ## Why
 
-dj-skills is the successor of the author's previous system, Phased Build Skills (PBS). PBS proved that external memory, small tasks, and human review checkpoints work — and also that twenty visible skills, rigid gates, giant reports, and questionnaire-style discovery create more friction than quality.
+The goal is not an AI that never makes mistakes. The goal is an AI that works like a mid-senior developer whose errors are small, visible and cheap to correct, while the human keeps the architect's judgment: intent, plan approval, diff review, trade-offs and commits.
 
-This system keeps what worked and drops the ceremony:
+v3 adds five things to the v2 base:
 
-- A handful of visible commands instead of a skill per micro-step.
-- Specialist subagents instead of one monolithic prompt doing everything.
-- Living specs and acceptance checks instead of contracts frozen weeks in advance.
-- Judgment questions instead of rigid numeric rules.
+- **One root for everything.** All state, plans, reports and knowledge live in one folder, `.dj-agents/`, next to the repositories. Nothing is written inside a client repository.
+- **A map that grows with the work.** `knowledge/` holds the architecture of each repository, the business flows, the glossary, decisions, open questions and review rules. Planning and review read it; task closes, reviews and `/dj-ingest` add to it, always after the human approves.
+- **Blind review.** The reviewer sees the code, one Goal line and the map, never the plan or the report. It judges the code instead of confirming the story. "Nothing to report" is a valid answer.
+- **Layered guide and report.** The first screen says what needs the human, what was not verified and what can break. The depth sits below.
+- **Scripts for the numbers.** Diff metrics, the staging table, the PR meter and line counts come from scripts, never from the model's estimate. No number is a limit.
 
-The goal is not an AI that never makes mistakes. The goal is an AI that works like a mid-senior developer whose errors are small, visible, and cheap to correct — while you keep the architect's judgment: you define intent, validate plans, review diffs, decide trade-offs, and control commits.
+What still holds from v2:
+
+- **Small task packets:** one objective, clear validation commands, reviewable in one sitting.
+- **Scout before building:** find the existing pattern before creating a new one.
+- **Real validation:** every command in the packet runs, and the report pastes its real output.
+- **Drift is logged, never absorbed:** when reality differs from the plan, the drift log says so and a replan follows when needed.
 
 ## Core ideas
 
-- **External memory in `.dj-agents/`** — project state, specs, task packets, drift logs, and handoff notes live in files, not in chat history. Any fresh session can pick up exactly where the last one stopped.
-- **Living specs** — Feature Spec → Phase → Task Packet, all revisable. When reality diverges from the plan, drift is logged and triggers a replan — never a silent restart from zero.
-- **Small task packets** — one conceptual objective, clear validation commands, human-reviewable in 10–20 minutes.
-- **Specialist subagents** — scout, planner, implementer, reviewers, writer. Each has one job, restricted tools, and a defined output format.
-- **A light orchestrator** — the main session plans, delegates, and reviews; it does not write code or hold diffs. Heavy steps run in subagents with their own context, state is saved to `.dj-agents/` at every task close, and the session stays disposable.
-- **Evidence-based review** — a finding without evidence is a question, not a finding. No invented race conditions, no impossible edge cases, no zero-value nits.
-- **Clear language policy** — converse in whatever language you prefer; everything that leaves your machine (code, commits, PR descriptions, review comments) is always English.
-- **Self-contained** — the system has zero dependencies on third-party skills. External expertise skills are optional plugins registered per project, never requirements.
+- **External memory in `.dj-agents/`.** Chat history is disposable; the root is not. Any fresh session continues from the files.
+- **Living specs.** Feature spec, phases, task packets, all revisable. Drift leads to a replan, never to a silent restart.
+- **Specialist subagents.** Scout, planner, implementer, blind reviewers, writers. Each has one job, restricted tools and a fixed output format.
+- **A light orchestrator.** The main session plans, delegates and filters; it does not write code or hold diffs. State is saved at every task close.
+- **Evidence-based review.** A finding without evidence is a question, not a finding.
+- **Drafts only.** Every comment, PR description, ticket or update a skill writes is a draft. The human rewrites it in his own words and posts it himself. No skill posts, sends or pushes anything.
+- **Language policy.** Converse in any language; everything that leaves the machine (code, commits, PR text, comments) is English.
+- **Self-contained.** No dependency on third-party skills. Expertise skills are optional and registered per repository.
 
 ## How it fits together
 
-Five pieces: visible commands, the `.dj-agents/` root as external memory, specialist subagents, small optional skills, and deterministic hooks/scripts. A typical interaction:
+The root sits next to the repositories it serves, one level above them:
+
+```text
+~/code/<client>/
+  .dj-agents/          the root, its own git repository
+    knowledge/         the map shared across repositories
+    repos/<repo-a>/    the work area of <repo-a>: state, features, reviews, issues
+    repos/<repo-b>/
+  <repo-a>/            a client repository; nothing of dj-skills inside
+  <repo-b>/
+```
+
+Every skill finds the root by walking up from the folder where the session was opened. The repository name comes from git's main checkout, so every worktree of a repository shares one area.
+
+A typical interaction:
 
 ```text
 You
   ↓
-Visible command (/dj-task T-03)
+Command (/dj-task T-03)
   ↓
-Main Claude session
+Main session: reads .dj-agents/ (index, feature state, packet, map)
   ↓
-Reads .dj-agents/ (current state, task packet, spec)
+Delegates each heavy step to one subagent (scout, implementer, blind reviewer, guide writer)
   ↓
-Delegates the heavy steps to subagents (scout, implementer, reviewers, guide writer)
+Subagents apply the quality lenses (simplicity, repo patterns, test quality)
   ↓
-Subagents apply quality lenses (simplicity, repo patterns, test quality)
+Scripts measure (diff metrics, staging table, PR meter, line counts)
   ↓
-Hooks/scripts validate deterministic things (format, typecheck, tests)
+Main session filters the review, writes the report, proposes map lines
   ↓
-Main session reports back with evidence
-  ↓
-You review and decide
+You review, approve and commit
 ```
-
-Deterministic checks (formatting, typecheck, tests, secret-blocking) belong in hooks and scripts, not in prompts — the model should never have to "remember" to run them. See GUIDE.md for an example hook setup.
 
 ## Installation
 
-### Option A: install script (recommended)
-
 ```bash
-git clone https://github.com/djaciel/dj-skills.git
+git clone <url of this repository> dj-skills
 cd dj-skills
-./install.sh                     # user-level: ~/.claude (all projects)
-./install.sh /path/to/project    # or project-level: <project>/.claude
+git checkout v3.0
+./install.sh
 ```
 
-Installs the 20 skills and the 10 subagents in one step. Re-run it after every `git pull` or local edit — it replaces previous copies (and any symlinks left by other installers).
+In an existing copy, run `git fetch --tags` before the checkout.
 
-### Option B: `npx skills`
+`./install.sh` with no argument installs user-level into `~/.claude/`: 22 skills, 11 agents and 6 scripts (in `~/.claude/scripts/dj/`). This is the recommended install and the only one for client repositories, because it writes nothing inside any repository. Re-run it after every `git pull` or local edit; it replaces the previous copies.
 
-```bash
-# from GitHub
-npx skills add djaciel/dj-skills --all -g
+`./install.sh <dir>` installs project-level into `<dir>/.claude/`. It writes `.claude/` inside that directory, so use it only for a scratch project to try v3. The install prints the same note.
 
-# or from a local clone
-npx skills add /path/to/dj-skills --all -g
-```
+Other installers (a skills CLI, a manual copy) do not copy the agents and the scripts. The scripts are needed by several commands, so use `./install.sh`.
 
-Drop `-g` to install into the current project (`.claude/`) instead of user-level (`~/.claude/`). The CLI symlinks by default, so `git pull` on the clone updates your installed skills; add `--copy` if you want plain copies. Use `-l` to list what would be installed, or omit `--all` to pick skills interactively.
-
-**The subagents are not covered by the skills CLI** — copy them manually:
-
-```bash
-cp /path/to/dj-skills/agents/*.md ~/.claude/agents/    # or .claude/agents/ inside a project
-```
-
-### Option C: manual copy/symlink
-
-**User-level (available in every project):**
-
-```bash
-git clone https://github.com/djaciel/dj-skills.git
-cd dj-skills
-mkdir -p ~/.claude/skills ~/.claude/agents
-cp -R skills/* ~/.claude/skills/
-cp agents/*.md ~/.claude/agents/
-```
-
-**Project-level (one project only):**
-
-```bash
-mkdir -p .claude/skills .claude/agents
-cp -R /path/to/dj-skills/skills/* .claude/skills/
-cp /path/to/dj-skills/agents/*.md .claude/agents/
-```
-
-Prefer symlinks if you want `git pull` updates to propagate automatically.
-
-Each installed skill is invocable by its name (e.g. `/dj-start`, `/dj-task`). The eight command skills below are the intended entry points; the lens skills are mostly applied automatically by the commands and subagents. Commands degrade gracefully: if a subagent is not installed, the same work happens inline in the main session.
+Each skill is invoked by its name (`/dj-start`, `/dj-task`). The ten commands are the entry points; the lenses are applied by the commands and subagents. When a subagent is missing, the same step runs inline in the main session.
 
 ## What you get
 
-### Commands (8)
+### Commands (10)
 
 | Command | Purpose |
 |---|---|
-| `/dj-start` | Start a new project from an idea or brain-dump: smart intake, work mode, base `.dj-agents/` files, focused discovery |
-| `/dj-map` | Understand an existing repo or repo area before planning — produces a compact codebase map |
-| `/dj-plan` | Turn intent into a living spec, phases, task packets, and PR strategy; also replans after drift |
-| `/dj-task` | Execute one task packet end-to-end: implement, validate, audit tests, review, report, guide |
-| `/dj-review` | Review someone else's PR, branch, or diff — produces a reviewer dossier and draft comments |
-| `/dj-fix` | Investigate and fix a bug: reproduce first, confirm root cause, minimal fix, fix report |
-| `/dj-brief` | Generate human communication from work already done: PR description, commit message, ticket, team update |
-| `/dj-explore` | Compare 2–3 approaches when there is real architectural uncertainty |
+| `/dj-start` | Start a new project from an idea or notes. `/dj-start --adopt` gives an existing repository its area under `.dj-agents/`, or fills the base files a migrated area lacks |
+| `/dj-map` | Map one area for a feature. `/dj-map --architecture` writes the repository's architecture with evidence; `--refresh` re-runs that evidence |
+| `/dj-plan` | Turn intent into a living spec, phases, task packets and a PR strategy; replans after drift |
+| `/dj-task` | Execute one task packet: implement, validate, test audit, blind review, acceptance review, report, guide, map lines |
+| `/dj-review` | Review someone else's PR: code before description, a layered dossier, draft comments. `--deep` verifies blocking findings; `--base <ref>` sets the base by hand |
+| `/dj-fix` | Investigate and fix a bug: reproduce first, root cause, minimal fix, fix report |
+| `/dj-brief` | Draft human communication from work already done: PR description, commit message, ticket, team update |
+| `/dj-explore` | Compare two or three approaches when there is real uncertainty |
+| `/dj-ingest` | Stage knowledge from a thread, memo, ticket, hand-made PR packet or an explanation into the map, with provenance labels, after approval |
+| `/dj-migrate` | Once per machine: copy the v2 working folders into `.dj-agents/`; `--merge` adds a second machine's data |
 
-### Subagents (10)
+### Subagents (11)
 
 | Subagent | Purpose |
 |---|---|
-| `dj-scout` | Read-only repo exploration: relevant files, existing patterns, reusable code, duplication risk |
-| `dj-planner` | Turns intent into feature spec, delivery plan, task packets, and PR strategy — writes only inside `.dj-agents/` |
-| `dj-implementer` | Implements one task packet: stays in scope, reuses existing patterns, runs real validation |
-| `dj-ts-reviewer` | TypeScript/Node review lens: types, duplication, modularity, error handling, async flows |
-| `dj-elixir-reviewer` | Elixir review lens: Ecto queries and changesets, error tuples, OTP/process use, context boundaries |
+| `dj-scout` | Read-only exploration: relevant files, patterns, reusable code, duplication risk, corrections to the map |
+| `dj-planner` | Writes spec, delivery plan, task packets (with Placement and a business why) and PR strategy; writes only inside `.dj-agents/` |
+| `dj-implementer` | Implements one task packet in scope, follows Placement, runs real validation |
+| `dj-ts-reviewer` | Blind reviewer for TypeScript and Node: the diff, the touched files, one Goal line and the map |
+| `dj-elixir-reviewer` | Blind reviewer for Elixir, with the same contract |
+| `dj-pr-reviewer` | Blind reviewer for other stacks and for other people's PRs; writes the dossier depth sections |
 | `dj-test-auditor` | Judges whether tests add value: behavior over implementation, realistic edge cases only |
-| `dj-acceptance-reviewer` | Judges whether the diff fulfills the task/spec intent — not whether the code is pretty |
-| `dj-pr-reviewer` | Reviews external PRs under the evidence rule: findings, questions, and discarded suspicions |
-| `dj-guide-writer` | Writes the human-review guide for one task's diff: file-by-file, test-by-test, deletions audited |
-| `dj-writer` | Turns technical analysis into human communication, honoring the project's language policy |
+| `dj-acceptance-reviewer` | Judges whether the diff fulfills the packet's intent |
+| `dj-guide-writer` | Inserts one task's section at the top of the feature guide |
+| `dj-repo-mapper` | Writes a repository's architecture and pattern files with reproducible evidence; read-only on the repository |
+| `dj-writer` | Turns finished analysis into draft human communication, following the language policy |
 
 ### Core skills (12)
 
 | Skill | Purpose |
 |---|---|
-| `dj-simplicity-lens` | The seven "does this need to exist?" questions before writing new code |
-| `dj-repo-patterns` | Find precedent before creating: reuse scan, follow local conventions, justify new patterns |
-| `dj-test-quality` | What makes a test worth having — and when a test is not worth adding |
-| `dj-acceptance-review` | The four acceptance levels, seven task end states, and how to judge a diff against intent |
-| `dj-human-comments` | Review comments a teammate will actually welcome: kind, evidence-linked, questions before verdicts |
-| `dj-commit-message` | Suggest commit messages that match the repo's existing convention; suggest, never commit |
-| `dj-pr-description` | PR descriptions written for the reviewer's 15 minutes: what/why, reading order, evidence |
-| `dj-pr-slicing` | Decide PR boundaries by reviewable story, not by file counts |
-| `dj-data-flow-review` | Reconstruct input → transform → output before judging any diff |
-| `dj-task-report` | The compact task completion report: changes, real validation output, review order |
-| `dj-guide` | Turns a validated diff into a human-review guide: reading order, every test and deletion explained |
-| `dj-drift-management` | Detect drift, log it, decide absorb vs replan vs split — and mark obsolete docs |
+| `dj-simplicity-lens` | The "does this need to exist?" questions before writing new code |
+| `dj-repo-patterns` | Find precedent before creating: reuse scan, local conventions, justified new patterns |
+| `dj-test-quality` | What makes a test worth having, and when a test is not worth adding |
+| `dj-acceptance-review` | The four acceptance levels, the task end states, judging a diff against intent |
+| `dj-human-comments` | Review comment drafts a teammate will welcome: kind, evidence-linked, questions before verdicts |
+| `dj-commit-message` | Suggest commit messages in the repository's own convention; suggest, never commit |
+| `dj-pr-description` | PR description drafts written for the reviewer: what and why, reading order, evidence |
+| `dj-pr-slicing` | PR boundaries by reviewable story: estimates per PR, a split as the default when large, sequential PRs, the hosting check, re-slicing |
+| `dj-data-flow-review` | Reconstruct input, transform and output before judging a diff |
+| `dj-task-report` | The task report: first screen with what needs the human and what was not verified, depth below |
+| `dj-guide` | The layered review guide: business why, metrics, what can break, yes/no checks first; added lines only below |
+| `dj-drift-management` | Detect drift, log it, decide absorb, replan or split |
+
+### Scripts (6)
+
+Installed in `~/.claude/scripts/dj/`. Plain bash, git and coreutils. They read and print; only `dj-sync` writes: bundles next to the root, and the root itself on `clone`.
+
+| Script | What it does |
+|---|---|
+| `dj-root` | Prints the root, the repository name, the repository's area or the knowledge path |
+| `dj-sync` | Moves `.dj-agents/` between machines as git bundles: `pack`, `unpack`, `clone`, `status` |
+| `diff-metrics` | Added and removed lines per file and kind (code, test, docs, config, generated), files outside the packet's scope |
+| `staging-table` | The unstaged hunks as `git add -p` will offer them, numbered, so commits can be staged by theme |
+| `pr-meter` | One line: commits, files, core files and lines of the current PR so far |
+| `line-count` | Lines of a file or of one task's section in the guide |
 
 ## Quick start
 
-**1. New project from an idea:**
+**Existing repository** (from inside it; `<root>` is the `.dj-agents/` folder):
 
 ```text
-/dj-start expense-tracker
-# paste your notes or a conversation with another AI;
-# answer at most 3–5 blocking questions
-/dj-plan            # spec, phases, task packets
-/dj-task T-01       # execute the first task
-```
-
-**2. Feature in an existing repo:**
-
-```text
-/dj-map packages/sdk          # compact codebase map of the area
-/dj-plan funding-recovery     # spec + tasks grounded in that map
+/dj-start --adopt             # area under .dj-agents/repos/<repo>/, commands detected from the manifests
+/dj-map --architecture        # the repository's rules, each with a command behind it
+# write <root>/repos/<repo>/features/<feature>/init.md with the intent
+/dj-plan <root>/repos/<repo>/features/<feature>/init.md
 /dj-task T-01
 ```
 
-**3. Review a teammate's PR:**
+**New project from an idea:**
 
 ```text
-/dj-review branch feat/onramp-validation against main
-# read the reviewer dossier, keep the findings you agree with
-/dj-brief review-comments     # draft English comments for the keepers
+/dj-start expense-tracker     # paste notes; answer at most 3 to 5 blocking questions
+/dj-plan
+/dj-task T-01
 ```
 
-For full workflows, work modes, drift handling, session management, hooks, and the external skills policy, read **[GUIDE.md](GUIDE.md)**.
+**Someone else's PR:**
 
-## A note on `.dj-agents/`
+```text
+/dj-review branch feat/order-cancel against main
+# read the dossier's first screen, keep or discard each finding, approve the map rows
+# the kept findings come back as draft comments in comments.md
+```
 
-The commands generate a `.dj-agents/` root in each project you use them on. It is working memory — project context, current state, specs, task packets, reports — not part of this repo. You will usually want to add `.dj-agents/` to that project's `.gitignore`; keep it tracked only if your team deliberately wants to share planning state.
+The drafts are yours to rewrite and post. The skill never posts.
+
+Full workflows, the migration checklist, rollback and the concepts are in **[GUIDE.md](GUIDE.md)**.
+
+## About `.dj-agents/`
+
+- One root per client folder, next to the repositories, never inside one. No client repository gets a dj-skills file, so there is nothing to ignore there.
+- The root is its own git repository. Every task or fix close makes one short commit inside it (`dj_agents_commit: human-only` in `project.md` turns this off). The client repository's commit policy is not affected.
+- `dj-sync` moves it between machines as git bundles. One feature is worked on one machine at a time.
+- v3 reads only `.dj-agents/`. The v2 working folders are read only by `/dj-migrate`, once. See [Migrating from v2](GUIDE.md#migrating-from-v2) and [Rollback](GUIDE.md#rollback).
