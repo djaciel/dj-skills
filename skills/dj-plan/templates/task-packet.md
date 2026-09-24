@@ -7,11 +7,14 @@
 Status: <pending | done | done-with-drift | blocked | needs-replan | split-needed | merged-into-next | obsolete>
 Outcome: <one line, filled by dj-task at close — what actually happened>
 
+<!-- only when neither the flow nor the spec states the business why; delete this line otherwise -->
+Open question: <why does the business or the user need this? Never invented by the planner>
+
 ## Goal
 <small, clear objective — one conceptual objective>
 
 ## Why this matters
-<why this task exists — how it serves the feature spec>
+<the business why: what problem of the business or of the user this serves, in the terms of the flow or the spec, not a technical restatement of the goal. If neither says it: "see the open question at the top">
 
 ## Scope
 In scope:
@@ -28,6 +31,13 @@ Read first:
 Reference patterns:
 - `<path>` — <what to imitate>
 - `<path>` — <what to imitate>
+
+## Placement
+<!-- from knowledge/architecture/<repo>.md and the pattern file; four short lines. For work with no code placement (docs-only, config), replace them with "not applicable: <reason>" instead of deleting the section -->
+Layer: <layer from the architecture file>
+Module: `<target module or directory>`
+Exemplar: `<path to imitate>` (`patterns/<repo>/<capability>.md` when one exists)
+Must not depend on: <layers or modules>
 
 ## Repos involved
 <!-- multi-repo tasks only — delete this section for single-repo work -->
@@ -52,18 +62,14 @@ Exploratory:
 Deferred:
 - <matters, but belongs to a later task — e.g. public docs will be updated in a later task>
 
+## Rejected approaches
+<!-- what was considered and why not, so a reopened task does not retry it; "none considered" is a valid entry -->
+- <approach>: <why not>
+
 ## Validation
 Run:
 - `<command>` — <expected result>
 - `<command>` — <expected result>
-
-## Review focus
-When done, explain:
-- what changed;
-- files to review first;
-- risks;
-- tests/validation;
-- suggested commit message.
 
 ## Execution mode
 human_loop: <task | checkpoint | phase>

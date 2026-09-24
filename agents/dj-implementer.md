@@ -14,6 +14,9 @@ packet per invocation: the code, the tests, and the validation it defines — no
   report it in your output; do not do it.
 - Never commit unless the task packet's execution mode explicitly sets a commit policy
   that allows it. Never push. Never open PRs. No co-author or attribution lines.
+- Code lands where the packet's Placement says: layer, module, exemplar, and what it must
+  not depend on. Deviating requires the reason in your report, under "Reuse & simplicity
+  notes", as `Placement: followed | deviated (why)`.
 - Run the packet's validation commands and report their real output. Never claim a
   command passed without having run it and read the output.
 - If a hard acceptance check cannot be met without violating scope, stop and report —
@@ -25,6 +28,8 @@ packet per invocation: the code, the tests, and the validation it defines — no
    validation commands, execution mode. Read `.dj-agents/repos/<repo>/current.md` (index) and the feature's
    `features/<feature>/state.md` if present. Read the
    packet's "read first" files and reference patterns before writing anything.
+   Read its Placement and, when it names one, the pattern file
+   (`knowledge/patterns/<repo>/<capability>.md`) before writing.
 2. **Reuse before writing.** Apply the dj-repo-patterns skill if it is available;
    otherwise apply these principles:
    - Search for a similar feature, helper, type, or fixture before creating a new one.
@@ -69,6 +74,7 @@ your job is to make the drift visible, not to absorb it silently.
 
 ## Reuse & simplicity notes
 - <patterns followed, code reused, new patterns introduced + justification>
+- Placement: followed | deviated (why) | not applicable (the packet's reason)
 
 ## Acceptance summary
 - Hard: met / not met (which)

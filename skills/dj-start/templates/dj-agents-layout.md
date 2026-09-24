@@ -100,5 +100,5 @@ Written once: packets, scout results and reports inside `features/<feature>/`, a
 ## Git
 
 - `.dj-agents/` is its own git repository: `git init` inside it, no remote required. It gives history, per-file rollback and a clean way to move changes between machines.
-- Task close may commit inside it, one short commit per closed task. The client repository's commit policy is untouched.
+- Task and fix closes commit inside it by default, one short commit per close (`T-XX <repo>/<feature>: <end state>` for a task, `<issue-id> <repo>: <fixed | not reproduced | not a bug>` for a fix), when it is a git repository of its own. `dj_agents_commit: human-only` in `repos/<repo>/project.md` turns this off; `auto` is the default. The client repository's commit policy is untouched.
 - Sync between two machines uses git bundles since a `last-sync` tag: `dj-sync pack` on one side, `dj-sync unpack` on the other. The procedure ships with that script. One feature per machine at a time.

@@ -33,10 +33,14 @@ You never edit files. You never commit.
 1. **Restate the question.** One sentence: what does the caller need to know? If the
    request bundles several unrelated questions, answer the most important ones and say
    which you skipped.
-2. **Start from existing maps.** If `.dj-agents/repos/<repo>/codebase-map.md` or
-   `.dj-agents/repos/<repo>/features/*/codebase-map.md` exists, read it before searching — it is a far
-   cheaper starting point than a fresh crawl. Treat it as a hypothesis, not truth:
-   verify anything load-bearing for this question, and flag stale entries in Notes.
+2. **Start from existing maps.** Before searching, read what the knowledge map already
+   holds (`dj-root knowledge` prints its path), in this order: `knowledge/index.md`, then
+   `knowledge/architecture/<repo>.md`, then the `knowledge/patterns/<repo>/<capability>.md`
+   files for the capabilities the question touches, then the feature's
+   `.dj-agents/repos/<repo>/features/<feature>/codebase-map.md` if it exists. They are a far
+   cheaper starting point than a fresh crawl. Treat them as hypotheses, not truth:
+   verify anything load-bearing for this question, and return a correction under
+   Map corrections for any entry the code contradicts.
    Same for "Related repos & context sources" in `.dj-agents/repos/<repo>/project.md`: when the
    question crosses repo boundaries (contracts, schemas, docs), consult the
    registered paths instead of asking the caller to spell them out.
@@ -60,7 +64,7 @@ Return exactly this structure:
 - `path`: why it matters
 
 ## Existing patterns
-- `path`: pattern to follow
+- <the layer rule> (`architecture/<repo>.md` row, or `patterns/<repo>/<capability>.md`): exemplar `path`
 
 ## Existing reusable code
 - `symbol/path`: possible reuse
@@ -73,17 +77,28 @@ Return exactly this structure:
 2. ...
 3. ...
 
+## Map corrections
+- `<knowledge file>`: says <what is wrong>; true now: <what the code shows> (`path:line` or command output)
+
 ## Notes
 - <short>
+- flow candidate: <a path traced end to end that the map lacks: entry, layers crossed, effect, with anchors>
+- opportunity candidate: <something wrong, complex or duplicated, with its path, stated without judging the authors>
 ```
 
 Keep every section. If one is genuinely empty, write "none found" rather than deleting
 it — the caller needs to know you looked. Use Notes for open questions, verified
 negatives, and anything the caller should double-check themselves.
 
+Existing patterns cite the rule from the map, then the exemplar path; with no map, the
+rule you verified in more than one place. Map corrections are one line each, with the
+evidence; write "none" when the map matched the code or no map exists. You never write
+them into the map: the orchestrator applies them.
+
 ## Quality bar
 
 - Every path exists — you opened it.
 - Every "reusable" claim is backed by a real signature you read.
+- Every map correction carries the `path:line` or command output that contradicts the map.
 - The whole result fits on one screen for a typical question. Depth on request, not by default.
 - High signal beats completeness: 6 files with reasons beat 40 files without.

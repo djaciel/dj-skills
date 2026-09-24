@@ -19,6 +19,14 @@ Read before planning, when they exist:
   `features/<feature>/state.md` (direction and "Do not follow").
 - `.dj-agents/repos/<repo>/project.md` — stack, commands, constraints, work mode (`human_loop`,
   `commit_policy`, `pr_policy`), language policy.
+- The knowledge map (`dj-root knowledge` prints its path), in this order:
+  `.dj-agents/knowledge/index.md` (what lives where), `architecture/<repo>.md` (layers,
+  placement guide, invariants), `patterns/<repo>/` (the capabilities the feature touches),
+  `flows/` (the flow the feature touches), `glossary.md` (use its canonical terms in the
+  spec and the packets), `decisions.md` and `questions.md` (do not re-ask a question that
+  already has an answer). If the repo has no `architecture/<repo>.md`, say so in the Plan
+  Summary ("no architecture map; run `/dj-map --architecture` or accept the risk") and
+  still plan.
 - `.dj-agents/repos/<repo>/features/<feature>/brief.md`, `discovery.md`, `codebase-map.md` — intent and context.
 - `.dj-agents/repos/<repo>/features/<feature>/drift-log.md` — required when replanning.
 
@@ -60,13 +68,26 @@ test, config, and mechanical files don't count against size. The judgment questi
 - **Exploratory** — may change during execution (UX feels clear in manual review).
 - **Deferred** — matters, but belongs to a later task (public docs update).
 
-**Every task packet includes:** goal, why it matters, scope in/out, context (read-first
-files and reference patterns — verified paths, not guesses), the four-level acceptance
-checks, validation commands, review focus, and execution mode (`human_loop`,
-`commit_policy`, internal/external language) copied from `project.md`. For multi-repo
-tasks, also fill the packet's "Repos involved" block — each repo's role, the cross-repo
-contract, and validation per repo — pulling registered paths from "Related repos &
-context sources" in `project.md`.
+**Every task packet includes:** goal, a business why, scope in/out, context (read-first
+files and reference patterns: verified paths, not guesses), Placement, the four-level
+acceptance checks, rejected approaches, validation commands, and execution mode
+(`human_loop`, `commit_policy`, internal/external language) copied from `project.md`.
+For multi-repo tasks, also fill the packet's "Repos involved" block (each repo's role,
+the cross-repo contract, and validation per repo), pulling registered paths from
+"Related repos & context sources" in `project.md`.
+
+- **Placement**: layer, target module or directory, exemplar to imitate, and what the new
+  code must not depend on, taken from `architecture/<repo>.md` and the pattern file. Four
+  short lines. "not applicable" only with a reason (docs-only, config). A task that does
+  not fit the map is listed under Architecture fit, never slipped in.
+- **Business why**: what problem of the business or of the user this task serves, taken
+  from the flow or the spec, in their terms. A technical restatement of the goal is not a
+  why. If neither the flow nor the spec says it, write it as an open question at the top of
+  the packet and list it under open questions; never invent it.
+- **Rejected approaches**: what was considered and why not, so a reopened task does not
+  retry it. "none considered" is a valid entry.
+- No "How to review" or "Notes" sections in a packet: what a reviewer should look at
+  derives from the acceptance checks and lands in the guide.
 
 **Packets are the executor's whole world.** The context section carries read-first paths
 and the relevant spec excerpt, never the full spec pasted; a fresh subagent must be able
@@ -103,16 +124,22 @@ After writing the files, report:
 ## Phases
 - Phase 1 — <name>: T-01..T-03 — <goal>
 
+## Architecture fit
+- T-XX: <how it deviates from `architecture/<repo>.md`, as an open question> (or "all tasks follow the map", or "no architecture map; run `/dj-map --architecture` or accept the risk")
+
 ## Riskiest assumption
 - <the assumption most likely to force a replan>
 
 ## Open questions for the human
 - <only questions that block execution; everything else is a listed assumption>
+- Answered: <question>: <answer>, written to `knowledge/questions.md` (only when the human answered a blocking question)
 ```
 
 ## Quality bar
 
 - Every context path in a task packet exists — verify with Glob/Read before writing it.
+- Every Placement exemplar path exists: you opened it.
+- Every business why comes from the flow or the spec, or is an open question at the top of the packet.
 - No task depends on an artifact that no earlier task produces.
 - Hard checks are objectively verifiable; judgment calls go under soft or exploratory.
 - The plan is readable in minutes: the human is the architect, your plan is their briefing.

@@ -31,6 +31,7 @@ If some of these do not exist (small projects skip ceremony), review with what y
 
 1. Restate the task's goal in one sentence. If you cannot, that is itself a finding.
 2. Walk each **hard** check: pass or fail, with evidence — file:line, a test name, or command output. Run a check's validation command yourself when it is cheap and safe.
+   When the packet has Placement, "lives where the packet said" is one more hard check: compare `git diff --name-only <range>` with its Module and name any core file that lands elsewhere (tests and config follow their own conventions).
 3. Walk each **soft** check: pass / partial / fail, with judgment rather than dogma.
 4. For **exploratory** checks that evolved and **deferred** checks still pending: record them under scope drift or missing behavior as drift-log candidates — do not fail the task for them.
 5. Compare the diff's footprint to the packet's scope. Classify drift: none / minor (absorbable, note it) / major (invalidates assumptions of future tasks).

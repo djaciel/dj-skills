@@ -34,8 +34,9 @@ Read before planning, in this order:
 
 1. `.dj-agents/repos/<repo>/current.md` (the index of active features) and, for an existing feature, its `features/<feature>/state.md` (direction and "Do not follow"). Never plan against stale intent.
 2. `.dj-agents/repos/<repo>/project.md` — work mode (`human_loop`, `commit_policy`, `pr_policy`), stack, constraints.
-3. `.dj-agents/repos/<repo>/features/<feature>/brief.md` and `discovery.md`, if they exist.
-4. `.dj-agents/repos/<repo>/features/<feature>/codebase-map.md`, if it exists. If the area is unfamiliar and there is no map, run /dj-map first.
+3. The knowledge map (`dj-root knowledge` prints its path), in this order: `knowledge/index.md`, `knowledge/architecture/<repo>.md`, `knowledge/patterns/<repo>/` (the capabilities the feature touches), `knowledge/flows/` (the flow the feature touches), `knowledge/glossary.md` (canonical terms for the spec), `knowledge/decisions.md` and `knowledge/questions.md` (never re-ask a question that already has an answer). If the repo has no architecture file, say so in the plan ("no architecture map; run `/dj-map --architecture` or accept the risk") and still plan.
+4. `.dj-agents/repos/<repo>/features/<feature>/brief.md` and `discovery.md`, if they exist.
+5. `.dj-agents/repos/<repo>/features/<feature>/codebase-map.md`, if it exists. If the area is unfamiliar and there is no map, run /dj-map first.
 
 If something essential is missing, ask at most 3–5 **blocking questions** — questions whose answers change planning decisions, not checklist questions.
 
@@ -89,7 +90,7 @@ A good task packet has:
 - clear validation commands;
 - human review possible in 10–20 minutes;
 - no mixing of foundation + UI + docs + cleanup + huge test suites;
-- self-sufficiency: read-first paths and the relevant spec excerpt, never the full spec pasted — a fresh subagent must be able to execute it reading only the packet and the files it points to.
+- self-sufficiency: read-first paths, the relevant spec excerpt and its Placement, never the full spec pasted. A fresh subagent must be able to execute it reading only the packet and the files it points to.
 
 | Example | Verdict |
 |---|---|
@@ -97,6 +98,8 @@ A good task packet has:
 | "Implement the full funding flow." | Too big — split into phases and tasks |
 | "Create enum. Export enum. Import enum. Use enum." | Too small — merge into one task |
 | "Create all the DB tables for the module." | Horizontal — re-slice so each task proves one flow end to end |
+
+When a packet protects an existing path, say what is protected: observable behavior, or the code itself. "Same responses, same errors" is a behavior promise and permits refactoring the shared parts. "Do not edit this function" is a code promise and needs its own reason, because it forbids the cheapest fix for the duplication the new path may create.
 
 Never enforce a rigid file count: a task may touch more files when most are tests, config, or mechanical changes. The question that decides: **"Does this task leave something reviewable, verifiable, and aligned with current intent?"**
 
@@ -135,7 +138,7 @@ Acceptance checks are living contracts: they can change, but consciously — thr
 
 ## Human checkpoint
 
-Present the plan before any implementation: spec summary, phase list, the detailed task packets, PR strategy, and open assumptions. Scale ceremony to work mode — for `personal-small` a compact summary is enough; for `production-work` walk the human through the review story. The human approves, adjusts, or answers open questions. Then hand off to /dj-task for execution.
+Present the plan before any implementation: spec summary, phase list, the detailed task packets, Architecture fit (tasks that deviate from the map, as open questions), PR strategy, and open assumptions. Scale ceremony to work mode: for `personal-small` a compact summary is enough; for `production-work` walk the human through the review story. The human approves, adjusts, or answers open questions; each answer to a blocking question is added to `knowledge/questions.md` with the decision it unblocked, following that file's update rule. Then hand off to /dj-task for execution.
 
 ## Common mistakes
 
@@ -145,3 +148,4 @@ Present the plan before any implementation: spec summary, phase list, the detail
 - Replanning by regenerating everything — you lose completed context and the human's earlier corrections.
 - Treating the PR strategy as dogma — it is a hypothesis with a checkpoint; revise it when evidence arrives.
 - Planning without reading the index and the feature's `state.md` first — plans built on stale state create instant drift.
+- Writing the why as a technical restatement of the goal instead of the business reason.
