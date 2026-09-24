@@ -50,7 +50,9 @@ resolve_root() {
   if ! git -C "$r" rev-parse --git-dir >/dev/null 2>&1; then
     die 1 "$r is not a git repository; run: git -C $r init, then commit its content"
   fi
-  if [ "$(git -C "$r" rev-parse --show-toplevel)" != "$(cd "$r" && pwd -P)" ]; then
+  # A path comparison breaks on case-insensitive filesystems (git canonicalizes, pwd keeps the typed case):
+  # the root is its own repository when .git sits directly inside it.
+  if [ ! -e "$r/.git" ]; then
     die 1 "$r has no .git of its own; run: git -C $r init, then commit its content"
   fi
   printf '%s\n' "$r"
