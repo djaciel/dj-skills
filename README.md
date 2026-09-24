@@ -186,7 +186,7 @@ Full workflows, the migration checklist, rollback and the concepts are in **[GUI
 
 ## About `.dj-agents/`
 
-- One root per client folder, next to the repositories, never inside one. No client repository gets a dj-skills file, so there is nothing to ignore there.
+- One root per client folder, next to the repositories, never inside one. No client repository gets a dj-skills file, so there is nothing to ignore there. Unrelated personal projects do not share a root: each keeps its own `.dj-agents/` inside the project folder (see the GUIDE, "Multi-repo setups").
 - The root is its own git repository. Every task or fix close makes one short commit inside it (`dj_agents_commit: human-only` in `project.md` turns this off). The client repository's commit policy is not affected.
 - `dj-sync` moves it between machines as git bundles. One feature is worked on one machine at a time.
 - v3 reads only `.dj-agents/`. The v2 working folders are read only by `/dj-migrate`, once. See [Migrating from v2](GUIDE.md#migrating-from-v2) and [Rollback](GUIDE.md#rollback).

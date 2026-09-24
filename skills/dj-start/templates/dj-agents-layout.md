@@ -7,6 +7,7 @@
 ## Root and resolution
 
 - The root is one hidden folder, `.dj-agents/`, next to the client's repositories and never inside one. The name is fixed.
+- One root per group of related repositories (a client folder): they share one `knowledge/`. Repositories that have nothing to do with each other (a folder of personal projects) do not share a root: each one gets its own `.dj-agents/` inside the project folder, next to its `.git`, and the walk-up finds it first. That root is its own git repository too; ignore it in the project's `.gitignore` or keep it untracked. When adopt or migrate ask where the root should live, answer with the client folder for related repositories and with the project folder for a standalone one.
 - Walk-up rule: starting at the directory where the session was opened, look for `.dj-agents/` there, then in each parent up to `/`. The first hit is the root. `DJ_AGENTS_ROOT` set to an existing directory replaces the walk (tests, or a session opened outside the tree).
 - Repo-name rule: the repo name is the basename of the main checkout, the directory that owns `git rev-parse --git-common-dir`. A linked worktree resolves to the same name, so every worktree of a repo shares one `repos/<repo>/`.
 - The area follows the directory name, not the remote name: a repo cloned into `api-v2/` gets `repos/api-v2/` even when the remote is called `api`.

@@ -411,7 +411,7 @@ The orchestrating session stays light: implementation and reviews run in subagen
 
 ## Multi-repo setups
 
-One root for the client folder, one area per repository under `repos/<repo>/`, one shared `knowledge/` for everything that crosses repositories (flows, glossary, decisions). Nothing of one repository's work area mixes with another. Register related repositories and shared docs once in `project.md` under "Related repos & context sources". Cross-repo task packets declare the contract explicitly:
+One root for the client folder, one area per repository under `repos/<repo>/`, one shared `knowledge/` for everything that crosses repositories (flows, glossary, decisions). Nothing of one repository's work area mixes with another. The shared map only makes sense for repositories that belong together. A folder of unrelated personal projects gets no shared root: each project keeps its own `.dj-agents/` inside the project folder (the walk-up takes the nearest root), and its map stays its own. When `/dj-start --adopt` or `/dj-migrate` ask where the root should live, answer with the client folder for related repositories and with the project folder for a standalone one. Register related repositories and shared docs once in `project.md` under "Related repos & context sources". Cross-repo task packets declare the contract explicitly:
 
 ```md
 ## Repos involved
