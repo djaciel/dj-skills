@@ -6,6 +6,8 @@
      what the PR solves, what behavior changes, where the risk lives, the findings. Keep
      them short enough to read in one screen. Findings keep the reviewer's shape and field
      labels as written; each scale is ordered by consequence, with no count cap.
+     What is copied from the reviewer stays verbatim in the reviewer's language; every
+     other section follows the internal language policy.
 
      AUDIENCE RULE for the depth sections: write for a reviewer who does NOT know this
      area of the codebase. Every codebase-specific component (service, lock, queue,
@@ -16,7 +18,7 @@
      Do NOT add sections beyond the ones below; operational facts (topology, wiring,
      config) go inside the finding or section whose severity they affect. -->
 
-# Reviewer Dossier: `<branch or PR>` vs `<base>`
+# Reviewer Dossier: <branch or PR> at <head sha> vs <base>
 
 ## What this PR appears to solve
 
