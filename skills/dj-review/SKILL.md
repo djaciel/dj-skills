@@ -118,7 +118,7 @@ Three lenses over the core files, one read. Steps 4 and 5 are done by dj-pr-revi
 - Prefer fewer, higher-signal comments.
 ```
 
-**Kill pass, before writing any finding down.** For each candidate, actively try to kill it: does it match a row in `review/false-positives.md` (a row covers only the shape it names)? Is the case already handled elsewhere (caller validation, middleware, a DB constraint, the type system)? Can its trigger actually happen in this system as deployed, through a realistic user or API flow? Is it a style point the repo is already inconsistent about? A finding earns its place only if the kill attempt fails; killed candidates go to "Discarded suspicions" with the row or what you checked.
+**Kill pass, before writing any finding down.** For each candidate, actively try to kill it: does it match a row in `review/false-positives.md` (a row covers only the shape it names)? Is the case already handled elsewhere (caller validation, middleware, a DB constraint, the type system)? Can its trigger actually happen in this system as deployed, through a realistic user or API flow? Is it a style point the repo is already inconsistent about? A finding earns its place only if the kill attempt fails; killed candidates go to "Discarded suspicions" with the row or what you checked. A candidate killed only because its trigger cannot happen as deployed, when it changes previous behavior at a seam (what a caller, a consumer or a failure path saw before), goes to Questions as `path:line: behavior changed (before <X>, now <Y>); was it intended?`, not to "Discarded suspicions".
 
 **Two gates.** Every surviving candidate passes one of them, or it is a Question or a "Couldn't verify" item, never a silent drop:
 
