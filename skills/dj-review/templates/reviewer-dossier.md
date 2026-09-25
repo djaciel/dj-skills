@@ -51,7 +51,7 @@ per behavior. Not a file list.>
 
 <"none" when empty. A structural finding is never Nit.>
 
-- [<Rule broken | Precedent diverged>] <path:line>: <problem>. Boundary or duplicate: <path:line>. Rule or precedent: <rules.md row | architecture section and row | pattern file | touched code path:line>. Resolves: <what changing it resolves>. Fix: <auto | human>. Suggestion: <smallest fix or question>.
+- [<Rule broken | Precedent diverged>] <path:line>: <problem>. Boundary or duplicate: <path:line>. Rule or precedent: <rules.md row | architecture section and row | pattern file | guidance path:line | touched code path:line>. Resolves: <what changing it resolves>. Fix: <auto | human>. Suggestion: <smallest fix or question>.
 
 ## Questions, not findings
 
@@ -106,6 +106,7 @@ block, one or two plain-language lines each. Group only truly mechanical files.>
 
 - Standard pass: <delegated to dj-pr-reviewer | inline: <why>>
 - Map inputs used: architecture <path | missing>; rules <path | missing>; false positives <path | missing>; patterns <paths | none>
+- Repo guidance: <paths read at <head> | missing>
 - Verification run: <command → real result, one line each | none available>
 - Deep: <no | yes: <Blocking findings verified and their outcome>>
 - Verdict: <Nothing to report | Findings | Couldn't verify, as the reviewer returned it>

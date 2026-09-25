@@ -40,11 +40,13 @@ The standard pass is one call to **dj-pr-reviewer**, right after step 1, with ex
 Blind review. Range: <base>..<head> in <repo path>.
 Goal: none (someone else's PR).
 Map inputs: <architecture path | missing>; <rules path | missing>; <false-positives path | missing>.
+Repo guidance: <paths read at <head> | missing>.
 Output: dossier.
 ```
 
 - **Range**: `<base>` is `git merge-base <target> <head>`, so the range is the PR's own commits. When that equals `<head>` (the PR is already merged, so the range would be empty): for a merge commit `<m>`, `<head>` is `<m>^2` and `<base>` is `git merge-base <m>^1 <m>^2`; for a squash or rebase merge, `<head>` is the PR head ref fetched from the host, and ask the human for the base when it cannot be derived. An explicit `--base <ref>` from the human always wins. A branch that is not checked out is reviewed where it is: the reviewer reads it at `<head>`, and the session never checks it out for the review. A PR number is fetched locally first; a pasted diff with no range to hand over is reviewed inline.
 - **Map inputs**: the absolute paths from Inputs; a file that does not exist is written `missing`.
+- **Repo guidance**: `AGENTS.md`, `CLAUDE.md` and `CONTRIBUTING.md` at the repo root, each kept only when `git cat-file -e <head>:<path>` succeeds, plus the docs the architecture file's `Method:` line names as read by hand; a folder or a glob is listed with `git ls-tree -r --name-only <head> -- <dir>` on its folder, keeping the files it matches. Paths are relative to the repo root; `missing` when none exists. The reviewer decides which of their lines are rules (dj-pr-reviewer, "What you receive").
 
 Never add the PR description, the ticket, the commit bodies, your own intent summary or anything under `.dj-agents/repos/` to that prompt: a reviewer that holds the author's account confirms it instead of judging the code. The reviewer does steps 2 and 4 to 6 and writes the Intent paragraph of step 3; the session does not repeat them. No other subagent runs at standard depth. If dj-pr-reviewer is not available, the session does steps 2 to 6 inline under the same contract, and "How this review ran" says so.
 
@@ -64,6 +66,7 @@ Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; res
 - The PR description and any linked issue or ticket, if available: read at step 3, after the Intent paragraph, never before
 - `.dj-agents/repos/<repo>/language-policy.md` and `.dj-agents/repos/<repo>/project.md`, if present
 - The three map review inputs, by absolute path, with `<root>` from `dj-root` and `<repo>` from `dj-root name`: `<root>/knowledge/architecture/<repo>.md`, `<root>/knowledge/review/rules.md` and `<root>/knowledge/review/false-positives.md`. Each may be missing; the dossier says which were used.
+- The repo's guidance files at `<head>`, as the Repo guidance bullet says; the reviewer reads them, and the dossier lists them.
 
 Create `.dj-agents/repos/<repo>/reviews/<branch-or-pr>/` as the working folder for this review.
 
@@ -73,7 +76,7 @@ Standard depth: step 1 here, the delegated pass (steps 2 and 4 to 6, and the Int
 
 ### 1. Get the diff
 
-Fetch the diff (or fix the range for the hand-off) and the PR or branch metadata: title, base and head, linked issue id. Set the description and the ticket aside unread; step 3 reads them. Fix the range as the Range bullet says, and check it is not empty (`git diff --stat <base>..<head>`) before the hand-off.
+Fetch the diff (or fix the range for the hand-off) and the PR or branch metadata: title, base and head, linked issue id. Set the description and the ticket aside unread; step 3 reads them. Fix the range as the Range bullet says and resolve the guidance files at `<head>` as the Repo guidance bullet says, then check the range is not empty (`git diff --stat <base>..<head>`) before the hand-off.
 
 ### 2. Triage files (internal, not a dossier section)
 
@@ -123,12 +126,12 @@ Three lenses over the core files, one read. Steps 4 and 5 are done by dj-pr-revi
 **Two gates.** Every surviving candidate passes one of them, or it is a Question or a "Couldn't verify" item, never a silent drop:
 
 - **Runtime gate:** a concrete **Trigger** (the realistic sequence that makes it bite) and file:line evidence.
-- **Structural gate:** the boundary or the duplicate named with file:line, what changing it **Resolves**, and a **rule or precedent**: a `review/rules.md` row, an architecture section and row, or a pattern file; or touched code at path:line, only when both sides sit in the diff or its imports and the case is one of these three: the existing branch the addition now repeats, the guard its sibling applies, the old meaning of a widened name. Layering and two mechanisms for one concern always need a map row; without one they are a Question.
+- **Structural gate:** the boundary or the duplicate named with file:line, what changing it **Resolves**, and a **rule or precedent**: a `review/rules.md` row, an architecture section and row, a pattern file, or a prescriptive line of a repo guidance file (path:line); or touched code at path:line, only when both sides sit in the diff or its imports and the case is one of these three: the existing branch the addition now repeats, the guard its sibling applies, the old meaning of a widened name. Layering and two mechanisms for one concern always need a map row or a prescriptive guidance line; without one they are a Question.
 
 **Two scales**, each with its own section, neither trimmed for the other:
 
 - **Runtime:** `Blocking | Should fix | Nit`, by consequence in production.
-- **Structural:** `Rule broken` (a written rule: a `review/rules.md` row, a Layers "Must not depend on" cell, or an Invariants row) or `Precedent diverged` (a Seams, Placement guide, Shared building blocks or Deviations row, a pattern file, or one of the three touched-code cases). A structural finding is never Nit.
+- **Structural:** `Rule broken` (a written rule: a `review/rules.md` row, a Layers "Must not depend on" cell, an Invariants row, or a prescriptive line of a repo guidance file (path:line)) or `Precedent diverged` (a Seams, Placement guide, Shared building blocks or Deviations row, a pattern file, or one of the three touched-code cases). A structural finding is never Nit.
 
 The finding shapes are those of dj-pr-reviewer's output, with its field labels as written (Trigger, Evidence, Boundary or duplicate, Rule or precedent, Resolves, Fix, Suggestion); `templates/reviewer-dossier.md` shows both. There is no count cap: order each scale by consequence, the most consequential first. "Nothing to report" and "Couldn't verify" are valid results of a review.
 

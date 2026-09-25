@@ -96,7 +96,7 @@ A task can end `done`, but also `done-with-drift`, `blocked`, `needs-replan`, `s
 ```
 
 **What happens:**
-1. **Code before description.** One blind reviewer (dj-pr-reviewer) reads the PR's own commits, the touched files and the map, never the PR description, the ticket or the commit bodies. It writes what the code does.
+1. **Code before description.** One blind reviewer (dj-pr-reviewer) reads the PR's own commits, the touched files, the map and the repo's guidance files, never the PR description, the ticket or the commit bodies. It writes what the code does.
 2. **The gap line.** Only then the description is read, and one line compares them: `Description vs code: matches | promises <X> that the code does not do | does <Y> that the description does not mention`. The gap is often the best question for the author.
 3. **Layered dossier** at `<root>/repos/<repo>/reviews/<branch-or-pr>/reviewer-dossier.md`. First screen: what the PR solves, what behavior changes, where the risk lives, the findings. Below: Components involved and "Files, from the ground up", written for someone who does not know the area.
 4. **Your filter feeds the map.** Keep or discard each finding, question and "Couldn't verify" item, with a one-line reason. Comments other reviewers left can be pasted too. The skill turns this into one inbox entry: discards backed by a protection go to false positives, team rules to review rules, one library entry for the PR. **One approval** covers the table; a single comment from one reviewer needs its own yes before it becomes a rule.
@@ -215,13 +215,13 @@ save this explanation               # after the session explained something wort
 
 The blind reviewer runs in `/dj-task` step 6, in `/dj-fix`, and as the standard pass of `/dj-review`: `dj-ts-reviewer` for TypeScript and Node, `dj-elixir-reviewer` for Elixir, `dj-pr-reviewer` for any other stack.
 
-**What it sees:** the commit range (or the working tree), every touched file in full and the files they import, one Goal line with the purpose only, and three map files: `architecture/<repo>.md`, `review/rules.md`, `review/false-positives.md`.
+**What it sees:** the commit range (or the working tree), every touched file in full and the files they import, one Goal line with the purpose only, and three map files: `architecture/<repo>.md`, `review/rules.md`, `review/false-positives.md`; and, in `/dj-review`, the repo's guidance files (`AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md` and the docs the map names), whose prescriptive lines count as written rules.
 
 **What it never sees:** the task packet, spec, delivery plan, scout result, report, guide, drift log, `state.md`, `current.md`, `handoff.md`, anything under `<root>/repos/`, and for a PR the description, the ticket and the commit bodies. It does not search the rest of the repository. A reviewer that holds the story confirms the story; this one judges the code.
 
 **How to read the output:**
 - **Intent (from the code)** comes first. The orchestrator compares it with the packet's Goal: `match`, `partial` or `mismatch`.
-- **Two gates.** A runtime finding needs a realistic **Trigger** and `file:line` evidence. A structural finding needs the boundary or duplicate named at `file:line`, what changing it resolves, and a written rule or precedent from the map (or, in three narrow cases, from the touched code).
+- **Two gates.** A runtime finding needs a realistic **Trigger** and `file:line` evidence. A structural finding needs the boundary or duplicate named at `file:line`, what changing it resolves, and a written rule or precedent from the map, or in `/dj-review` from a prescriptive line of the repo's guidance files (or, in three narrow cases, from the touched code).
 - **Two scales.** Runtime: `Blocking`, `Should fix`, `Nit`. Structural: `Rule broken` or `Precedent diverged`, never Nit. Each scale has its own section; no count cap.
 - **Verdict.** `Findings`, `Nothing to report` or `Couldn't verify`. "Nothing to report" is a valid, good result. A "Couldn't verify" item names the file or fact that would settle it.
 - **Fix tags.** `Fix: auto` is a hint; `Fix: human` is never applied without your yes.

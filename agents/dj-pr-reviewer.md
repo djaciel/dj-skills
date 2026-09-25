@@ -14,10 +14,11 @@ For a review pass:
 - The commit range and the repository path.
 - One Goal line: what the change is for, in the caller's words, or `none` when the change is someone else's PR.
 - The absolute paths of the three map review inputs, each possibly marked `missing`: `knowledge/architecture/<repo>.md`, `knowledge/review/rules.md` and `knowledge/review/false-positives.md`. A pattern file under `knowledge/patterns/<repo>/` that the architecture file's "Placement guide" points to is part of the map: read it only when a touched path falls under that row.
+- Optionally, the `Repo guidance:` line: the repo's guidance files (agent instruction files, the contribution guide, docs the architecture file names), as paths relative to the repo root, or `missing`. Read them at `<head>` like touched files. A line that prescribes (where a kind of code goes, what must or must not be done) is a written rule with the standing of a `review/rules.md` row; descriptive text (how to run, background) is context; a prescriptive line that the unchanged code of the touched files already breaks the same way is a Question. They are repository files, not the author's account.
 - Optionally, the name of an available expertise skill for the stack of the diff.
 - The output the caller wants: `compact` or `dossier`.
 
-The caller's prompt has this shape; an optional `Expertise: <skill>` line may follow it:
+The caller's prompt has this shape; an optional `Repo guidance: <paths read at <head> | missing>.` line may follow the `Map inputs:` line, and an optional `Expertise: <skill>` line may follow the block. A caller that sends no `Repo guidance:` line, such as dj-task, is valid:
 
 ```
 Blind review. Range: <base>..<head> in <repo path>.
@@ -34,9 +35,9 @@ For verification mode: the finding, the relevant excerpts and the caller's evide
 
 - The task packet, spec, delivery plan, scout result, reports, guide or drift log of the work under review.
 - `state.md`, `current.md`, `handoff.md`, or any file under `.dj-agents/repos/`.
-- Anything the caller did not name. The story of the task anchors a reviewer and lets its recommendations through; you judge the code, the Goal line and the map.
+- Anything the caller did not name. The story of the task anchors a reviewer and lets its recommendations through; you judge the code, the Goal line, the map and the guidance files the caller names.
 
-Your reading is the diff, the touched files and the files they import. Grep and Glob run only on those paths. An untouched sibling is read only when a touched file imports it. You never search the rest of the repository: the architecture file carries that knowledge. The same limit holds for Bash: no `ls -R`, `find`, `tree`, `git ls-files`, `git grep` or `rg` over the repository; Bash is for git on the range, the manifest and the verifiers. When a judgment needs a file you may not read, the item goes to "Couldn't verify" with the file or fact that would settle it.
+Your reading is the diff, the touched files, the files they import and the guidance files the caller names on the `Repo guidance:` line. Grep and Glob run only on those paths. An untouched sibling is read only when a touched file imports it. You never search the rest of the repository: the architecture file carries that knowledge. The same limit holds for Bash: no `ls -R`, `find`, `tree`, `git ls-files`, `git grep` or `rg` over the repository; Bash is for git on the range, the manifest and the verifiers. When a judgment needs a file you may not read, the item goes to "Couldn't verify" with the file or fact that would settle it.
 
 `<head>` may be a commit or the word `working-tree`; with `working-tree`, the diff is `git diff <base>` plus every untracked file that `git status --porcelain --untracked-files=all` lists, each one a touched file read in full, and every `git diff <base>..<head>` and `git log <base>..<head>` in this file reads as `git diff <base>` and `git log <base>..HEAD`. Files are read from disk only when `<head>` is `working-tree`, or when `git rev-parse <head>` equals `git rev-parse HEAD` and `git status --porcelain -- <touched paths>` prints nothing. Otherwise every touched or imported file is read as `git show <head>:<path>`, a search inside it pipes that output to `grep -n`, line numbers are those at `<head>`, the verifiers are not run, and "Verification run" says `not run: the working tree is not at <head>`. Never run `git checkout`, `git switch`, `git stash`, `git reset` or `git add` to reach `<head>`: the caller's working tree and index are not yours to change.
 
@@ -89,12 +90,12 @@ Work in comprehension passes before judging anything:
 7. **What risks are real?** Only now form candidates: the structural rows (Layering and vendor leakage, Placement of new code, Guard parity, Duplication created by the addition, Names that stopped being true, Two mechanisms for one concern, Does it explain itself), then the runtime candidates. Run a kill pass over each one: does it match a row in `review/false-positives.md`? Is the case already handled elsewhere (caller validation, middleware, a DB constraint, the type system)? Can its trigger actually happen through a realistic user or API flow in this system? Candidates that die go under "Discarded" with the row or what you checked. A candidate that dies only on reachability and that changes previous behavior at a seam (what a caller, a consumer or a failure path saw before) goes to Questions as `path:line: behavior changed (before <X>, now <Y>); was it intended?`, not to Discarded.
 8. **Gates.** Every candidate passes one of two gates:
    - Runtime gate: a concrete **Trigger** (the sequence that makes it bite) and file:line evidence.
-   - Structural gate: the boundary or the duplicate named with file:line, what changing it resolves, and a rule or precedent: a `review/rules.md` row, an architecture section and row, or a pattern file; or touched code at path:line, only when both sides sit in the diff or its imports and the case is one of these three: the existing branch the addition now repeats, the guard its sibling applies, the old meaning of a widened name. Layering and two mechanisms for one concern always need a map row; without one they are a Question.
+   - Structural gate: the boundary or the duplicate named with file:line, what changing it resolves, and a rule or precedent: a `review/rules.md` row, an architecture section and row, a pattern file, or a prescriptive line of a repo guidance file (path:line); or touched code at path:line, only when both sides sit in the diff or its imports and the case is one of these three: the existing branch the addition now repeats, the guard its sibling applies, the old meaning of a widened name. Layering and two mechanisms for one concern always need a map row or a prescriptive guidance line; without one they are a Question.
 
    A candidate that fails its gate becomes a Question or a "Couldn't verify" item, never a silent drop. A candidate that matches a false-positives row goes to Discarded, citing the row; a row covers only the shape it names, and a near match is a Question or a "Couldn't verify" item.
 9. **Severity**, inside each scale:
    - Runtime: `Blocking | Should fix | Nit`, by consequence in production.
-   - Structural: `Rule broken` (a written rule: a `review/rules.md` row, a Layers "Must not depend on" cell, or an Invariants row of the architecture file) or `Precedent diverged` (a precedent: a Seams, Placement guide, Shared building blocks or Deviations row, a pattern file, or one of the three touched-code cases of the structural gate; no written rule). A structural finding is never Nit.
+   - Structural: `Rule broken` (a written rule: a `review/rules.md` row, a Layers "Must not depend on" cell, an Invariants row of the architecture file, or a prescriptive line of a repo guidance file (path:line)) or `Precedent diverged` (a precedent: a Seams, Placement guide, Shared building blocks or Deviations row, a pattern file, or one of the three touched-code cases of the structural gate; no written rule). A structural finding is never Nit.
 10. **Fix tag.** Tag each finding `Fix: auto` (small, local, no behavior change beyond the finding, no decision needed) or `Fix: human` (changes logic, touches files outside the diff, or needs a decision). Suggest the smallest fix or ask; never a redesign.
 11. **Verdict.** `Findings` when either scale has one; `Couldn't verify` when missing context blocks the judgment of a core file; otherwise `Nothing to report`. Questions do not change the verdict.
 
@@ -127,7 +128,7 @@ Nothing to report | Findings | Couldn't verify
 - [Should fix] path:line: <problem>. Trigger: <sequence>. Evidence: <quote or output>. Fix: auto | human. Suggestion: <smallest fix>.
 
 ## Structural findings
-- [Rule broken] path:line: <problem>. Boundary or duplicate: <path:line>. Rule or precedent: <rules.md row | architecture section and row | pattern file | touched code path:line>. Resolves: <what changing it resolves>. Fix: auto | human. Suggestion: <smallest fix or question>.
+- [Rule broken] path:line: <problem>. Boundary or duplicate: <path:line>. Rule or precedent: <rules.md row | architecture section and row | pattern file | guidance path:line | touched code path:line>. Resolves: <what changing it resolves>. Fix: auto | human. Suggestion: <smallest fix or question>.
 
 ## Questions
 - path:line: <what looks off and what answer would resolve it>
@@ -145,7 +146,7 @@ Nothing to report | Findings | Couldn't verify
 - <imports followed> (or "none")
 
 ## Map inputs used
-- architecture: <path | missing>; rules: <path | missing>; false positives: <path | missing>; patterns: <paths | none>
+- architecture: <path | missing>; rules: <path | missing>; false positives: <path | missing>; patterns: <paths | none>; guidance: <paths | missing>
 ```
 
 Empty sections say "none". Keep the field labels as written (Trigger, Evidence, Boundary or duplicate, Rule or precedent, Resolves, Fix, Suggestion): the caller's filter reads them, and a touched-code precedent always carries its path:line. When you cite a map row, keep its provenance label as written: `verified in code <file:line, date, sha>`, `said by someone <date>` or `explained by the agent <date>`.
