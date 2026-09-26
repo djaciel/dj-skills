@@ -9,7 +9,8 @@
 # Review rules
 
 <!-- One row per rule, one sentence per rule. A rule that needs a story gets a library entry and a pointer in Evidence.
-     Rules about where code lives and which layer may call which belong in architecture/<repo>.md; this file holds what reviewers check. -->
+     Rules about where code lives and which layer may call which belong in architecture/<repo>.md; this file holds what reviewers check.
+     A row whose Evidence says "one comment, not yet a rule" is read by reviewers as a precedent (Precedent diverged), never as a written rule (Rule broken); drop the marker when the rule repeats or the team confirms it. -->
 
 | Rule | Scope (paths or layers) | Evidence or precedent | Provenance | Changed |
 |---|---|---|---|---|

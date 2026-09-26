@@ -131,7 +131,7 @@ Three lenses over the core files, one read. Steps 4 and 5 are done by dj-pr-revi
 **Two scales**, each with its own section, neither trimmed for the other:
 
 - **Runtime:** `Blocking | Should fix | Nit`, by consequence in production.
-- **Structural:** `Rule broken` (a written rule: a `review/rules.md` row, a Layers "Must not depend on" cell, an Invariants row, or a prescriptive line of a repo guidance file (path:line)) or `Precedent diverged` (a Seams, Placement guide, Shared building blocks or Deviations row, a pattern file, or one of the three touched-code cases). A structural finding is never Nit.
+- **Structural:** `Rule broken` (a written rule: a `review/rules.md` row, a Layers "Must not depend on" cell, an Invariants row, or a prescriptive line of a repo guidance file (path:line)) or `Precedent diverged` (a Seams, Placement guide, Shared building blocks or Deviations row, a pattern file, a `review/rules.md` row marked "one comment, not yet a rule", or one of the three touched-code cases). A row marked "one comment, not yet a rule" is a precedent, never a written rule. A structural finding is never Nit.
 
 The finding shapes are those of dj-pr-reviewer's output, with its field labels as written (Trigger, Evidence, Boundary or duplicate, Rule or precedent, Resolves, Fix, Suggestion); `templates/reviewer-dossier.md` shows both. There is no count cap: order each scale by consequence, the most consequential first. "Nothing to report" and "Couldn't verify" are valid results of a review.
 
