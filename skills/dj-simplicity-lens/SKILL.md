@@ -16,7 +16,7 @@ This is NOT "write minimal code at any cost". Cutting safeguards to save lines i
 - Before implementing a task, as a pre-write checkpoint.
 - During code review, when judging whether a diff is over-built for its goal.
 - Whenever you are about to create a helper, wrapper, abstraction, base class, or propose a new dependency.
-- In the **dj-review** skill, the blind reviewer (the **dj-pr-reviewer** subagent, or the session inline) asks questions 1 and 5 to 7 against the diff alone, for its Shape scale; questions 2 to 4 need a repository search and are not asked by a blind reviewer.
+- In the **dj-review** skill, the blind reviewer (the **dj-pr-reviewer** subagent, or the session inline) asks questions 1 and 5 to 7 against the diff alone, for its Shape scale; questions 2 to 4 need a repository search and are asked by the skill's informed pass (`templates/informed-pass.md`), never by a blind reviewer.
 
 **When NOT to use:**
 

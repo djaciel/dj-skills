@@ -14,6 +14,7 @@ Comprehension before criticism: reconstruct how data moves through the changed c
 - As the first analytical step of the **dj-review** skill, right after diff retrieval and file classification
 - During the **dj-fix** skill, to locate the affected flow before hunting the root cause
 - The **dj-pr-reviewer** subagent applies this lens when reconstructing a PR's intent
+- The informed pass of the **dj-review** skill (its `templates/informed-pass.md`) applies this lens per main flow, holding the description and the ticket
 - Any diff touching an interface between components (API ↔ service, service ↔ DB, SDK ↔ UI, producer ↔ consumer)
 
 **When NOT to use:**
