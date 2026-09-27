@@ -47,7 +47,7 @@ per behavior. Not a file list.>
 
 <"none" when empty>
 
-- [<Blocking | Should fix | Nit>] <path:line>: <problem>. Trigger: <the realistic sequence that makes it bite>. Evidence: <quote or output>. Fix: <auto | human>. Suggestion: <smallest fix>.
+- [<Blocking | Should fix | Nit>] <path:line>: <problem>. Trigger: <the realistic sequence that makes it bite>. Evidence: <quote or output>. Assumes: <the operational fact the trigger needs; omitted when none>. Fix: <auto | human>. Suggestion: <smallest fix>.
 
 ### Structural
 
