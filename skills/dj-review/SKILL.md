@@ -155,9 +155,12 @@ For each **Blocking** finding: one independent verification pass (the **dj-pr-re
 
 Fill `templates/reviewer-dossier.md` and save it to `.dj-agents/repos/<repo>/reviews/<branch-or-pr>/reviewer-dossier.md`, in the internal language from `.dj-agents/repos/<repo>/language-policy.md`.
 
+**Cross the two passes** before writing. For each item of either output, decide whether the other pass reports the same problem: the same place (the `path:line` both outputs put first) or the same flow, and the same consequence. An item found by both is written once, in the blind wording, with `Found by: both`, unless the informed item carries a Trigger or an `Assumes:` the blind item lacks (a blind Question against an informed break path), or a higher severity; then the informed wording and severity are kept, still tagged `Found by: both`. Every other item is copied verbatim with one tag appended, `Found by: blind` or `Found by: informed (suspected)`. Informed break paths go under Runtime, "Already exists" items under Shape (they share the blind `[Shape]` label, so their source section sets the tag), informed Questions under Questions, each ordered by consequence with the blind ones. The informed pass's Discarded items are copied under "Discarded suspicions" with `Found by: informed`, and the "Read beyond the diff" line of "How this review ran" lists both passes. With `--blind-only`, every tag is `Found by: blind`. Save each pass's output as it came (the subagent's return, or the inline output) next to the dossier, as `blind-output.md` and `informed-output.md`, for the human.
+
 **Dossier writing rules** (they override habit):
 
-- **First screen for a decision.** The sections above the depth marker say what the PR solves, what behavior changes, where the risk lives and the findings, short enough to read in one screen. Depth comes below. Findings are copied from the reviewer's output without rewriting. What is copied from the reviewer stays verbatim in the reviewer's language; every other section follows the internal language policy. "What behavior changes" is written from a caller's view (what a client, a user or another module sees), not as a file list.
+- **First screen for a decision.** The sections above the depth marker open with Worth posting, then say what the PR solves, what behavior changes, where the risk lives and the findings, short enough to read in one screen. Depth comes below. Items are copied from the passes' outputs without rewriting; only the `Found by:` tag is appended. What is copied from a pass stays verbatim in that pass's language; every other section follows the internal language policy. "What behavior changes" is written from a caller's view (what a client, a user or another module sees), not as a file list.
+- **Worth posting.** The first section of the dossier: the items the session would post on the PR, picked from any section (a finding of any scale, a Question, a Couldn't verify item), one line each: `<path:line>: <what to post>. From: <section>, <Found by>. Why: <one line>`. The pick weighs the consequence, the agreement of both passes, a promise the code does not keep, and whether the author can act on it. What a human posts is usually two or three items; that is guidance, not a limit, and "nothing worth posting" is a valid entry. It runs with `--blind-only` too.
 - **Audience for the depth sections: a reviewer who does NOT know this area of the codebase.** Every component named gets a one-line explanation on first mention: what it is, where it lives, why it exists. That is what the "Components involved" section is for.
 - **Concrete over abstract.** Not "serializes across processes", "prevents two replicas from signing with the same nonce at the same time". A one-sentence digression to explain something "obvious" is welcome; unexplained jargon is not.
 - **"Files, from the ground up":** order files from the most foundational to the top-level (dependencies first, orchestration last), and for each file explain **every change in it**, function by function, one or two plain lines each.
@@ -167,7 +170,7 @@ Fill `templates/reviewer-dossier.md` and save it to `.dj-agents/repos/<repo>/rev
 
 After the human goes through the dossier:
 
-1. **Filter.** Each finding, question and "Couldn't verify" item is kept (to be drafted) or discarded with a one-line reason.
+1. **Filter.** Each finding, question and "Couldn't verify" item is kept (to be drafted) or discarded with a one-line reason; a Worth posting line points to one of them and is not a new item.
 2. **Other reviewers.** Optionally, the human pastes comments other reviewers already left on this PR.
 3. **One inbox entry.** Write `knowledge/inbox/<YYYY-MM-DD>-review-<branch-or-pr>.md` from `templates/knowledge/inbox-entry.md` in the dj-map skill (`Source kind: PR review`), one routing row per item:
    - A discard whose reason is a protection (middleware, caller validation, a DB constraint, the type system): the flagged shape as a pattern and its protection, destination `review/false-positives.md`.
@@ -201,7 +204,8 @@ Both passes run whatever the size of the PR, unless `--blind-only`. A docs-only 
 ## Output
 
 - `.dj-agents/repos/<repo>/reviews/<branch-or-pr>/reviewer-dossier.md`: the dossier (internal language)
+- `.dj-agents/repos/<repo>/reviews/<branch-or-pr>/`, next to the dossier: `description.md` (the PR description as read at step 3), `blind-output.md` and `informed-output.md` (each pass's output as it came)
 - `knowledge/inbox/<YYYY-MM-DD>-review-<branch-or-pr>.md`: the inbox entry with the routing table, shown before anything is applied
 - After approval: the rows written to `review/false-positives.md`, `review/rules.md` and the other destinations, and one library entry `library/<YYYY-MM-DD>-<slug>.md` (`Kind: PR reviewed`); the entry moves to `inbox/processed/` once no row is pending
 - `.dj-agents/repos/<repo>/reviews/<branch-or-pr>/comments.md`: draft comments in English, only after the human filters
-- A short summary to the user: intent in one line, the "Description vs code" line, finding counts by scale, and where the dossier lives
+- A short summary to the user: intent in one line, the "Description vs code" line, the Worth posting lines, finding counts by scale, the crossing counts (both, blind only, informed only), and where the dossier lives

@@ -3,11 +3,12 @@
      Purpose: comprehension-first summary and evidence-filtered findings for the human reviewer
 
      FIRST SCREEN FIRST: the sections above the Depth marker are written for a decision:
-     what the PR solves, what behavior changes, where the risk lives, the findings. Keep
-     them short enough to read in one screen. Findings keep the reviewer's shape and field
-     labels as written; each scale is ordered by consequence, with no count cap.
-     What is copied from the reviewer stays verbatim in the reviewer's language; every
-     other section follows the internal language policy.
+     Worth posting, then what the PR solves, what behavior changes, where the risk lives,
+     the findings. Keep them short enough to read in one screen. Items copied from either
+     pass keep their shape and field labels as written, with only a `Found by:` tag
+     appended; each scale is ordered by consequence, with no count cap.
+     What is copied from a pass stays verbatim in that pass's language; every other
+     section follows the internal language policy.
 
      AUDIENCE RULE for the depth sections: write for a reviewer who does NOT know this
      area of the codebase. Every codebase-specific component (service, lock, queue,
@@ -19,6 +20,13 @@
      config) go inside the finding or section whose severity they affect. -->
 
 # Reviewer Dossier: <branch or PR> at <head sha> vs <base>
+
+## Worth posting
+
+<chosen by the session from any section; usually two or three, as guidance, not a limit;
+"nothing worth posting" is valid>
+
+- <path:line>: <what to post>. From: <section>, <Found by>. Why: <one line>
 
 ## What this PR appears to solve
 
@@ -47,23 +55,23 @@ per behavior. Not a file list.>
 
 <"none" when empty>
 
-- [<Blocking | Should fix | Nit>] <path:line>: <problem>. Trigger: <the realistic sequence that makes it bite>. Evidence: <quote or output>. Assumes: <the operational fact the trigger needs; omitted when none>. Fix: <auto | human>. Suggestion: <smallest fix>.
+- [<Blocking | Should fix | Nit>] <path:line>: <problem>. Trigger: <the realistic sequence that makes it bite>. Evidence: <quote or output>. Assumes: <the operational fact the trigger needs; omitted when none>. Fix: <auto | human>. Suggestion: <smallest fix>. Found by: <both | blind | informed (suspected)>.
 
 ### Structural
 
 <"none" when empty. A structural finding is never Nit.>
 
-- [<Rule broken | Precedent diverged>] <path:line>: <problem>. Boundary or duplicate: <path:line>. Rule or precedent: <rules.md row | architecture section and row | pattern file | guidance path:line | touched code path:line>. Resolves: <what changing it resolves>. Fix: <auto | human>. Suggestion: <smallest fix or question>.
+- [<Rule broken | Precedent diverged>] <path:line>: <problem>. Boundary or duplicate: <path:line>. Rule or precedent: <rules.md row | architecture section and row | pattern file | guidance path:line | touched code path:line>. Resolves: <what changing it resolves>. Fix: <auto | human>. Suggestion: <smallest fix or question>. Found by: <both | blind | informed (suspected)>.
 
 ### Shape
 
 <"none" when empty. Never blocking; a suggestion. Shape items do not change the verdict.>
 
-- [Shape] <path:line>: <what could be smaller>. Evidence: <path:line in the diff or its imports>. Suggestion: <the smaller shape>.
+- [Shape] <path:line>: <what could be smaller>. Evidence: <path:line in the diff or its imports, or, for an "already exists" item, path:line in the repository or dependency@version and path>. Suggestion: <the smaller shape>. Found by: <both | blind | informed (suspected)>.
 
 ## Questions, not findings
 
-- <path:line>: <what looks off and what answer would resolve it>
+- <path:line>: <what looks off and what answer would resolve it>. Found by: <both | blind | informed (suspected)>.
 
 ## Couldn't verify
 
@@ -114,9 +122,10 @@ block, one or two plain-language lines each. Group only truly mechanical files.>
 
 - Blind pass: <delegated to dj-pr-reviewer | inline: <why>>
 - Informed pass: <delegated to a general-purpose subagent | inline by the session: not independent of the blind pass | skipped: --blind-only | skipped: <reason>>; context: <paths | none>; library sources read: <package@version | none>
+- Crossing: <n> both, <n> blind only, <n> informed only
 - Map inputs used: architecture <path | missing>; rules <path | missing>; false positives <path | missing>; patterns <paths | none>
 - Repo guidance: <paths read at <head> | missing>
 - Verification run: <command → real result, one line each | none available>
 - Deep: <no | yes: <Blocking findings verified and their outcome>>
 - Verdict: <Nothing to report | Findings | Couldn't verify, as the reviewer returned it>
-- Read beyond the diff: <imports the reviewer followed, or none>
+- Read beyond the diff: blind <imports followed | none>; informed <repository paths or searches, library sources | none>
