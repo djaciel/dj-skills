@@ -112,7 +112,8 @@ block, one or two plain-language lines each. Group only truly mechanical files.>
 
 ## How this review ran
 
-- Standard pass: <delegated to dj-pr-reviewer | inline: <why>>
+- Blind pass: <delegated to dj-pr-reviewer | inline: <why>>
+- Informed pass: <delegated to a general-purpose subagent | inline by the session: not independent of the blind pass | skipped: --blind-only | skipped: <reason>>; context: <paths | none>; library sources read: <package@version | none>
 - Map inputs used: architecture <path | missing>; rules <path | missing>; false positives <path | missing>; patterns <paths | none>
 - Repo guidance: <paths read at <head> | missing>
 - Verification run: <command → real result, one line each | none available>

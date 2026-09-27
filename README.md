@@ -99,7 +99,7 @@ Each skill is invoked by its name (`/dj-start`, `/dj-task`). The ten commands ar
 | `/dj-map` | Map one area for a feature. `/dj-map --architecture` writes the repository's architecture with evidence; `--refresh` re-runs that evidence |
 | `/dj-plan` | Turn intent into a living spec, phases, task packets and a PR strategy; replans after drift |
 | `/dj-task` | Execute one task packet: implement, validate, test audit, blind review, acceptance review, report, guide, map lines |
-| `/dj-review` | Review someone else's PR: code before description, a layered dossier, draft comments. `--deep` verifies blocking findings; `--base <ref>` sets the base by hand |
+| `/dj-review` | Review someone else's PR: code before description, a layered dossier, draft comments. A blind pass runs, then an informed pass that reads the description and the repository; `--blind-only` skips the informed pass. `--deep` verifies blocking findings; `--base <ref>` sets the base by hand |
 | `/dj-fix` | Investigate and fix a bug: reproduce first, root cause, minimal fix, fix report |
 | `/dj-brief` | Draft human communication from work already done: PR description, commit message, ticket, team update |
 | `/dj-explore` | Compare two or three approaches when there is real uncertainty |

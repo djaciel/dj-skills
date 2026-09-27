@@ -92,19 +92,21 @@ A task can end `done`, but also `done-with-drift`, `blocked`, `needs-replan`, `s
 ```text
 /dj-review branch feat/order-cancel against main
 /dj-review 482 --base 3f2a1c9       # a PR fetched locally, with an explicit base
+/dj-review 482 --blind-only         # one pass: the blind reviewer alone
 /dj-review branch feat/order-cancel against main --deep
 ```
 
 **What happens:**
 1. **Code before description.** One blind reviewer (dj-pr-reviewer) reads the PR's own commits, the touched files, the map and the repo's guidance files, never the PR description, the ticket or the commit bodies. It writes what the code does.
 2. **The gap line.** Only then the description is read, and one line compares them: `Description vs code: matches | promises <X> that the code does not do | does <Y> that the description does not mention`. The gap is often the best question for the author.
-3. **Layered dossier** at `<root>/repos/<repo>/reviews/<branch-or-pr>/reviewer-dossier.md`. First screen: what the PR solves, what behavior changes, where the risk lives, the findings. Below: Components involved and "Files, from the ground up", written for someone who does not know the area.
-4. **Your filter feeds the map.** Keep or discard each finding, question and "Couldn't verify" item, with a one-line reason. Comments other reviewers left can be pasted too. The skill turns this into one inbox entry: discards backed by a protection go to false positives, team rules to review rules, one library entry for the PR. **One approval** covers the table; a single comment from one reviewer needs its own yes before it becomes a rule.
-5. **Draft comments** for the kept items in `reviews/<branch-or-pr>/comments.md`, in English.
+3. **The informed pass.** A general-purpose subagent then reads the saved description, the ticket, the map and the repository, library sources included when a break path needs them, to find how the change breaks. It gets the blind Intent paragraph, never the blind findings.
+4. **Layered dossier** at `<root>/repos/<repo>/reviews/<branch-or-pr>/reviewer-dossier.md`. First screen: what the PR solves, what behavior changes, where the risk lives, the findings. Below: Components involved and "Files, from the ground up", written for someone who does not know the area.
+5. **Your filter feeds the map.** Keep or discard each finding, question and "Couldn't verify" item, with a one-line reason. Comments other reviewers left can be pasted too. The skill turns this into one inbox entry: discards backed by a protection go to false positives, team rules to review rules, one library entry for the PR. **One approval** covers the table; a single comment from one reviewer needs its own yes before it becomes a rule.
+6. **Draft comments** for the kept items in `reviews/<branch-or-pr>/comments.md`, in English.
 
 **Range:** the base is the merge base with the target, so the range is the PR's own commits. An already merged PR works too: for a merge commit the skill finds the PR's base and head; for a squash or rebase merge it asks for the base. `--base <ref>` always wins. A branch that is not checked out is read where it is; the skill never checks it out.
 
-**Depth and cost:** the default is one careful pass. `--deep` adds one verifier per Blocking finding, which may read library sources. It costs several times more and is always your call; the skill may offer it, never assume it.
+**Depth and cost:** the default is two passes, one after the other: the blind one, then the informed one. `--blind-only` gives one. In the trial, one pass measured 90 to 135k tokens and 3 to 7 minutes on PRs of 2 to 22 files. `--deep` adds one verifier per Blocking finding, which may read library sources. It costs several times more and is always your call; the skill may offer it, never assume it.
 
 **Your job:** filter the findings, approve the map rows, then rewrite the drafts in your own words and post them yourself. **Nothing is ever posted by a skill.**
 
@@ -213,7 +215,7 @@ save this explanation               # after the session explained something wort
 
 ## Recipe 13: Read a blind review
 
-The blind reviewer runs in `/dj-task` step 6, in `/dj-fix`, and as the standard pass of `/dj-review`: `dj-ts-reviewer` for TypeScript and Node, `dj-elixir-reviewer` for Elixir, `dj-pr-reviewer` for any other stack.
+The blind reviewer runs in `/dj-task` step 6, in `/dj-fix`, and as the blind pass of `/dj-review`: `dj-ts-reviewer` for TypeScript and Node, `dj-elixir-reviewer` for Elixir, `dj-pr-reviewer` for any other stack.
 
 **What it sees:** the commit range (or the working tree), every touched file in full and the files they import, one Goal line with the purpose only, and three map files: `architecture/<repo>.md`, `review/rules.md`, `review/false-positives.md`; and, in `/dj-review`, the repo's guidance files (`AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md` and the docs the map names), whose prescriptive lines count as written rules.
 

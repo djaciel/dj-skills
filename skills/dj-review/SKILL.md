@@ -9,7 +9,7 @@ description: Use when reviewing someone else's pull request, branch, or diff: a 
 
 Comprehension before criticism, and code before the author's account. Read what the change does before reading what its description says it does, then compare the two. Report only findings backed by code evidence that are likely to matter in production or maintenance. Nothing is ever posted automatically, and the human's filter feeds the knowledge map only after approval.
 
-**Announce at start:** "I'm using the dj-review skill to review <branch or PR> against <base> (standard|deep)."
+**Announce at start:** "I'm using the dj-review skill to review <branch or PR> against <base> (standard|blind-only|deep)."
 
 ## When to use
 
@@ -29,12 +29,12 @@ Two depths. **Cost is the user's choice, never a surprise.**
 
 | Depth | What runs | When |
 |---|---|---|
-| `standard` (default) | ONE delegated pass to the **dj-pr-reviewer** subagent under the blind contract (`Output: dossier`), then this session composes the dossier and runs the human filter. Inline only as degradation, when the subagent is missing; the session then follows the same contract and does not read the description until step 3. No parallel fleets, no library-source spelunking. | Every review, unless the user asks for deep |
-| `--deep` | Standard flow, then independent verification of **Blocking findings only** (one verifier per finding, not a panel), which may consult installed library sources. | Only when the user explicitly asks (high-stakes PRs: money, auth, data integrity) |
+| `standard` (default) | The blind pass: ONE delegated call to the **dj-pr-reviewer** subagent under the blind contract (`Output: dossier`). After step 3, the informed pass: one general-purpose subagent given `templates/informed-pass.md`; `--blind-only` skips it. Then this session composes the dossier and runs the human filter. The blind pass runs inline only as degradation, when the subagent is missing; the session then follows the same contract and does not read the description until step 3. No parallel fleets. The blind pass reads no library sources; the informed pass may, when a break path hinges on library behavior. | Every review, unless the user asks for deep |
+| `--deep` | Standard flow, then independent verification of **Blocking findings only**, from either pass (one verifier per finding, not a panel), which may consult installed library sources. | Only when the user explicitly asks (high-stakes PRs: money, auth, data integrity) |
 
-**Hard brake:** never launch multi-agent workflows or parallel reviewer fleets from this skill, not even when the session's effort mode encourages orchestration. If a deeper pass seems warranted, finish the standard review, state what deep verification would add and roughly what it costs, and let the user decide.
+**Hard brake:** never launch multi-agent workflows or parallel reviewer fleets from this skill, not even when the session's effort mode encourages orchestration. Besides the blind pass, only the informed pass runs at standard depth: one general-purpose subagent given `templates/informed-pass.md`, after the blind pass and never at the same time. If a deeper pass seems warranted, finish the standard review, state what deep verification would add and roughly what it costs, and let the user decide.
 
-The standard pass is one call to **dj-pr-reviewer**, right after step 1, with exactly this hand-off, followed by an `Expertise: <skill>` line only when an expertise skill for the stack of the diff is available:
+The blind pass is one call to **dj-pr-reviewer**, right after step 1, with exactly this hand-off, followed by an `Expertise: <skill>` line only when an expertise skill for the stack of the diff is available:
 
 ```
 Blind review. Range: <base>..<head> in <repo path>.
@@ -48,7 +48,14 @@ Output: dossier.
 - **Map inputs**: the absolute paths from Inputs; a file that does not exist is written `missing`.
 - **Repo guidance**: `AGENTS.md`, `CLAUDE.md` and `CONTRIBUTING.md` at the repo root, each kept only when `git cat-file -e <head>:<path>` succeeds, plus the docs the architecture file's `Method:` line names as read by hand; a folder or a glob is listed with `git ls-tree -r --name-only <head> -- <dir>` on its folder, keeping the files it matches. Paths are relative to the repo root; `missing` when none exists. The reviewer decides which of their lines are rules (dj-pr-reviewer, "What you receive").
 
-Never add the PR description, the ticket, the commit bodies, your own intent summary or anything under `.dj-agents/repos/` to that prompt: a reviewer that holds the author's account confirms it instead of judging the code. The reviewer does steps 2 and 4 to 6 and writes the Intent paragraph of step 3; the session does not repeat them. No other subagent runs at standard depth. If dj-pr-reviewer is not available, the session does steps 2 to 6 inline under the same contract, and "How this review ran" says so.
+Never add the PR description, the ticket, the commit bodies, your own intent summary or anything under `.dj-agents/repos/` to that prompt: a reviewer that holds the author's account confirms it instead of judging the code. The reviewer does steps 2 and 4 to 6 and writes the Intent paragraph of step 3; the session does not repeat them. If dj-pr-reviewer is not available, the session does steps 2 to 6 inline under the same contract, and "How this review ran" says so.
+
+The informed pass runs after step 3, unless `--blind-only`. The session fills the header of `templates/informed-pass.md` and sends everything below the template's comment as the prompt of one general-purpose subagent, launched with no model named. The header lives only in the template:
+
+- **Context**: the description as the session read it at step 3, saved verbatim to `.dj-agents/repos/<repo>/reviews/<branch-or-pr>/description.md` when it is not already a file, plus the ticket or RFC paths the human gives; `none` when there is nothing. The Intent line takes the blind pass's Intent paragraph; the other header lines are filled as the blind hand-off's bullets say.
+- **Never add** the blind findings, Questions, Couldn't verify, the Discarded list or the session's own conclusions, the Description vs code line included: the crossing in step 8 only works if the two passes found things apart.
+
+When no subagent can be launched, the session does the informed pass inline after step 3, following `templates/informed-pass.md` as it is written, and "How this review ran" says "inline by the session: not independent of the blind pass". When dj-pr-reviewer is missing but subagents can be launched, the blind pass runs inline as above and the informed pass is still delegated. When no subagent can be launched at all, both passes run inline, in order.
 
 ## The review contract
 
@@ -62,8 +69,8 @@ A good review may legitimately conclude: "No blockers. Two questions and one min
 
 Layout and root resolution: `skills/dj-start/templates/dj-agents-layout.md`; resolve `.dj-agents/repos/<repo>/` with `dj-root repo`.
 
-- The diff: `git diff <base>..<head>` with the Range rule below, `gh pr diff <number>`, or a pasted diff; `--base <ref>` (optional, the human's explicit base)
-- The PR description and any linked issue or ticket, if available: read at step 3, after the Intent paragraph, never before
+- The diff: `git diff <base>..<head>` with the Range rule below, `gh pr diff <number>`, or a pasted diff; `--base <ref>` (optional, the human's explicit base); `--blind-only` (optional, skips the informed pass)
+- The PR description and any linked issue or ticket, if available: read at step 3, after the Intent paragraph, never before; also handed to the informed pass as a file
 - `.dj-agents/repos/<repo>/language-policy.md` and `.dj-agents/repos/<repo>/project.md`, if present
 - The three map review inputs, by absolute path, with `<root>` from `dj-root` and `<repo>` from `dj-root name`: `<root>/knowledge/architecture/<repo>.md`, `<root>/knowledge/review/rules.md` and `<root>/knowledge/review/false-positives.md`. Each may be missing; the dossier says which were used.
 - The repo's guidance files at `<head>`, as the Repo guidance bullet says; the reviewer reads them, and the dossier lists them.
@@ -72,7 +79,7 @@ Create `.dj-agents/repos/<repo>/reviews/<branch-or-pr>/` as the working folder f
 
 ## The process (in order)
 
-Standard depth: step 1 here, the delegated pass (steps 2 and 4 to 6, and the Intent paragraph of step 3), then step 3, step 7 with `--deep`, and steps 8 and 9 here. Inline: every step in order, by this session.
+Standard depth, one after another and never in parallel: step 1 here, the blind pass (steps 2 and 4 to 6, and the Intent paragraph of step 3), step 3, the informed pass (unless `--blind-only`), step 7 with `--deep`, then steps 8 and 9 here. Inline: every step in order, by this session, the informed pass after step 3.
 
 ### 1. Get the diff
 
@@ -92,7 +99,9 @@ Only then read the description and the linked issue, and write one line:
 
 When both gaps exist, write both, separated by `;`. The gap is usually the best question for the author. If the description is empty, the line says so. If intent stays unclear, that is itself a question for the author, not a license to assume they are wrong.
 
-Inline, also collect the **components involved**: every codebase-specific service, lock, queue, helper, or pattern the change touches; for each, what it is, where it lives, why it exists. The dossier's audience does not know them. In the standard pass they come from the reviewer's depth sections.
+Inline, also collect the **components involved**: every codebase-specific service, lock, queue, helper, or pattern the change touches; for each, what it is, where it lives, why it exists. The dossier's audience does not know them. In the blind pass they come from the reviewer's depth sections.
+
+After the gap line, save the description and run the informed pass, unless `--blind-only`.
 
 ### 4. Map the data flow
 
@@ -102,7 +111,7 @@ For each main flow the diff touches, build a compact `input → transform → ou
 
 ### 5. Check precedents, tests, and stack quality
 
-Four lenses over the core files, one read. Steps 4 and 5 are done by dj-pr-reviewer in the standard pass; the session does not repeat them.
+Four lenses over the core files, one read. Steps 4 and 5 are done by dj-pr-reviewer in the blind pass; the session does not repeat them.
 
 - **Precedents/duplication:** read the architecture file's "Shared building blocks", "Placement guide", "Layers" and "Deviations and migrations in progress" rows, then the touched files and the files they import. Does the PR re-implement a block the map lists? Does it diverge from a placement, a layer rule or the go-forward side of a migration? The placement check covers where each new module or function of a placed kind lives, not only the calls it makes. No search beyond the touched files and their imports; what the map and those files cannot settle goes to "Couldn't verify".
 - **Tests:** apply the **dj-test-quality** skill: do the tests validate the behavior this PR introduces, or implementation details? What realistic cases are missing?
@@ -175,12 +184,12 @@ Comments the team leaves after this review, or a PR reviewed without this skill,
 
 ## Scaling rigor
 
-The standard pass always runs, whatever the size of the PR. A docs-only or mechanical diff comes back from the reviewer as "Nothing to report" instead of a skipped step. A PR touching money, auth or data integrity may deserve a `--deep` follow-up, but that escalation is the user's call, offered with a cost estimate, never assumed.
+Both passes run whatever the size of the PR, unless `--blind-only`. A docs-only or mechanical diff comes back from the reviewer as "Nothing to report" instead of a skipped step. A PR touching money, auth or data integrity may deserve a `--deep` follow-up, but that escalation is the user's call, offered with a cost estimate, never assumed.
 
 ## Common mistakes
 
 - **Jumping straight to criticism**: the Intent paragraph and the data flow come before any judgment; findings come from the comprehension passes, not from a hunt for issues.
-- **Fanning out agents to look thorough**: seven agents re-reading the same files multiplies cost, not insight. One careful pass beats a fleet.
+- **Fanning out agents to look thorough**: seven agents re-reading the same files multiplies cost, not insight. Two careful passes, one after another, beat a fleet.
 - **Writing for yourself**: a dossier full of unexplained internal component names is useless to the person it is for.
 - **Padding the review**: reporting nits to justify the effort. "No blockers" is a valid, valuable result.
 - **Presenting questions as findings**: if you lack evidence, it is a question for the author.
