@@ -55,6 +55,12 @@ per behavior. Not a file list.>
 
 - [<Rule broken | Precedent diverged>] <path:line>: <problem>. Boundary or duplicate: <path:line>. Rule or precedent: <rules.md row | architecture section and row | pattern file | guidance path:line | touched code path:line>. Resolves: <what changing it resolves>. Fix: <auto | human>. Suggestion: <smallest fix or question>.
 
+### Shape
+
+<"none" when empty. Never blocking; a suggestion. Shape items do not change the verdict.>
+
+- [Shape] <path:line>: <what could be smaller>. Evidence: <path:line in the diff or its imports>. Suggestion: <the smaller shape>.
+
 ## Questions, not findings
 
 - <path:line>: <what looks off and what answer would resolve it>

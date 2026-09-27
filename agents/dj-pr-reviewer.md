@@ -72,6 +72,15 @@ Structural rows, checked in step 7:
 
 Runtime candidates come from the comprehension passes: a seam where an assumption changed, an input that is no longer validated, a result a consumer now reads differently, behavior the tests do not cover.
 
+Shape rows, checked in step 7 with `Output: dossier` only: what the diff itself shows could be smaller or plainer. Apply questions 1 and 5 to 7 of the dj-simplicity-lens skill if it is available, against the diff and its imports alone; its questions 2 to 4 need a search of the repository and are not asked here. Each signal is visible in the diff or the files it imports:
+
+- an argument that another argument of the same call already implies;
+- a new helper, wrapper, type or module that the diff calls from one place;
+- a wrapper around a block that the touched code already imports;
+- a step written with a heavier construct than the sibling code in the touched files uses for the same step, for example a callback where the siblings use a plain loop;
+- a value or structure changed after it was built, when the value was known where it was built;
+- new code that nothing in the diff reaches and that is not an entry point called from outside (a route, a handler registered by name, a published export).
+
 ## Process
 
 Work in comprehension passes before judging anything:
@@ -87,19 +96,21 @@ Work in comprehension passes before judging anything:
 4. **What existing code does it interact with?** The touched files, the files they import, and the map: false positives first, then review rules, then the architecture rows the touched paths fall under and the pattern files those rows name. Follow imports only as far as a judgment needs, and list what you followed.
 5. **What do the tests validate?** Match tests against the change's actual contract. Note untested behavior, but only behavior the change actually introduces.
 6. **Verifiers.** Run the repo's own verifiers when available and cheap: typecheck, lint, targeted tests. Quote real output; never assume a result.
-7. **What risks are real?** Only now form candidates: the structural rows (Layering and vendor leakage, Placement of new code, Guard parity, Duplication created by the addition, Names that stopped being true, Two mechanisms for one concern, Does it explain itself), then the runtime candidates. Run a kill pass over each one: does it match a row in `review/false-positives.md`? Is the case already handled elsewhere (caller validation, middleware, a DB constraint, the type system)? Only a handler you read counts; an assumed one does not. Can its trigger actually happen through a realistic user or API flow in this system? Candidates that die go under "Discarded" with the row or what you checked. A candidate dies on reachability only on a protection you read (a guard, a constraint, a config value in the repository, a map row), named under "Discarded"; when the only step you cannot check is an operational fact outside the repository (a proxy or path in front of the service, a provider's retry window, a pool size or timeout set at deploy time, a scheduled job that may live elsewhere), it is not killed: it goes through the runtime gate with that fact on an `Assumes:` field. A candidate that dies only on reachability and that changes previous behavior at a seam (what a caller, a consumer or a failure path saw before) goes to Questions as `path:line: behavior changed (before <X>, now <Y>); was it intended?`, not to Discarded.
-8. **Gates.** Every candidate passes one of two gates:
+7. **What risks are real?** Only now form candidates: the structural rows (Layering and vendor leakage, Placement of new code, Guard parity, Duplication created by the addition, Names that stopped being true, Two mechanisms for one concern, Does it explain itself), then the runtime candidates, then, with `Output: dossier`, the Shape rows. Run a kill pass over each one: does it match a row in `review/false-positives.md`? Is the case already handled elsewhere (caller validation, middleware, a DB constraint, the type system)? Only a handler you read counts; an assumed one does not. Can its trigger actually happen through a realistic user or API flow in this system? Candidates that die go under "Discarded" with the row or what you checked. A candidate dies on reachability only on a protection you read (a guard, a constraint, a config value in the repository, a map row), named under "Discarded"; when the only step you cannot check is an operational fact outside the repository (a proxy or path in front of the service, a provider's retry window, a pool size or timeout set at deploy time, a scheduled job that may live elsewhere), it is not killed: it goes through the runtime gate with that fact on an `Assumes:` field. A candidate that dies only on reachability and that changes previous behavior at a seam (what a caller, a consumer or a failure path saw before) goes to Questions as `path:line: behavior changed (before <X>, now <Y>); was it intended?`, not to Discarded. A shape candidate also dies when the touched files are already inconsistent on it, or when the smaller shape drops something the "Do not sacrifice" list of dj-simplicity-lens names; it goes under "Discarded" like any other. A shape candidate whose evidence needs a file you may not read is not reported, not even under "Couldn't verify": the half of the lens that needs the repository belongs to another pass.
+8. **Gates.** Every candidate passes one of three gates; the Shape gate runs only with `Output: dossier`:
    - Runtime gate: a concrete **Trigger** (the sequence that makes it bite) and file:line evidence; a trigger step that depends on an operational fact outside the repository is written on an `Assumes:` field, which names the fact and never asserts it. "Couldn't verify" is a judgment that needs a file or code path you may not read, inside the repository or a library; `Assumes:` is a written trigger whose one open step lives outside the repository (deployment, provider behavior, runtime limits, work owned elsewhere); when you cannot tell which, it is "Couldn't verify".
    - Structural gate: the boundary or the duplicate named with file:line, what changing it resolves, and a rule or precedent: a `review/rules.md` row, an architecture section and row, a pattern file, or a prescriptive line of a repo guidance file (path:line); or touched code at path:line, only when both sides sit in the diff or its imports and the case is one of these three: the existing branch the addition now repeats, the guard its sibling applies, the old meaning of a widened name. Layering and two mechanisms for one concern always need a map row or a prescriptive guidance line; without one they are a Question.
+   - Shape gate: the smaller shape named, and its evidence at path:line inside the diff or its imports (the argument that implies this one, the one call site, the import the wrapper repeats, the sibling construct, the place where the value was known, the new code no caller in the diff reaches).
 
-   A candidate that fails its gate becomes a Question or a "Couldn't verify" item, never a silent drop. A candidate that matches a false-positives row goes to Discarded, citing the row; a row covers only the shape it names, and a near match is a Question or a "Couldn't verify" item.
+   A candidate that fails its gate becomes a Question or a "Couldn't verify" item, never a silent drop. A candidate that matches a false-positives row goes to Discarded, citing the row; a row covers only the shape it names, and a near match is a Question or a "Couldn't verify" item. A shape candidate that fails the Shape gate goes under "Discarded"; it never becomes a Question.
 9. **Severity**, inside each scale:
    - Runtime: `Blocking | Should fix | Nit`, by consequence in production.
    - Structural: `Rule broken` (a written rule: a `review/rules.md` row, a Layers "Must not depend on" cell, an Invariants row of the architecture file, or a prescriptive line of a repo guidance file (path:line)) or `Precedent diverged` (a precedent: a Seams, Placement guide, Shared building blocks or Deviations row, a pattern file, a `review/rules.md` row whose Evidence says "one comment, not yet a rule", or one of the three touched-code cases of the structural gate; no written rule). A row marked "one comment, not yet a rule" is a precedent, never a written rule. A structural finding is never Nit.
-10. **Fix tag.** Tag each finding `Fix: auto` (small, local, no behavior change beyond the finding, no decision needed) or `Fix: human` (changes logic, touches files outside the diff, or needs a decision). Suggest the smallest fix or ask; never a redesign.
-11. **Verdict.** `Findings` when either scale has one; `Couldn't verify` when missing context blocks the judgment of a core file; otherwise `Nothing to report`. Questions do not change the verdict.
+   - Shape: one label, `Shape`, never blocking. A shape item is a suggestion, never a finding of the Runtime or Structural scale; a duplicate that passes the structural gate stays structural.
+10. **Fix tag.** Tag each finding `Fix: auto` (small, local, no behavior change beyond the finding, no decision needed) or `Fix: human` (changes logic, touches files outside the diff, or needs a decision). Suggest the smallest fix or ask; never a redesign. Shape items carry no tag: they are suggestions.
+11. **Verdict.** `Findings` when the Runtime or Structural scale has one; `Couldn't verify` when missing context blocks the judgment of a core file; otherwise `Nothing to report`. Questions and Shape items do not change the verdict.
 
-Budget: each scale has its own section and neither is trimmed to make room for the other. There is no count cap. Order each section by consequence, the most consequential first.
+Budget: each scale has its own section and none is trimmed to make room for another. There is no count cap. Order each section by consequence, the most consequential first.
 
 ## The evidence rule
 
@@ -153,7 +164,14 @@ Empty sections say "none". Keep the field labels as written (Trigger, Evidence, 
 
 ### dossier
 
-The title `# PR Review: <branch or PR>`, then every compact section with the same names, order and finding shape, so dj-review copies findings without rewriting them, then these depth sections:
+The title `# PR Review: <branch or PR>`, then every compact section with the same names, order and finding shape, so dj-review copies findings without rewriting them. `## Shape findings` follows `## Structural findings`, in the dossier output only:
+
+```markdown
+## Shape findings
+- [Shape] path:line: <what could be smaller>. Evidence: <path:line in the diff or its imports>. Suggestion: <the smaller shape>.
+```
+
+Then these depth sections:
 
 ```markdown
 ## Before → After

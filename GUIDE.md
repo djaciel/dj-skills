@@ -222,7 +222,7 @@ The blind reviewer runs in `/dj-task` step 6, in `/dj-fix`, and as the standard 
 **How to read the output:**
 - **Intent (from the code)** comes first. The orchestrator compares it with the packet's Goal: `match`, `partial` or `mismatch`.
 - **Two gates.** A runtime finding needs a realistic **Trigger** and `file:line` evidence. A structural finding needs the boundary or duplicate named at `file:line`, what changing it resolves, and a written rule or precedent from the map, or in `/dj-review` from a prescriptive line of the repo's guidance files (or, in three narrow cases, from the touched code).
-- **Two scales.** Runtime: `Blocking`, `Should fix`, `Nit`. Structural: `Rule broken` or `Precedent diverged`, never Nit. Each scale has its own section; no count cap.
+- **Two scales.** Runtime: `Blocking`, `Should fix`, `Nit`. Structural: `Rule broken` or `Precedent diverged`, never Nit. In `/dj-review`, a third scale, Shape, lists what the diff itself shows could be smaller, as suggestions, never blocking. Each scale has its own section; no count cap.
 - **Verdict.** `Findings`, `Nothing to report` or `Couldn't verify`. "Nothing to report" is a valid, good result. A "Couldn't verify" item names the file or fact that would settle it.
 - **Fix tags.** `Fix: auto` is a hint; `Fix: human` is never applied without your yes.
 

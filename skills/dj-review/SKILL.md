@@ -102,11 +102,12 @@ For each main flow the diff touches, build a compact `input → transform → ou
 
 ### 5. Check precedents, tests, and stack quality
 
-Three lenses over the core files, one read. Steps 4 and 5 are done by dj-pr-reviewer in the standard pass; the session does not repeat them.
+Four lenses over the core files, one read. Steps 4 and 5 are done by dj-pr-reviewer in the standard pass; the session does not repeat them.
 
 - **Precedents/duplication:** read the architecture file's "Shared building blocks", "Placement guide", "Layers" and "Deviations and migrations in progress" rows, then the touched files and the files they import. Does the PR re-implement a block the map lists? Does it diverge from a placement, a layer rule or the go-forward side of a migration? The placement check covers where each new module or function of a placed kind lives, not only the calls it makes. No search beyond the touched files and their imports; what the map and those files cannot settle goes to "Couldn't verify".
 - **Tests:** apply the **dj-test-quality** skill: do the tests validate the behavior this PR introduces, or implementation details? What realistic cases are missing?
 - **Stack quality:** apply the **dj-repo-patterns** skill: consistency with the repo's own conventions beats abstract best practice. For TypeScript, watch the dj-ts-reviewer checklist areas: unsafe casts, duplicated types/utilities, mishandled async flows. For Elixir, watch the dj-elixir-reviewer areas: N+1 queries and missing preloads, get-then-insert races, swallowed error tuples, context boundaries bypassed.
+- **Shape:** apply questions 1 and 5 to 7 of the **dj-simplicity-lens** skill against the diff and its imports alone: what the diff itself shows could be smaller or plainer. Questions 2 to 4 need a search of the repository and are not asked here. The signals and the kills are dj-pr-reviewer's Shape rows and its step 7.
 
 ### 6. Filter through the evidence rule
 
@@ -123,17 +124,19 @@ Three lenses over the core files, one read. Steps 4 and 5 are done by dj-pr-revi
 
 **Kill pass, before writing any finding down.** For each candidate, actively try to kill it: does it match a row in `review/false-positives.md` (a row covers only the shape it names)? Is the case already handled elsewhere (caller validation, middleware, a DB constraint, the type system)? Only a handler you read counts; an assumed one does not. Can its trigger actually happen in this system as deployed, through a realistic user or API flow? Is it a style point the repo is already inconsistent about? A finding earns its place only if the kill attempt fails; killed candidates go to "Discarded suspicions" with the row or what you checked. A candidate is killed on reachability only by a protection you read (a guard, a constraint, a config value in the repository, a map row), named under "Discarded suspicions"; when the only step you cannot check is an operational fact outside the repository (a proxy or path in front of the service, a provider's retry window, a pool size or timeout set at deploy time, a scheduled job that may live elsewhere), it is not killed: it goes through the runtime gate with that fact on an `Assumes:` field. A candidate killed only because its trigger cannot happen as deployed, when it changes previous behavior at a seam (what a caller, a consumer or a failure path saw before), goes to Questions as `path:line: behavior changed (before <X>, now <Y>); was it intended?`, not to "Discarded suspicions".
 
-**Two gates.** Every surviving candidate passes one of them, or it is a Question or a "Couldn't verify" item, never a silent drop:
+**Three gates.** Every surviving candidate passes one of them, or it is a Question or a "Couldn't verify" item, never a silent drop (a shape candidate that fails its gate goes to "Discarded suspicions", see the Shape gate):
 
 - **Runtime gate:** a concrete **Trigger** (the realistic sequence that makes it bite) and file:line evidence; a trigger step that depends on an operational fact outside the repository is written on an `Assumes:` field, which names the fact and never asserts it. "Couldn't verify" is a judgment that needs a file or code path you may not read, inside the repository or a library; `Assumes:` is a written trigger whose one open step lives outside the repository (deployment, provider behavior, runtime limits, work owned elsewhere); when you cannot tell which, it is "Couldn't verify".
 - **Structural gate:** the boundary or the duplicate named with file:line, what changing it **Resolves**, and a **rule or precedent**: a `review/rules.md` row, an architecture section and row, a pattern file, or a prescriptive line of a repo guidance file (path:line); or touched code at path:line, only when both sides sit in the diff or its imports and the case is one of these three: the existing branch the addition now repeats, the guard its sibling applies, the old meaning of a widened name. Layering and two mechanisms for one concern always need a map row or a prescriptive guidance line; without one they are a Question.
+- **Shape gate:** the smaller shape named, and its evidence at path:line inside the diff or its imports. A shape candidate whose evidence needs any other file is not reported; one that fails the gate goes to "Discarded suspicions", never to Questions.
 
-**Two scales**, each with its own section, neither trimmed for the other:
+**Three scales**, each with its own section, none trimmed for another:
 
 - **Runtime:** `Blocking | Should fix | Nit`, by consequence in production.
 - **Structural:** `Rule broken` (a written rule: a `review/rules.md` row, a Layers "Must not depend on" cell, an Invariants row, or a prescriptive line of a repo guidance file (path:line)) or `Precedent diverged` (a Seams, Placement guide, Shared building blocks or Deviations row, a pattern file, a `review/rules.md` row marked "one comment, not yet a rule", or one of the three touched-code cases). A row marked "one comment, not yet a rule" is a precedent, never a written rule. A structural finding is never Nit.
+- **Shape:** one label, `Shape`, a suggestion: never blocking, never a finding of the Runtime or Structural scale, and it never changes the verdict. A duplicate that passes the structural gate stays structural.
 
-The finding shapes are those of dj-pr-reviewer's output, with its field labels as written (Trigger, Evidence, Assumes, Boundary or duplicate, Rule or precedent, Resolves, Fix, Suggestion); `templates/reviewer-dossier.md` shows both. There is no count cap: order each scale by consequence, the most consequential first. "Nothing to report" and "Couldn't verify" are valid results of a review.
+The finding shapes are those of dj-pr-reviewer's output, with its field labels as written (Trigger, Evidence, Assumes, Boundary or duplicate, Rule or precedent, Resolves, Fix, Suggestion); `templates/reviewer-dossier.md` shows all three. There is no count cap: order each scale by consequence, the most consequential first. "Nothing to report" and "Couldn't verify" are valid results of a review.
 
 ### 7. Deep verification (only with `--deep`)
 
