@@ -106,7 +106,7 @@ A task can end `done`, but also `done-with-drift`, `blocked`, `needs-replan`, `s
 
 **Range:** the base is the merge base with the target, so the range is the PR's own commits. An already merged PR works too: for a merge commit the skill finds the PR's base and head; for a squash or rebase merge it asks for the base. `--base <ref>` always wins. A branch that is not checked out is read where it is; the skill never checks it out.
 
-**Depth and cost:** the default is two passes, one after the other: the blind one, then the informed one. `--blind-only` gives one. In the trial, one pass measured 90 to 135k tokens and 3 to 7 minutes on PRs of 2 to 22 files. `--deep` adds one verifier per Blocking finding, which may read library sources. It costs several times more and is always your call; the skill may offer it, never assume it.
+**Depth and cost:** the default is two passes, one after the other: the blind one, then the informed one. `--blind-only` gives one. In the trial, one pass measured 90 to 135k tokens and 3 to 7 minutes on PRs of 2 to 22 files. On a diff with several independent flows, such as a new service with several processes, the skill first proposes a split by area; on your yes it runs one blind pass per area, one after another, then one informed pass over the whole, and the dossier keeps one first screen and one depth block per area. Each area adds one blind pass of cost. `--deep` adds one verifier per Blocking finding, which may read library sources. It costs several times more and is always your call; the skill may offer it, never assume it.
 
 **Your job:** filter the findings, approve the map rows, then rewrite the drafts in your own words and post them yourself. **Nothing is ever posted by a skill.**
 

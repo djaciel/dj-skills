@@ -10,6 +10,12 @@
      What is copied from a pass stays verbatim in that pass's language; every other
      section follows the internal language policy.
 
+     BY AREAS (the human accepted a split at step 1 of the skill): one first screen across
+     areas, and every copied item gets `Area: <name>` after `Found by:` (step 8). Under the
+     Depth marker, the five depth sections repeat once per area, one level down, under
+     `## Area: <name> (<n> files)`, in the split's order. A component explained in an
+     earlier area block is pointed back to, not explained again.
+
      AUDIENCE RULE for the depth sections: write for a reviewer who does NOT know this
      area of the codebase. Every codebase-specific component (service, lock, queue,
      pattern, helper) gets a short explanation on first mention: what it is, where it
@@ -26,7 +32,7 @@
 <chosen by the session from any section; usually two or three, as guidance, not a limit;
 "nothing worth posting" is valid>
 
-- <path:line>: <what to post>. From: <section>, <Found by>. Why: <one line>
+- <path:line>: <what to post>. From: <section>, <Found by>. Area: <name, by areas only>. Why: <one line>
 
 ## What this PR appears to solve
 
@@ -55,29 +61,32 @@ per behavior. Not a file list.>
 
 <"none" when empty>
 
-- [<Blocking | Should fix | Nit>] <path:line>: <problem>. Trigger: <the realistic sequence that makes it bite>. Evidence: <quote or output>. Assumes: <the operational fact the trigger needs; omitted when none>. Fix: <auto | human>. Suggestion: <smallest fix>. Found by: <both | blind | informed (suspected)>.
+- [<Blocking | Should fix | Nit>] <path:line>: <problem>. Trigger: <the realistic sequence that makes it bite>. Evidence: <quote or output>. Assumes: <the operational fact the trigger needs; omitted when none>. Fix: <auto | human>. Suggestion: <smallest fix>. Found by: <both | blind | informed (suspected)>. Area: <name, by areas only>.
 
 ### Structural
 
 <"none" when empty. A structural finding is never Nit.>
 
-- [<Rule broken | Precedent diverged>] <path:line>: <problem>. Boundary or duplicate: <path:line>. Rule or precedent: <rules.md row | architecture section and row | pattern file | guidance path:line | touched code path:line>. Resolves: <what changing it resolves>. Fix: <auto | human>. Suggestion: <smallest fix or question>. Found by: <both | blind | informed (suspected)>.
+- [<Rule broken | Precedent diverged>] <path:line>: <problem>. Boundary or duplicate: <path:line>. Rule or precedent: <rules.md row | architecture section and row | pattern file | guidance path:line | touched code path:line>. Resolves: <what changing it resolves>. Fix: <auto | human>. Suggestion: <smallest fix or question>. Found by: <both | blind | informed (suspected)>. Area: <name, by areas only>.
 
 ### Shape
 
 <"none" when empty. Never blocking; a suggestion. Shape items do not change the verdict.>
 
-- [Shape] <path:line>: <what could be smaller>. Evidence: <path:line in the diff or its imports, or, for an "already exists" item, path:line in the repository or dependency@version and path>. Suggestion: <the smaller shape>. Found by: <both | blind | informed (suspected)>.
+- [Shape] <path:line>: <what could be smaller>. Evidence: <path:line in the diff or its imports, or, for an "already exists" item, path:line in the repository or dependency@version and path>. Suggestion: <the smaller shape>. Found by: <both | blind | informed (suspected)>. Area: <name, by areas only>.
 
 ## Questions, not findings
 
-- <path:line>: <what looks off and what answer would resolve it>. Found by: <both | blind | informed (suspected)>.
+- <path:line>: <what looks off and what answer would resolve it>. Found by: <both | blind | informed (suspected)>. Area: <name, by areas only>.
 
 ## Couldn't verify
 
 - <path:line>: <the judgment> needs <the file or fact that would settle it>
 
 <!-- Depth: read when learning the area -->
+
+<by areas only: one `## Area: <name> (<n> files)` block per area, in the split's order,
+holding the five sections below one level down>
 
 ## Components involved
 
@@ -121,7 +130,9 @@ block, one or two plain-language lines each. Group only truly mechanical files.>
 ## How this review ran
 
 - Blind pass: <delegated to dj-pr-reviewer | inline: <why>>
+- Areas: <none: one blind pass | <name>: <n> files, verdict <...>; ...>
 - Informed pass: <delegated to a general-purpose subagent | inline by the session: not independent of the blind pass | skipped: --blind-only | skipped: <reason>>; context: <paths | none>; library sources read: <package@version | none>
+- Cost: blind <tokens, minutes per pass | not measured: inline>; informed <tokens, minutes | skipped | not measured: inline>
 - Crossing: <n> both, <n> blind only, <n> informed only
 - Map inputs used: architecture <path | missing>; rules <path | missing>; false positives <path | missing>; patterns <paths | none>
 - Repo guidance: <paths read at <head> | missing>
