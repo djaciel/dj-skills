@@ -1,0 +1,255 @@
+#!/usr/bin/env bash
+# dj-sync: move .dj-agents/ between two machines with git bundles.
+#
+# Usage:
+#   dj-sync pack [--out <file>] [--full]   bundle the commits since the last-sync tag
+#   dj-sync unpack <file>                  verify a bundle and pull it into the root
+#   dj-sync unpack --finish                after a conflict was resolved and committed
+#   dj-sync clone <file> [<dest>]          create a root from a full bundle (default ./.dj-agents)
+#   dj-sync status                         branch, last-sync, commits to pack, working tree
+#
+# The tag last-sync marks the newest commit both machines hold. pack moves it
+# only after the bundle file exists; unpack moves it only after the pull
+# succeeded, and to the commit that came in, so a merge made here is packed next.
+# The root is resolved with dj-root (DJ_AGENTS_ROOT overrides the walk-up).
+# stdout carries only the single value (file path, HEAD line, root path);
+# messages go to stderr. Uncommitted changes are never packed.
+# Exit codes: 0 ok, 1 usage or no root, 2 git failure (verify, pull, conflict).
+# Needs bash, git, coreutils, hostname and date only.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+TAG=last-sync
+PENDING=refs/dj-sync/pending
+
+usage() {
+  cat <<'EOF'
+Usage: dj-sync <command>
+  pack [--out <file>] [--full]  bundle the commits since last-sync (all history with --full
+                                or when there is no tag); prints the bundle path
+  unpack <file>                 verify the bundle, pull it into the current branch, move last-sync
+  unpack --finish               move last-sync after a conflict was resolved and committed
+  clone <file> [<dest>]         create a root from a full bundle; <dest> defaults to ./.dj-agents
+  status                        branch, last-sync, commits to pack, working tree
+The root is the nearest .dj-agents/ above the current directory; DJ_AGENTS_ROOT overrides it.
+EOF
+}
+
+die() { echo "dj-sync: $2" >&2; exit "$1"; }
+
+abs_path() {
+  case "$1" in
+    /*) printf '%s\n' "$1" ;;
+    *)  printf '%s/%s\n' "$PWD" "$1" ;;
+  esac
+}
+
+resolve_root() {
+  local r
+  r="$(bash "$SCRIPT_DIR/dj-root" root)" || exit 1
+  if ! git -C "$r" rev-parse --git-dir >/dev/null 2>&1; then
+    die 1 "$r is not a git repository; run: git -C $r init, then commit its content"
+  fi
+  # A path comparison breaks on case-insensitive filesystems (git canonicalizes, pwd keeps the typed case):
+  # the root is its own repository when .git sits directly inside it.
+  if [ ! -e "$r/.git" ]; then
+    die 1 "$r has no .git of its own; run: git -C $r init, then commit its content"
+  fi
+  printf '%s\n' "$r"
+}
+
+current_branch() {
+  local b
+  b="$(git -C "$1" symbolic-ref --short -q HEAD)" \
+    || die 2 "HEAD in $1 is detached; check out the branch you sync, then run this again"
+  git -C "$1" rev-parse -q --verify HEAD >/dev/null \
+    || die 2 "branch $b in $1 has no commits yet; commit inside the root first"
+  printf '%s\n' "$b"
+}
+
+has_tag() { git -C "$1" rev-parse -q --verify "refs/tags/$TAG" >/dev/null; }
+
+# Move last-sync to $2 only when that is at or after the current tag; never backward.
+move_tag_forward() {
+  if has_tag "$1" && ! git -C "$1" merge-base --is-ancestor "$TAG" "$2"; then
+    echo "note: $TAG stays at $(git -C "$1" rev-parse --short "$TAG"); $(git -C "$1" rev-parse --short "$2") is older than it (an old bundle?)" >&2
+    return 0
+  fi
+  git -C "$1" tag -f "$TAG" "$2" >/dev/null
+}
+
+dirty_count() { git -C "$1" status --porcelain | wc -l | tr -d ' '; }
+
+# The single branch a bundle carries: "<sha> <refs/heads/name>".
+bundle_head() {
+  local heads n
+  heads="$(git bundle list-heads "$1" | grep ' refs/heads/' || true)"
+  n="$(printf '%s' "$heads" | grep -c . || true)"
+  if [ "$n" != "1" ]; then
+    die 2 "$1 must carry exactly one branch, found $n; create it with: dj-sync pack"
+  fi
+  printf '%s\n' "$heads"
+}
+
+cmd_pack() {
+  local out="" full=0
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --out)  [ $# -ge 2 ] || { usage >&2; exit 1; }; out="$2"; shift 2 ;;
+      --full) full=1; shift ;;
+      *)      usage >&2; exit 1 ;;
+    esac
+  done
+  local root branch range count dirty host
+  root="$(resolve_root)"
+  branch="$(current_branch "$root")"
+
+  if [ "$full" = 0 ] && has_tag "$root"; then
+    count="$(git -C "$root" rev-list --count "$TAG..$branch")"
+    if [ "$count" = 0 ]; then
+      echo "nothing to pack since $TAG; no file written" >&2
+      dirty="$(dirty_count "$root")"
+      [ "$dirty" = 0 ] || echo "note: $dirty uncommitted changes in $root are not packed; close the task or commit inside the root first" >&2
+      return 0
+    fi
+    range="$TAG..$branch"
+  else
+    count="$(git -C "$root" rev-list --count "$branch")"
+    range="$branch"
+  fi
+
+  dirty="$(dirty_count "$root")"
+  if [ "$dirty" != 0 ]; then
+    echo "warning: $dirty uncommitted changes in $root are not packed; close the task or commit inside the root first" >&2
+  fi
+
+  if [ -z "$out" ]; then
+    host="$(hostname -s 2>/dev/null || hostname 2>/dev/null || echo host)"
+    host="$(printf '%s' "$host" | tr -c 'A-Za-z0-9._-' '-')"
+    out="$(dirname "$root")/dj-agents-$host-$(date +%F-%H%M%S).bundle"
+  fi
+  out="$(abs_path "$out")"
+
+  if ! git -C "$root" bundle create -q "$out" "$range" >&2; then
+    die 2 "git bundle create failed; $TAG was not moved"
+  fi
+  [ -s "$out" ] || die 2 "bundle $out was not written; $TAG was not moved"
+
+  git -C "$root" tag -f "$TAG" "$branch" >/dev/null
+  if [ "$range" = "$branch" ]; then
+    echo "packed $branch in full: $count commit(s); $TAG moved to $(git -C "$root" rev-parse --short "$branch")" >&2
+    echo "next: move this file to the other machine and run: dj-sync unpack $(basename "$out") (or dj-sync clone $(basename "$out") where no root exists yet)" >&2
+  else
+    echo "packed $count commit(s) of $branch since $TAG; $TAG moved to $(git -C "$root" rev-parse --short "$branch")" >&2
+    echo "next: move this file to the other machine and run: dj-sync unpack $(basename "$out")" >&2
+  fi
+  printf '%s\n' "$out"
+}
+
+cmd_unpack_finish() {
+  local root pending
+  root="$(resolve_root)"
+  pending="$(git -C "$root" rev-parse -q --verify "$PENDING" 2>/dev/null)" \
+    || die 1 "no interrupted unpack to finish in $root"
+  if git -C "$root" rev-parse -q --verify MERGE_HEAD >/dev/null; then
+    die 2 "the merge is not committed yet; resolve the files, run: git -C $root add <files> && git -C $root commit --no-edit, then run: dj-sync unpack --finish"
+  fi
+  git -C "$root" merge-base --is-ancestor "$pending" HEAD \
+    || die 2 "the incoming commit $(git -C "$root" rev-parse --short "$pending") is not in HEAD; run: dj-sync unpack <file> again"
+  move_tag_forward "$root" "$pending"
+  git -C "$root" update-ref -d "$PENDING"
+  echo "$TAG at $(git -C "$root" rev-parse --short "$TAG"); next time you leave this machine run: dj-sync pack" >&2
+  git -C "$root" log -1 --oneline
+}
+
+cmd_unpack() {
+  [ $# -eq 1 ] || { usage >&2; exit 1; }
+  if [ "$1" = "--finish" ]; then
+    cmd_unpack_finish
+    return
+  fi
+  local file root branch head sha ref
+  file="$(abs_path "$1")"
+  [ -f "$file" ] || die 1 "no such file: $file"
+  root="$(resolve_root)"
+  branch="$(current_branch "$root")"
+
+  if git -C "$root" rev-parse -q --verify MERGE_HEAD >/dev/null; then
+    die 2 "a merge is in progress in $root; resolve and commit it, then run: dj-sync unpack --finish"
+  fi
+  if ! git -C "$root" bundle verify -q "$file" >&2; then
+    die 2 "bundle verify failed for $file; nothing was pulled and $TAG did not move. Ask for a new bundle (dj-sync pack --full on the other machine if its commits are missing here)"
+  fi
+  head="$(bundle_head "$file")"
+  sha="${head%% *}"
+  ref="${head#* }"
+
+  if ! git -C "$root" pull -q --no-rebase --ff --no-edit "$file" "$ref" >&2; then
+    if git -C "$root" rev-parse -q --verify MERGE_HEAD >/dev/null; then
+      git -C "$root" update-ref "$PENDING" "$sha"
+      echo "dj-sync: conflict while merging $file into $branch; $TAG did not move." >&2
+      echo "next: fix the files git lists above, then run: git -C $root add <files> && git -C $root commit --no-edit && dj-sync unpack --finish" >&2
+      exit 2
+    fi
+    die 2 "git pull from $file failed; $TAG did not move. Read git's message above"
+  fi
+
+  move_tag_forward "$root" "$sha"
+  git -C "$root" update-ref -d "$PENDING" 2>/dev/null || true
+  if [ "$(git -C "$root" rev-parse "$TAG")" = "$sha" ] && [ "$(git -C "$root" rev-parse HEAD)" != "$sha" ]; then
+    echo "note: both machines had new commits; git made a merge commit. $TAG marks the incoming commit, so the merge goes out with the next pack" >&2
+  fi
+  echo "unpacked $(basename "$file") into $branch; $TAG at $(git -C "$root" rev-parse --short "$TAG")" >&2
+  git -C "$root" log -1 --oneline
+}
+
+cmd_clone() {
+  [ $# -ge 1 ] && [ $# -le 2 ] || { usage >&2; exit 1; }
+  local file dest head ref
+  file="$(abs_path "$1")"
+  dest="$(abs_path "${2:-.dj-agents}")"
+  [ -f "$file" ] || die 1 "no such file: $file"
+  [ ! -e "$dest" ] || die 1 "$dest already exists; to add a bundle to an existing root run: dj-sync unpack $1"
+  head="$(bundle_head "$file")"
+  ref="${head#* }"
+  if ! git clone -q -b "${ref#refs/heads/}" "$file" "$dest" >&2; then
+    die 2 "git clone from $file failed; clone needs a full bundle: run dj-sync pack --full on the other machine"
+  fi
+  git -C "$dest" remote remove origin
+  git -C "$dest" tag -f "$TAG" HEAD >/dev/null
+  echo "cloned $(basename "$file") on branch ${ref#refs/heads/}; $TAG at $(git -C "$dest" rev-parse --short HEAD)" >&2
+  echo "next: work here, commit inside the root, and before leaving run: dj-sync pack" >&2
+  printf '%s\n' "$dest"
+}
+
+cmd_status() {
+  [ $# -eq 0 ] || { usage >&2; exit 1; }
+  local root branch dirty
+  root="$(resolve_root)"
+  branch="$(current_branch "$root")"
+  echo "root: $root on branch $branch"
+  if has_tag "$root"; then
+    echo "last-sync: $(git -C "$root" log -1 --format='%h %s' "$TAG")"
+    echo "to pack: $(git -C "$root" rev-list --count "$TAG..$branch") commit(s) since last-sync"
+  else
+    echo "last-sync: no last-sync tag"
+    echo "to pack: $(git -C "$root" rev-list --count "$branch") commit(s) (full, no tag yet)"
+  fi
+  dirty="$(dirty_count "$root")"
+  if [ "$dirty" = 0 ]; then
+    echo "working tree: clean"
+  else
+    echo "working tree: $dirty uncommitted changes, not packed; close the task or commit inside the root first"
+  fi
+}
+
+cmd="${1:-}"
+[ $# -gt 0 ] && shift
+case "$cmd" in
+  pack)      cmd_pack "$@" ;;
+  unpack)    cmd_unpack "$@" ;;
+  clone)     cmd_clone "$@" ;;
+  status)    cmd_status "$@" ;;
+  -h|--help) usage ;;
+  *)         usage >&2; exit 1 ;;
+esac

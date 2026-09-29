@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# line-count: lines of a file, or of one ## T-XX section of it.
+#
+# Usage:
+#   line-count <file>[#<T-XX>]...
+#
+# With #<T-XX>, the section runs from the heading line that starts with "## <T-XX>"
+# followed by ":", a space or the end of the line, up to the line before the next
+# "## " heading or the end of the file. The first matching heading counts. A last
+# line without a newline counts as a line. The count is a measurement for the human,
+# never a limit.
+#
+# stdout: one line per argument, "<lines><TAB><argument>", in argument order.
+# Messages go to stderr. Reads files only, writes nothing; needs no git repository.
+# Exit codes: 0 ok, 1 a file is missing, 2 a section is not found (both after
+# printing the counts that were found; 1 wins over 2), 64 bad usage.
+# Needs bash, coreutils and grep only.
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: line-count <file>[#<T-XX>]...
+  <file>         print the number of lines of the file
+  <file>#<T-XX>  print the number of lines of its "## <T-XX>" section
+One line per argument: <lines><TAB><argument>.
+USAGE
+}
+
+missing=0
+no_section=0
+
+# Lines from the "## <id>" heading to the line before the next "## " heading.
+section_lines() {
+  local id="$2" line n=0 inside=0
+  while IFS= read -r line || [ -n "$line" ]; do
+    if [ "$inside" = 1 ]; then
+      case "$line" in '## '*) break ;; esac
+      n=$((n + 1))
+    else
+      case "$line" in
+        "## $id:"*|"## $id "*|"## $id") inside=1; n=1 ;;
+      esac
+    fi
+  done < "$1"
+  [ "$inside" = 1 ] || return 1
+  printf '%s\n' "$n"
+}
+
+count_one() {
+  local arg="$1" file="$1" id="" n
+  if [ ! -f "$arg" ]; then
+    case "$arg" in
+      *'#'*) file="${arg%#*}"; id="${arg##*#}" ;;
+    esac
+  fi
+  if [ ! -f "$file" ]; then
+    echo "line-count: no such file: $file" >&2
+    missing=1
+    return 0
+  fi
+  if [ -z "$id" ]; then
+    n="$(grep -c '' -- "$file" || true)"
+  elif ! n="$(section_lines "$file" "$id")"; then
+    echo "line-count: no \"## $id\" section in $file" >&2
+    no_section=1
+    return 0
+  fi
+  printf '%s\t%s\n' "$n" "$arg"
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  '')        usage >&2; exit 64 ;;
+  --)        shift; [ $# -gt 0 ] || { usage >&2; exit 64; } ;;
+  -*)        usage >&2; exit 64 ;;
+esac
+
+for arg in "$@"; do
+  count_one "$arg"
+done
+[ "$missing" = 0 ] || exit 1
+[ "$no_section" = 0 ] || exit 2

@@ -1,9 +1,9 @@
 ---
 name: dj-commit-message
-description: "Use when a commit message should be suggested for staged or completed changes — at the end of a task, when dj-brief routes a commit request, or whenever the user asks how to commit what was just built."
+description: "Use when a commit message should be suggested for staged or completed changes, at the end of a task, when dj-brief routes a commit request, or whenever the user asks how to commit what was just built."
 ---
 
-# Commit Message — Suggest, Match the Repo, Never Commit
+# Commit Message: Suggest, Match the Repo, Never Commit
 
 ## Overview
 
@@ -14,7 +14,7 @@ The repo's history is the style guide: suggest a message that fits it, and stop 
 - A task or fix is done and the change needs a commit suggestion (called from /dj-task, /dj-fix, or /dj-brief).
 - The user asks "what should the commit message be?"
 
-**Do NOT use when:** the change is not finished or not validated — a commit message for unverified work invites committing unverified work.
+**Do NOT use when:** the change is not finished or not validated. A commit message for unverified work invites committing unverified work.
 
 ## Process
 
@@ -28,13 +28,13 @@ The repo's history is the style guide: suggest a message that fits it, and stop 
 - Subject in the imperative mood ("add", not "added" or "adds"); aim under ~72 characters.
 - Default types: `feat` `fix` `refactor` `test` `docs` `chore` `perf` `build` `ci`.
 - Scope = the module or area touched, matching how the repo already scopes.
-- Add a body only when the "why" is not obvious from subject + diff — the body explains why, not what.
+- Add a body only when the "why" is not obvious from subject + diff. The body explains why, not what.
 - **No co-author lines, no tool attribution, ever.** No emoji unless the repo history uses them.
-- English, always — commits are external artifacts under the language policy.
+- English, always: commits are external artifacts under the language policy.
 
 ## Commit policy
 
-Honor `commit_policy` from `.agent/project.md`:
+Honor `commit_policy` from `.dj-agents/repos/<repo>/project.md`:
 
 | Policy | Behavior |
 |---|---|
@@ -42,7 +42,7 @@ Honor `commit_policy` from `.agent/project.md`:
 | `allowed-if-explicit` | Commit only when the user's current instruction explicitly says to. |
 | `autonomous` | May commit after the task's validation passes (e.g. `/dj-task T-01..T-04 --autonomous`). Still: no push, no automatic PR, no co-author. |
 
-If `.agent/project.md` does not exist, behave as `human-only`.
+If `.dj-agents/repos/<repo>/project.md` does not exist, behave as `human-only`.
 
 ## One commit, one change
 
@@ -50,7 +50,7 @@ If the diff mixes unrelated changes, suggest a split with a message per commit r
 
 ## Common mistakes
 
-- Committing because "it's obviously done" — the policy decides, not confidence.
+- Committing because "it's obviously done": the policy decides, not confidence.
 - Imposing conventional commits on a repo whose history writes plain sentences (or vice versa).
 - Subject describes the task ("complete T-03") instead of the change.
 - Writing the message from the plan instead of the actual diff.
@@ -63,7 +63,7 @@ Suggested commit:
 `feat(auth): add session refresh on token expiry`
 
 Convention: matches repo history (conventional commits, scope by module).
-Body: not needed — the diff is self-explanatory.
+Body: not needed. The diff is self-explanatory.
 ```
 
 If a split is warranted, list the suggested commits in order, one line each, with which files go where.

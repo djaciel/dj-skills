@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# dj-root: resolve the .dj-agents/ root and the per-repo area inside it.
+#
+# Usage:
+#   dj-root [root]     nearest .dj-agents/ walking up from the current directory
+#   dj-root name       repo name: basename of the main checkout (worktrees resolve to it)
+#   dj-root repo       <root>/repos/<name>
+#   dj-root knowledge  <root>/knowledge
+#
+# DJ_AGENTS_ROOT, when set to an existing directory, replaces the walk-up
+# (tests, or a session opened outside the tree).
+# stdout carries only the path; messages go to stderr. Never creates anything.
+# Exit codes: 0 ok, 1 no root found, 2 not inside a git repository, 64 bad usage.
+# Needs bash, git and coreutils only.
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: dj-root [root|name|repo|knowledge]
+  root       print the nearest .dj-agents/ above the current directory (default)
+  name       print the repo name: basename of the main checkout, worktrees included
+  repo       print <root>/repos/<name>
+  knowledge  print <root>/knowledge
+DJ_AGENTS_ROOT=<dir> overrides the walk-up.
+EOF
+}
+
+find_root() {
+  if [ -n "${DJ_AGENTS_ROOT:-}" ] && [ -d "$DJ_AGENTS_ROOT" ]; then
+    printf '%s\n' "${DJ_AGENTS_ROOT%/}"
+    return 0
+  fi
+  local d="$PWD"
+  while :; do
+    if [ -d "${d%/}/.dj-agents" ]; then
+      printf '%s\n' "${d%/}/.dj-agents"
+      return 0
+    fi
+    if [ "$d" = "/" ]; then
+      break
+    fi
+    d="$(dirname "$d")"
+  done
+  echo "no .dj-agents/ found above $PWD; run /dj-start --adopt for a new repo area or /dj-migrate if you have v2 data" >&2
+  return 1
+}
+
+repo_name() {
+  local common
+  if ! common="$(git rev-parse --git-common-dir 2>/dev/null)"; then
+    echo "dj-root: $PWD is not inside a git repository" >&2
+    return 2
+  fi
+  basename "$(cd "$common/.." && pwd)"
+}
+
+cmd="${1:-root}"
+case "$cmd" in
+  root)      find_root ;;
+  name)      repo_name ;;
+  repo)      root="$(find_root)"; name="$(repo_name)"; printf '%s/repos/%s\n' "$root" "$name" ;;
+  knowledge) root="$(find_root)"; printf '%s/knowledge\n' "$root" ;;
+  -h|--help) usage ;;
+  *)         usage >&2; exit 64 ;;
+esac
